@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
+import '../services/cards_api.dart';
 import '../services/payments_api.dart';
 import 'models.dart';
 
@@ -12,11 +13,13 @@ class AppState extends ChangeNotifier {
   AppState({AuthService? auth}) : auth = auth ?? AuthService() {
     api = ApiClient(this.auth);
     payments = PaymentsApi(api);
+    cards = CardsApi(api);
   }
 
   final AuthService auth;
   late final ApiClient api;
   late final PaymentsApi payments;
+  late final CardsApi cards;
 
   AppStage stage = AppStage.starting;
   Me? me;

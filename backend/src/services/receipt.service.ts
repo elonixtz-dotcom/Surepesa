@@ -47,8 +47,8 @@ const RAIL_NAMES: Record<string, string> = {
 export const railName = (provider: string | null | undefined) => (provider ? (RAIL_NAMES[provider] ?? provider) : 'the payment network');
 
 export const receiptInclude = {
-  sourceWallet: { include: { user: { include: { profile: true } }, business: true } },
-  destinationWallet: { include: { user: { include: { profile: true } }, business: true } },
+  sourceWallet: { include: { user: { include: { profile: true } }, business: true, card: true } },
+  destinationWallet: { include: { user: { include: { profile: true } }, business: true, card: true } },
   paymentMethod: true,
   reverses: { select: { reference: true } },
   refunds: { select: { reference: true } },
@@ -81,13 +81,15 @@ function statusText(t: Transaction, direction: 'IN' | 'OUT', rail: string): stri
 function walletParty(w: ReceiptTransaction['sourceWallet']) {
   if (!w) return null;
   if (w.business) return { name: w.business.tradingName, account: w.business.merchantCode };
+  if (w.card) return { name: w.card.nickname, account: `${w.card.brand} •••• ${w.card.last4 ?? '----'}` };
   if (w.user) return { name: registeredName(w.user.profile), account: maskPhone(w.user.phoneNumber) };
   return null;
 }
 
 /** `viewerUserId` decides direction (money in or out) and which side is the counterparty. */
 export async function presentReceipt(t: ReceiptTransaction, viewerUserId: string) {
-  const isMine = (w: ReceiptTransaction['sourceWallet']) => !!w && (w.userId === viewerUserId || w.business?.ownerId === viewerUserId);
+  const isMine = (w: ReceiptTransaction['sourceWallet']) =>
+    !!w && (w.userId === viewerUserId || w.business?.ownerId === viewerUserId || w.card?.userId === viewerUserId);
   const direction: 'IN' | 'OUT' = isMine(t.destinationWallet) && !isMine(t.sourceWallet) ? 'IN' : 'OUT';
   const rail = railName(t.paymentMethod?.provider ?? t.providerName);
 
@@ -96,6 +98,13 @@ export async function presentReceipt(t: ReceiptTransaction, viewerUserId: string
     counterparty = t.paymentMethod
       ? { name: t.paymentMethod.accountName ?? t.paymentMethod.label ?? rail, account: t.paymentMethod.maskedNumber }
       : { name: rail, account: null };
+  } else if (t.type === 'CARD_PURCHASE' || t.type === 'CARD_REFUND') {
+    // The other side is the card network; show the merchant and which card was used.
+    const meta = (t.metadata ?? {}) as { merchantName?: string | null };
+    const card = (t.type === 'CARD_PURCHASE' ? t.sourceWallet : t.destinationWallet)?.card;
+    counterparty = { name: meta.merchantName ?? t.description ?? 'Card payment', account: card ? `${card.brand} •••• ${card.last4 ?? '----'}` : null };
+  } else if (t.type === 'CARD_LOAD' || t.type === 'CARD_UNLOAD') {
+    counterparty = walletParty(t.type === 'CARD_LOAD' ? t.destinationWallet : t.sourceWallet);
   } else {
     counterparty = walletParty(direction === 'OUT' ? t.destinationWallet : t.sourceWallet);
   }

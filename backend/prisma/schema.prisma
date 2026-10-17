@@ -107,6 +107,7 @@ enum WalletKind {
   SYSTEM_FLOAT // mirror of money held at an external rail (simulated for now); may go negative
   SYSTEM_FEES // fee revenue
   SYSTEM_FX // FX position for currency conversion
+  CARD // prepaid balance of one virtual card
 }
 
 enum WalletStatus {
@@ -122,6 +123,10 @@ enum TransactionType {
   MERCHANT_PAYMENT // user -> business
   REVERSAL // compensating transaction for a previous one
   REFUND // full or partial return of a merchant payment, linked to the original
+  CARD_LOAD // user wallet -> virtual card
+  CARD_UNLOAD // virtual card -> user wallet
+  CARD_PURCHASE // card spend authorised by the issuer (card -> issuer float)
+  CARD_REFUND // merchant refund to a card (issuer float -> card)
   FX_CONVERSION // wallet(currency A) -> wallet(currency B)
   ADJUSTMENT // manual finance correction (admin, audited)
 }
@@ -202,6 +207,7 @@ model User {
   notifications         Notification[]
   refreshTokens         RefreshToken[]
   supportCases          SupportCase[]
+  virtualCards          VirtualCard[]
 
   @@map("users")
 }
@@ -442,6 +448,7 @@ model Wallet {
   userId        String?      @map("user_id") @db.Uuid
   businessId    String?      @map("business_id") @db.Uuid
   systemCode    String?      @unique @map("system_code") // e.g. FLOAT_SIMULATED_TZS, FEES_TZS
+  cardId        String?      @unique @map("card_id") @db.Uuid // CARD wallets: the card it funds
   currencyCode  String       @map("currency_code")
   // Cached projection of SUM(ledger_entries.amount). Written only by the ledger service.
   balance       BigInt       @default(0)
@@ -451,9 +458,10 @@ model Wallet {
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
 
-  user     User?     @relation(fields: [userId], references: [id])
-  business Business? @relation(fields: [businessId], references: [id])
-  currency Currency  @relation(fields: [currencyCode], references: [code])
+  user     User?        @relation(fields: [userId], references: [id])
+  business Business?    @relation(fields: [businessId], references: [id])
+  card     VirtualCard? @relation(fields: [cardId], references: [id])
+  currency Currency     @relation(fields: [currencyCode], references: [code])
 
   ledgerEntries        LedgerEntry[]
   outgoingTransactions Transaction[] @relation("SourceWallet")
@@ -716,4 +724,73 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([actorType, actorId, createdAt])
   @@map("audit_logs")
+}
+
+// ──────────────────────────── Virtual cards ────────────────────────────
+
+enum VirtualCardStatus {
+  REQUESTED // asked the issuer; waiting for it to be issued
+  ACTIVE
+  FROZEN // blocked by the customer; can be unfrozen
+  CLOSED // terminated; remaining balance returned to the wallet
+  FAILED // the issuer refused to issue it
+}
+
+// A prepaid virtual card (Visa/Mastercard) issued through a card issuer (e.g. Selcom VCN).
+// PCI: the full card number and CVV are NEVER stored or logged here. They live at the issuer
+// and are fetched on demand after a PIN check, or delivered by the issuer itself.
+model VirtualCard {
+  id                  String            @id @default(uuid()) @db.Uuid
+  userId              String            @map("user_id") @db.Uuid
+  issuerName          String            @map("issuer_name") // SIMULATED, SELCOM ...
+  issuerCardId        String?           @map("issuer_card_id") // the issuer's id for the card
+  status              VirtualCardStatus @default(REQUESTED)
+  nickname            String // "Online shopping", "Netflix"
+  brand               String            @default("VISA")
+  last4               String?
+  expiryMonth         Int?              @map("expiry_month")
+  expiryYear          Int?              @map("expiry_year")
+  currencyCode        String            @default("TZS") @map("currency_code")
+  perTransactionLimit BigInt?           @map("per_transaction_limit") // minor units; null = only the balance limits spend
+  validityMonths      Int               @default(24) @map("validity_months")
+  failureReason       String?           @map("failure_reason")
+  frozenAt            DateTime?         @map("frozen_at")
+  closedAt            DateTime?         @map("closed_at")
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+
+  user   User        @relation(fields: [userId], references: [id])
+  wallet Wallet?
+  events CardEvent[]
+
+  @@unique([issuerName, issuerCardId])
+  @@index([userId, status])
+  @@map("virtual_cards")
+}
+
+// Inbox of issuer events (authorisations, reversals, refunds). Stored once per issuer event id
+// before acting on it, so redeliveries never charge twice.
+model CardEvent {
+  id            BigInt    @id @default(autoincrement())
+  issuerName    String    @map("issuer_name")
+  eventId       String    @map("event_id")
+  cardId        String?   @map("card_id") @db.Uuid
+  kind          String // AUTHORIZATION, REVERSAL, REFUND
+  authId        String?   @map("auth_id") // the issuer's authorisation id, links reversals/refunds
+  amount        BigInt
+  currencyCode  String    @map("currency_code")
+  merchantName  String?   @map("merchant_name")
+  transactionId String?   @map("transaction_id") @db.Uuid
+  decision      String? // APPROVED, DECLINED
+  declineReason String?   @map("decline_reason")
+  payload       Json
+  receivedAt    DateTime  @default(now()) @map("received_at")
+  processedAt   DateTime? @map("processed_at")
+
+  card VirtualCard? @relation(fields: [cardId], references: [id])
+
+  @@unique([issuerName, eventId])
+  @@index([cardId, receivedAt])
+  @@index([issuerName, authId])
+  @@map("card_events")
 }

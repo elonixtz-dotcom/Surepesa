@@ -210,7 +210,7 @@ paymentsRouter.post('/payments/deposit', async (req, res) => {
 
 async function myWalletIds(userId: string): Promise<string[]> {
   const wallets = await prisma.wallet.findMany({
-    where: { OR: [{ userId }, { business: { ownerId: userId } }] },
+    where: { OR: [{ userId }, { business: { ownerId: userId } }, { card: { userId } }] },
     select: { id: true },
   });
   return wallets.map((w) => w.id);

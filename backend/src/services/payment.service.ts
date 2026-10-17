@@ -35,12 +35,12 @@ export interface Actor {
   id?: string;
 }
 
-const SYSTEM: Actor = { type: 'SYSTEM' };
+export const SYSTEM: Actor = { type: 'SYSTEM' };
 
 // ───────────────────────── Policy ─────────────────────────
 
 /** Rules a user must meet before money can leave their wallet. */
-function assertCanSend(user: User): void {
+export function assertCanSend(user: User): void {
   if (user.status !== 'ACTIVE') {
     throw new PaymentRejectedError('ACCOUNT_NOT_ACTIVE', 'Your account is not active');
   }
@@ -55,19 +55,20 @@ function assertCanReceive(user: User): void {
   }
 }
 
-function assertPositive(amount: bigint): void {
+export function assertPositive(amount: bigint): void {
   if (amount <= 0n) throw new AppError('INVALID_AMOUNT', 'Amount must be greater than zero');
 }
 
-async function loadUser(userId: string): Promise<User> {
+export async function loadUser(userId: string): Promise<User> {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new AppError('USER_NOT_FOUND', 'User not found', 404);
   return user;
 }
 
 // ─────────────────────── Core engine ───────────────────────
+// Exported for other money flows (virtual cards). Every flow still goes through these.
 
-interface TransactionIntent {
+export interface TransactionIntent {
   type: TransactionType;
   initiatorUserId?: string;
   initiatorAdminId?: string;
@@ -88,7 +89,7 @@ interface TransactionIntent {
  * Creates the Transaction row in PROCESSING. If the same initiator already used this
  * idempotency key, returns the original transaction instead (`replayed: true`).
  */
-async function openTransaction(
+export async function openTransaction(
   intent: TransactionIntent,
   actor: Actor,
 ): Promise<{ txn: Transaction; replayed: boolean }> {
@@ -158,7 +159,7 @@ async function openTransaction(
 }
 
 /** Standard lines: principal source -> destination, fee source -> fee wallet. */
-function transferLines(
+export function transferLines(
   sourceWalletId: string,
   destinationWalletId: string,
   amount: bigint,
@@ -178,7 +179,7 @@ function transferLines(
   return lines;
 }
 
-async function transition(
+export async function transition(
   tx: Prisma.TransactionClient,
   txn: Transaction,
   to: TransactionStatus,
@@ -200,7 +201,7 @@ async function transition(
 }
 
 /** Marks a transaction FAILED without moving money. */
-async function failTransaction(txn: Transaction, code: string, reason: string, actor: Actor = SYSTEM) {
+export async function failTransaction(txn: Transaction, code: string, reason: string, actor: Actor = SYSTEM) {
   return transition(prisma, txn, 'FAILED', actor, { failureCode: code, failureReason: reason }, reason);
 }
 
@@ -208,7 +209,7 @@ async function failTransaction(txn: Transaction, code: string, reason: string, a
  * Posts the ledger lines and moves the transaction to `finalStatus` atomically.
  * Business rejections (insufficient funds, frozen wallet ...) mark it FAILED.
  */
-async function settle(
+export async function settle(
   txn: Transaction,
   buildLines: (tx: Prisma.TransactionClient) => Promise<LedgerLine[]>,
   actor: Actor,
@@ -233,7 +234,7 @@ async function settle(
 }
 
 /** Runs a flow for a txn that was just opened; replays return the stored result untouched. */
-async function run(
+export async function run(
   opened: { txn: Transaction; replayed: boolean },
   execute: (txn: Transaction) => Promise<Transaction>,
 ): Promise<Transaction> {

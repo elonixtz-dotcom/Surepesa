@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../state/payment_models.dart';
 import '../widgets/common.dart';
+import 'cards/cards_screen.dart';
 import 'linked_accounts_screen.dart';
 import 'pay/pay_form_screen.dart';
 
@@ -11,6 +12,7 @@ class ServicesScreen extends StatelessWidget {
 
   static const _services = [
     (Icons.send_to_mobile_rounded, 'Send Money'),
+    (Icons.credit_card_rounded, 'Virtual Cards'),
     (Icons.qr_code_2_rounded, 'My QR Code'),
     (Icons.add_card_rounded, 'Add Money'),
     (Icons.account_balance_rounded, 'Withdraw'),
@@ -30,6 +32,8 @@ class ServicesScreen extends StatelessWidget {
     };
     if (flow != null) {
       openPayFlow(context, flow);
+    } else if (label == 'Virtual Cards') {
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CardsScreen()));
     } else if (label == 'Mobile Money') {
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const LinkedAccountsScreen()));
     } else {

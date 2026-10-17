@@ -1,5 +1,7 @@
 import express, { Router } from 'express';
-import { findProvider } from '../providers';
+import { findCardIssuer, findProvider } from '../providers';
+import { InvalidCardEventError } from '../providers/card-issuer';
+import { handleCardEvent } from '../services/card.service';
 import { InvalidCallbackError } from '../providers/payment-provider';
 import { handleProviderCallback } from '../services/rail-sync.service';
 
@@ -38,5 +40,35 @@ providerCallbacksRouter.post(
 
     const outcome = await handleProviderCallback(provider.name, callback);
     res.json({ received: true, outcome });
+  },
+);
+
+/**
+ * Card issuer events: POST /v1/providers/:issuer/card-events
+ *
+ * Authorisations are answered in real time: the response body carries the approve/decline
+ * decision the issuer relays to the card network. Redeliveries get the same answer.
+ */
+providerCallbacksRouter.post(
+  '/:issuer/card-events',
+  express.raw({ type: () => true, limit: '64kb' }),
+  async (req, res) => {
+    const issuer = findCardIssuer(String(req.params.issuer).toUpperCase());
+    if (!issuer) {
+      res.status(404).json({ error: { code: 'UNKNOWN_ISSUER', message: 'Unknown card issuer' } });
+      return;
+    }
+    let event;
+    try {
+      event = issuer.parseEvent(Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0), req.headers);
+    } catch (err) {
+      if (err instanceof InvalidCardEventError) {
+        console.warn(`Rejected ${issuer.name} card event: ${err.message}`);
+        res.status(401).json({ error: { code: 'INVALID_EVENT', message: 'Event could not be verified' } });
+        return;
+      }
+      throw err;
+    }
+    res.json(await handleCardEvent(issuer.name, event));
   },
 );

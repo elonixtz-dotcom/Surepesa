@@ -12,6 +12,7 @@ import { providerCallbacksRouter } from './routes/provider-callbacks.routes';
 import { paymentsRouter } from './routes/payments.routes';
 import { qrRouter } from './routes/qr.routes';
 import { merchantRouter } from './routes/merchant.routes';
+import { cardsRouter } from './routes/cards.routes';
 
 export function createApp() {
   const app = express();
@@ -31,6 +32,7 @@ export function createApp() {
   app.use('/v1/kyc', kycRouter);
   app.use('/v1/merchants', qrRouter); // static QR is public: must come before paymentsRouter's auth
   app.use('/v1/merchant', merchantRouter);
+  app.use('/v1/cards', cardsRouter);
   app.use('/v1', paymentsRouter);
   app.use('/admin/v1', adminRouter);
 

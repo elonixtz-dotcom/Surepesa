@@ -3,6 +3,7 @@ import { InvalidCallbackError } from '../src/providers/payment-provider';
 import { SimulatedProvider } from '../src/providers/simulated.provider';
 import { assertStrongPin } from '../src/services/pin.service';
 import { applyFeeRule } from '../src/services/fee.service';
+import { luhnValid, SimulatedCardIssuer } from '../src/providers/simulated-card-issuer';
 
 const secret = 'test-secret-that-is-at-least-32-characters';
 const rail = new SimulatedProvider(secret);
@@ -86,5 +87,29 @@ describe('fee rules as data', () => {
     expect(applyFeeRule(rule, 10_000_000_00n)).toBe(5_000_00n); // capped
     expect(applyFeeRule({ bps: 100, min: 0n, max: null }, 10_000_000_00n)).toBe(100_000_00n); // uncapped
     expect(applyFeeRule(undefined, 1_000_00n)).toBe(0n);
+  });
+});
+
+describe('simulated card issuer', () => {
+  const issuer = new SimulatedCardIssuer(secret);
+
+  it('derives Luhn-valid test card numbers that match the stored last four', async () => {
+    const card = await issuer.issueCard({ reference: 'abc', holderName: 'JUMA HAMISI', phoneNumber: '+255712345678', currency: 'TZS', validityMonths: 24 });
+    const details = await issuer.revealCard(card.issuerCardId!);
+    if (details.kind !== 'DETAILS') throw new Error('expected details');
+    expect(details.pan).toMatch(/^400000\d{10}$/);
+    expect(luhnValid(details.pan)).toBe(true);
+    expect(details.pan.slice(-4)).toBe(card.last4);
+    expect((await issuer.revealCard(card.issuerCardId!)).kind === 'DETAILS' && (await issuer.revealCard(card.issuerCardId!) as { pan: string }).pan).toBe(details.pan);
+  });
+
+  it('verifies event signatures and rejects tampering', () => {
+    const { body, headers } = issuer.signedEvent({ kind: 'AUTHORIZATION', issuerCardId: 'SIMCARD-1', amount: 1_200_000n, merchantName: 'Netflix' });
+    expect(issuer.parseEvent(body, headers)).toMatchObject({ kind: 'AUTHORIZATION', amount: 1_200_000n, merchantName: 'Netflix' });
+    expect(() => issuer.parseEvent(Buffer.from(body.toString().replace('1200000', '1')), headers)).toThrow('Signature mismatch');
+  });
+
+  it('refuses applications the simulator is told to decline', async () => {
+    expect((await issuer.issueCard({ reference: 'x', holderName: 'PLEASE DECLINE', phoneNumber: '', currency: 'TZS', validityMonths: 12 })).status).toBe('FAILED');
   });
 });

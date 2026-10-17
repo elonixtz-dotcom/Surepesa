@@ -86,6 +86,15 @@ All `/v1` routes require `Authorization: Bearer <Neon Auth JWT>` (client: `authC
 | GET | `/v1/transactions` | History as receipts (`?before=` for the next page) |
 | GET | `/v1/transactions/:reference` | Receipt: our reference, the rail's reference, and a plain-language status |
 | GET/POST | `/v1/payment-methods` | Linked mobile-money accounts. Adding one returns the rail's registered name. |
+| GET/POST | `/v1/cards` | Virtual cards (prepaid Visa, up to 3 open). Creating one needs `pin`; `initialLoad` also loads it (needs `Idempotency-Key`). |
+| GET | `/v1/cards/:id` | Card (never the full number) and its activity |
+| POST | `/v1/cards/:id/load`, `/unload` | Move money between the wallet and the card. Needs `pin` and `Idempotency-Key`. |
+| POST | `/v1/cards/:id/freeze`, `/unfreeze` | Freezing needs no PIN; unfreezing does |
+| PUT | `/v1/cards/:id/limit` | Per-purchase limit, or `null` to remove it |
+| POST | `/v1/cards/:id/reveal` | Card number, CVV and expiry, once, after `pin`. Never stored, served `no-store`, 5 per hour, audited. |
+| POST | `/v1/cards/:id/close` | Terminates at the issuer, then returns the balance to the wallet |
+| POST | `/v1/cards/:id/test-purchase` | Development only: the simulated issuer charges the card through the real decision path |
+| POST | `/v1/providers/:issuer/card-events` | Issuer webhook: authorisations (answered with approve/decline), reversals, refunds |
 | POST | `/v1/providers/:provider/callbacks` | Rail webhooks. Not user-authenticated: the provider's signature is the authentication. |
 
 Amounts go in as decimal strings (`"25000"` or `"25000.50"`). Every response carries `{ value, formatted }`.

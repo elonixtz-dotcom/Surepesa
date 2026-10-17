@@ -18,7 +18,9 @@ class ReceiptTile extends StatelessWidget {
       'DEPOSIT' => Icons.add_rounded,
       'WITHDRAWAL' => Icons.account_balance_outlined,
       'MERCHANT_PAYMENT' => Icons.storefront_rounded,
-      'REFUND' || 'REVERSAL' => Icons.undo_rounded,
+      'REFUND' || 'REVERSAL' || 'CARD_REFUND' => Icons.undo_rounded,
+      'CARD_PURCHASE' => Icons.shopping_bag_outlined,
+      'CARD_LOAD' || 'CARD_UNLOAD' => Icons.credit_card_rounded,
       _ => r.isIncoming ? Icons.south_west_rounded : Icons.north_east_rounded,
     };
     final statusColor = r.succeeded
