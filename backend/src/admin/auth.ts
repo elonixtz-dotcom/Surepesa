@@ -1,5 +1,4 @@
 import { RequestHandler } from 'express';
-import { jwtVerify, SignJWT } from 'jose';
 import { AdminUser } from '@prisma/client';
 import { env } from '../config/env';
 import { prisma } from '../lib/prisma';
@@ -7,6 +6,7 @@ import { AppError } from '../lib/errors';
 import { verifyPassword } from '../lib/password';
 import { can, Permission } from './permissions';
 import { audit } from './audit';
+import { loadJose } from '../lib/jose';
 
 /**
  * Staff authentication for the back-office console. Kept separate from customer identity
@@ -63,6 +63,7 @@ export async function login(email: string, password: string, ip?: string) {
   });
   await audit({ actorId: admin.id, action: 'ADMIN_LOGIN', entityType: 'AdminUser', entityId: admin.id, ipAddress: ip });
 
+  const { SignJWT } = await loadJose();
   const token = await new SignJWT({ role: admin.role })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(admin.id)
@@ -79,6 +80,7 @@ export const requireAdmin: RequestHandler = async (req, _res, next) => {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) return next(new AppError('UNAUTHENTICATED', 'Sign in required', 401));
   try {
+    const { jwtVerify } = await loadJose();
     const { payload } = await jwtVerify(header.slice(7), secret, { issuer: ISSUER, audience: AUDIENCE });
     const admin = await prisma.adminUser.findUnique({ where: { id: payload.sub ?? '' } });
     if (!admin || !admin.isActive) return next(new AppError('UNAUTHENTICATED', 'Session is no longer valid', 401));

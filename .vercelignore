@@ -1,0 +1,18 @@
+# What the Vercel CLI must never upload when deploying from the repo root.
+# (Git-triggered builds use GitHub, where none of these exist.)
+
+# Secrets and local notes
+**/.env
+**/.env.*
+!**/.env.example
+**/*.local.md
+
+# Not needed by any Vercel project
+mobile/
+evidence/
+docs/
+payment-providers-teardown.md
+**/dist/
+**/coverage/
+**/tests/
+**/.dart_tool/
