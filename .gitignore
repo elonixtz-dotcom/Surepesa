@@ -22,3 +22,6 @@ build/
 Thumbs.db
 .vscode/*
 !.vscode/extensions.json
+
+# Local-only notes (e.g. dev staff passwords)
+*.local.md

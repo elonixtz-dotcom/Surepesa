@@ -11,9 +11,10 @@ Flutter app ──REST──▶ Node.js/Express API ──Prisma──▶ Neon P
 
 | Folder | What |
 | --- | --- |
-| [backend/](backend/) | API, double-entry ledger, payment engine |
-| `mobile/` | Flutter app (next) |
-| `admin/` | Admin dashboard (later) |
+| [backend/](backend/) | API, double-entry ledger, payment engine, back-office API (`/admin/v1`) |
+| [mobile/](mobile/) | Flutter customer app |
+| [admin/](admin/) | Back-office console: System Controller, Customer Service, Finance, Compliance |
+| [docs/](docs/) | Research and design records ([payment patterns teardown](docs/research/payment-patterns-teardown.md)) |
 
 ## Backend quick start
 

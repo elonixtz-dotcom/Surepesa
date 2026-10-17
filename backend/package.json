@@ -15,7 +15,9 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "reconcile": "tsx scripts/reconcile.ts"
+    "reconcile": "tsx scripts/reconcile.ts",
+    "admin:create": "tsx scripts/create-admin.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

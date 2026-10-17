@@ -8,7 +8,10 @@
 //   * Nothing outside src/services/ledger.service.ts writes to Wallet.balance or LedgerEntry.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  // Single-query relation loading: nested includes become one SQL statement instead of one
+  // round trip per relation (each round trip to Neon costs ~300 ms from East Africa).
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -32,10 +35,44 @@ enum UserStatus {
 }
 
 enum AdminRole {
-  SUPER_ADMIN
-  COMPLIANCE // KYC review
-  SUPPORT
-  FINANCE // reversals, reconciliation
+  SUPER_ADMIN // "System Controller": full operational oversight
+  COMPLIANCE // KYC review, account status
+  SUPPORT // "Customer Service": lookup, cases, reversal *requests* (cannot move money)
+  FINANCE // approves reversals, reconciliation
+}
+
+enum SupportCaseStatus {
+  OPEN
+  IN_PROGRESS
+  ESCALATED
+  RESOLVED
+  CLOSED
+}
+
+enum SupportCasePriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum SupportCaseCategory {
+  PAYMENT_ISSUE
+  WRONG_RECIPIENT
+  ACCOUNT_ACCESS
+  KYC
+  FRAUD_REPORT
+  GENERAL
+}
+
+enum ApprovalType {
+  TRANSACTION_REVERSAL
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum KycStatus {
@@ -137,31 +174,32 @@ enum ActorType {
 // ─────────────────────────── Identity ───────────────────────────
 
 model User {
-  id           String      @id @default(uuid()) @db.Uuid
+  id              String      @id @default(uuid()) @db.Uuid
   // Identity lives in Neon Auth (Managed Better Auth, schema `neon_auth`); this is its user id (JWT `sub`).
-  authUserId   String?     @unique @map("auth_user_id")
-  phoneNumber  String?     @unique @map("phone_number") // E.164, e.g. +255712345678 — collected at onboarding
-  email        String?     @unique
-  accountType  AccountType @default(INDIVIDUAL) @map("account_type")
-  status       UserStatus  @default(PENDING_VERIFICATION)
-  passwordHash String?     @map("password_hash") // unused while Neon Auth owns passwords
-  pinHash      String?     @map("pin_hash") // transaction PIN, set after registration
-  pinAttempts  Int         @default(0) @map("pin_attempts")
-  pinLockedAt  DateTime?   @map("pin_locked_at")
-  phoneVerifiedAt DateTime? @map("phone_verified_at")
-  kycStatus    KycStatus   @default(NOT_STARTED) @map("kyc_status") // denormalised from latest submission
-  lastLoginAt  DateTime?   @map("last_login_at")
-  createdAt    DateTime    @default(now()) @map("created_at")
-  updatedAt    DateTime    @updatedAt @map("updated_at")
+  authUserId      String?     @unique @map("auth_user_id")
+  phoneNumber     String?     @unique @map("phone_number") // E.164, e.g. +255712345678 — collected at onboarding
+  email           String?     @unique
+  accountType     AccountType @default(INDIVIDUAL) @map("account_type")
+  status          UserStatus  @default(PENDING_VERIFICATION)
+  passwordHash    String?     @map("password_hash") // unused while Neon Auth owns passwords
+  pinHash         String?     @map("pin_hash") // transaction PIN, set after registration
+  pinAttempts     Int         @default(0) @map("pin_attempts")
+  pinLockedAt     DateTime?   @map("pin_locked_at")
+  phoneVerifiedAt DateTime?   @map("phone_verified_at")
+  kycStatus       KycStatus   @default(NOT_STARTED) @map("kyc_status") // denormalised from latest submission
+  lastLoginAt     DateTime?   @map("last_login_at")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
 
-  profile          Profile?
-  businesses       Business[]
-  wallets          Wallet[]
-  kycSubmissions   KycSubmission[]
-  paymentMethods   PaymentMethod[]
-  initiatedTransactions Transaction[] @relation("TransactionInitiator")
-  notifications    Notification[]
-  refreshTokens    RefreshToken[]
+  profile               Profile?
+  businesses            Business[]
+  wallets               Wallet[]
+  kycSubmissions        KycSubmission[]
+  paymentMethods        PaymentMethod[]
+  initiatedTransactions Transaction[]   @relation("TransactionInitiator")
+  notifications         Notification[]
+  refreshTokens         RefreshToken[]
+  supportCases          SupportCase[]
 
   @@map("users")
 }
@@ -215,19 +253,95 @@ model Business {
 }
 
 model AdminUser {
-  id           String    @id @default(uuid()) @db.Uuid
-  email        String    @unique
-  fullName     String    @map("full_name")
-  passwordHash String    @map("password_hash")
-  role         AdminRole
-  isActive     Boolean   @default(true) @map("is_active")
-  lastLoginAt  DateTime? @map("last_login_at")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  id                  String    @id @default(uuid()) @db.Uuid
+  email               String    @unique
+  fullName            String    @map("full_name")
+  passwordHash        String    @map("password_hash")
+  role                AdminRole
+  isActive            Boolean   @default(true) @map("is_active")
+  lastLoginAt         DateTime? @map("last_login_at")
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime? @map("locked_until")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
 
-  kycReviews KycSubmission[]
+  kycReviews         KycSubmission[]
+  casesCreated       SupportCase[]     @relation("CaseCreatedBy")
+  casesAssigned      SupportCase[]     @relation("CaseAssignedTo")
+  caseNotes          SupportCaseNote[]
+  approvalsRequested ApprovalRequest[] @relation("ApprovalRequestedBy")
+  approvalsDecided   ApprovalRequest[] @relation("ApprovalDecidedBy")
 
   @@map("admin_users")
+}
+
+// ───────────────────────── Back office ──────────────────────────
+
+// A customer-service case: a complaint, query or incident about a customer.
+model SupportCase {
+  id            String              @id @default(uuid()) @db.Uuid
+  reference     String              @unique // CS-XXXXXXXX, quoted to the customer
+  userId        String              @map("user_id") @db.Uuid
+  transactionId String?             @map("transaction_id") @db.Uuid
+  category      SupportCaseCategory
+  priority      SupportCasePriority @default(NORMAL)
+  status        SupportCaseStatus   @default(OPEN)
+  subject       String
+  createdById   String              @map("created_by_id") @db.Uuid
+  assignedToId  String?             @map("assigned_to_id") @db.Uuid
+  resolvedAt    DateTime?           @map("resolved_at")
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+
+  user        User              @relation(fields: [userId], references: [id])
+  transaction Transaction?      @relation(fields: [transactionId], references: [id])
+  createdBy   AdminUser         @relation("CaseCreatedBy", fields: [createdById], references: [id])
+  assignedTo  AdminUser?        @relation("CaseAssignedTo", fields: [assignedToId], references: [id])
+  notes       SupportCaseNote[]
+  approvals   ApprovalRequest[]
+
+  @@index([status, priority, createdAt])
+  @@index([userId])
+  @@index([assignedToId, status])
+  @@map("support_cases")
+}
+
+model SupportCaseNote {
+  id        String   @id @default(uuid()) @db.Uuid
+  caseId    String   @map("case_id") @db.Uuid
+  authorId  String   @map("author_id") @db.Uuid
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  case   SupportCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  author AdminUser   @relation(fields: [authorId], references: [id])
+
+  @@index([caseId, createdAt])
+  @@map("support_case_notes")
+}
+
+// Maker-checker: a sensitive action requested by one staff member and decided by another.
+model ApprovalRequest {
+  id            String         @id @default(uuid()) @db.Uuid
+  type          ApprovalType
+  status        ApprovalStatus @default(PENDING)
+  transactionId String?        @map("transaction_id") @db.Uuid
+  caseId        String?        @map("case_id") @db.Uuid
+  reason        String
+  requestedById String         @map("requested_by_id") @db.Uuid
+  decidedById   String?        @map("decided_by_id") @db.Uuid
+  decidedAt     DateTime?      @map("decided_at")
+  decisionNote  String?        @map("decision_note")
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+  case        SupportCase? @relation(fields: [caseId], references: [id])
+  requestedBy AdminUser    @relation("ApprovalRequestedBy", fields: [requestedById], references: [id])
+  decidedBy   AdminUser?   @relation("ApprovalDecidedBy", fields: [decidedById], references: [id])
+
+  @@index([status, createdAt])
+  @@index([transactionId])
+  @@map("approval_requests")
 }
 
 model OtpCode {
@@ -263,20 +377,20 @@ model RefreshToken {
 // ───────────────────────────── KYC ──────────────────────────────
 
 model KycSubmission {
-  id              String    @id @default(uuid()) @db.Uuid
-  userId          String?   @map("user_id") @db.Uuid // individual KYC
-  businessId      String?   @map("business_id") @db.Uuid // business KYB
-  status          KycStatus @default(PENDING)
+  id              String          @id @default(uuid()) @db.Uuid
+  userId          String?         @map("user_id") @db.Uuid // individual KYC
+  businessId      String?         @map("business_id") @db.Uuid // business KYB
+  status          KycStatus       @default(PENDING)
   // Snapshot of what was declared at submission time (profile may change later).
-  fullName        String    @map("full_name")
-  dateOfBirth     DateTime? @map("date_of_birth") @db.Date
+  fullName        String          @map("full_name")
+  dateOfBirth     DateTime?       @map("date_of_birth") @db.Date
   idType          KycDocumentType @map("id_type")
-  idNumber        String    @map("id_number")
-  declaredData    Json?     @map("declared_data")
-  submittedAt     DateTime  @default(now()) @map("submitted_at")
-  reviewedById    String?   @map("reviewed_by_id") @db.Uuid
-  reviewedAt      DateTime? @map("reviewed_at")
-  rejectionReason String?   @map("rejection_reason")
+  idNumber        String          @map("id_number")
+  declaredData    Json?           @map("declared_data")
+  submittedAt     DateTime        @default(now()) @map("submitted_at")
+  reviewedById    String?         @map("reviewed_by_id") @db.Uuid
+  reviewedAt      DateTime?       @map("reviewed_at")
+  rejectionReason String?         @map("rejection_reason")
 
   user       User?         @relation(fields: [userId], references: [id])
   business   Business?     @relation(fields: [businessId], references: [id])
@@ -334,11 +448,11 @@ model Wallet {
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
 
-  user     User?    @relation(fields: [userId], references: [id])
+  user     User?     @relation(fields: [userId], references: [id])
   business Business? @relation(fields: [businessId], references: [id])
-  currency Currency @relation(fields: [currencyCode], references: [code])
+  currency Currency  @relation(fields: [currencyCode], references: [code])
 
-  ledgerEntries       LedgerEntry[]
+  ledgerEntries        LedgerEntry[]
   outgoingTransactions Transaction[] @relation("SourceWallet")
   incomingTransactions Transaction[] @relation("DestinationWallet")
 
@@ -352,40 +466,40 @@ model Wallet {
 // A business-level money movement ("Send TZS 25,000 to John").
 // Its ledger entries describe exactly how balances changed.
 model Transaction {
-  id                      String            @id @default(uuid()) @db.Uuid
-  reference               String            @unique // customer-facing id, e.g. SPX-7K2M9QX4TB
-  type                    TransactionType
-  status                  TransactionStatus @default(PENDING)
+  id        String            @id @default(uuid()) @db.Uuid
+  reference String            @unique // customer-facing id, e.g. SPX-7K2M9QX4TB
+  type      TransactionType
+  status    TransactionStatus @default(PENDING)
 
-  initiatorUserId         String?           @map("initiator_user_id") @db.Uuid
-  initiatorAdminId        String?           @map("initiator_admin_id") @db.Uuid
-  idempotencyKey          String?           @map("idempotency_key")
+  initiatorUserId  String? @map("initiator_user_id") @db.Uuid
+  initiatorAdminId String? @map("initiator_admin_id") @db.Uuid
+  idempotencyKey   String? @map("idempotency_key")
 
-  sourceWalletId          String?           @map("source_wallet_id") @db.Uuid
-  destinationWalletId     String?           @map("destination_wallet_id") @db.Uuid
+  sourceWalletId      String? @map("source_wallet_id") @db.Uuid
+  destinationWalletId String? @map("destination_wallet_id") @db.Uuid
 
   amount                  BigInt // principal in `currencyCode` minor units
-  currencyCode            String            @map("currency_code")
-  fee                     BigInt            @default(0) // charged to the source, same currency
+  currencyCode            String   @map("currency_code")
+  fee                     BigInt   @default(0) // charged to the source, same currency
   // Cross-currency: what the destination receives.
-  destinationAmount       BigInt?           @map("destination_amount")
-  destinationCurrencyCode String?           @map("destination_currency_code")
-  exchangeRateId          String?           @map("exchange_rate_id") @db.Uuid
-  exchangeRate            Decimal?          @map("exchange_rate") @db.Decimal(24, 10) // snapshot at execution
+  destinationAmount       BigInt?  @map("destination_amount")
+  destinationCurrencyCode String?  @map("destination_currency_code")
+  exchangeRateId          String?  @map("exchange_rate_id") @db.Uuid
+  exchangeRate            Decimal? @map("exchange_rate") @db.Decimal(24, 10) // snapshot at execution
 
-  description             String?
-  paymentMethodId         String?           @map("payment_method_id") @db.Uuid
-  qrCodeId                String?           @map("qr_code_id") @db.Uuid
-  providerName            String?           @map("provider_name") // SIMULATED, MPESA_TZ, AIRTEL_TZ, NMB ...
-  providerReference       String?           @map("provider_reference")
-  failureCode             String?           @map("failure_code")
-  failureReason           String?           @map("failure_reason")
-  reversesTransactionId   String?           @unique @map("reverses_transaction_id") @db.Uuid
-  metadata                Json?
+  description           String?
+  paymentMethodId       String? @map("payment_method_id") @db.Uuid
+  qrCodeId              String? @map("qr_code_id") @db.Uuid
+  providerName          String? @map("provider_name") // SIMULATED, MPESA_TZ, AIRTEL_TZ, NMB ...
+  providerReference     String? @map("provider_reference")
+  failureCode           String? @map("failure_code")
+  failureReason         String? @map("failure_reason")
+  reversesTransactionId String? @unique @map("reverses_transaction_id") @db.Uuid
+  metadata              Json?
 
-  completedAt             DateTime?         @map("completed_at")
-  createdAt               DateTime          @default(now()) @map("created_at")
-  updatedAt               DateTime          @updatedAt @map("updated_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   initiator         User?          @relation("TransactionInitiator", fields: [initiatorUserId], references: [id])
   sourceWallet      Wallet?        @relation("SourceWallet", fields: [sourceWalletId], references: [id])
@@ -398,6 +512,8 @@ model Transaction {
 
   ledgerEntries LedgerEntry[]
   events        TransactionEvent[]
+  supportCases  SupportCase[]
+  approvals     ApprovalRequest[]
 
   // Same client retry => same transaction.
   @@unique([initiatorUserId, idempotencyKey])
@@ -496,14 +612,14 @@ model QrCode {
 
 // 1 unit of baseCurrency = rate units of quoteCurrency (major units).
 model ExchangeRate {
-  id            String   @id @default(uuid()) @db.Uuid
-  baseCurrency  String   @map("base_currency")
-  quoteCurrency String   @map("quote_currency")
-  rate          Decimal  @db.Decimal(24, 10)
-  source        String   @default("MANUAL") // MANUAL, BOT (Bank of Tanzania), provider name
-  effectiveFrom DateTime @default(now()) @map("effective_from")
+  id            String    @id @default(uuid()) @db.Uuid
+  baseCurrency  String    @map("base_currency")
+  quoteCurrency String    @map("quote_currency")
+  rate          Decimal   @db.Decimal(24, 10)
+  source        String    @default("MANUAL") // MANUAL, BOT (Bank of Tanzania), provider name
+  effectiveFrom DateTime  @default(now()) @map("effective_from")
   effectiveTo   DateTime? @map("effective_to")
-  createdAt     DateTime @default(now()) @map("created_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
 
   transactions Transaction[]
 

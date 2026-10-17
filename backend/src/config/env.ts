@@ -11,6 +11,7 @@ const schema = z.object({
   AWS_ACCESS_KEY_ID: z.string().min(1),
   AWS_SECRET_ACCESS_KEY: z.string().min(1),
   AWS_REGION: z.string().min(1),
+  ADMIN_JWT_SECRET: z.string().min(32),
   KYC_BUCKET: z.string().min(1).default('kyc-documents'),
   CORS_ORIGINS: z
     .string()

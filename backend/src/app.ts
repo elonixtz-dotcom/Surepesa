@@ -7,6 +7,7 @@ import { errorHandler, notFound } from './middleware/error-handler';
 import { healthRouter } from './routes/health.routes';
 import { meRouter } from './routes/me.routes';
 import { kycRouter } from './routes/kyc.routes';
+import { adminRouter } from './admin/router';
 
 export function createApp() {
   const app = express();
@@ -22,6 +23,7 @@ export function createApp() {
   app.use('/health', healthRouter);
   app.use('/v1/me', meRouter);
   app.use('/v1/kyc', kycRouter);
+  app.use('/admin/v1', adminRouter);
 
   app.use(notFound);
   app.use(errorHandler);
