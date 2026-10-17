@@ -14,6 +14,7 @@ Flutter app ──REST──▶ Node.js/Express API ──Prisma──▶ Neon P
 | [backend/](backend/) | API, double-entry ledger, payment engine, back-office API (`/admin/v1`) |
 | [mobile/](mobile/) | Flutter customer app |
 | [admin/](admin/) | Back-office console: System Controller, Customer Service, Finance, Compliance |
+| [merchant/](merchant/) | Merchant portal: balance, payments, onboarding checklist, TANQR payment requests. `npm run dev` signs in with Neon Auth (via the dev proxy); `npm run demo` runs on sample data with no sign-in (`?demo=busy`, `?demo=new`). Port 5175. |
 | [docs/](docs/) | Research and design records ([payment patterns teardown](docs/research/payment-patterns-teardown.md)) |
 
 ## Backend quick start
