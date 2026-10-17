@@ -319,6 +319,15 @@ export async function payMerchant(input: PayMerchantInput): Promise<Transaction>
     throw new AppError('SELF_TRANSFER', 'You cannot pay your own business');
   }
 
+  // A retry of a payment already made returns its receipt, even though its QR is now used.
+  const isRetry = Boolean(
+    await prisma.transaction.findUnique({
+      where: { initiatorUserId_idempotencyKey: { initiatorUserId: payer.id, idempotencyKey: input.idempotencyKey } },
+      select: { id: true },
+    }),
+  );
+  if (input.qrCodeId && !isRetry) await assertQrPayable(input.qrCodeId, business.id, input.amount, currency);
+
   const [source, destination] = await Promise.all([
     getOrCreateUserWallet(prisma, payer.id, currency),
     getOrCreateBusinessWallet(prisma, business.id, currency),
@@ -345,11 +354,47 @@ export async function payMerchant(input: PayMerchantInput): Promise<Transaction>
   return run(opened, (txn) =>
     settle(
       txn,
-      async (tx) =>
-        transferLines(source.id, destination.id, txn.amount, txn.fee, (await getSystemWallet(tx, systemWalletCode.fees(currency))).id),
+      async (tx) => {
+        // Claimed in the same DB transaction that moves the money: two payments racing for one
+        // dynamic code cannot both succeed, and a payment that fails leaves the code unused.
+        if (txn.qrCodeId) await claimDynamicQr(tx, txn.qrCodeId);
+        return transferLines(source.id, destination.id, txn.amount, txn.fee, (await getSystemWallet(tx, systemWalletCode.fees(currency))).id);
+      },
       actor,
     ),
   );
+}
+
+/**
+ * Checks a scanned QR code before any transaction is created, so the customer gets a clear
+ * reason. Static codes (customer enters the amount) only need to be active and belong to the
+ * merchant; dynamic codes (a payment request) also fix the amount, expire, and work once.
+ */
+async function assertQrPayable(qrCodeId: string, businessId: string, amount: bigint, currency: string): Promise<void> {
+  const qr = await prisma.qrCode.findUnique({ where: { id: qrCodeId } });
+  if (!qr || qr.businessId !== businessId || !qr.isActive) {
+    throw new PaymentRejectedError('QR_INVALID', 'This QR code is not valid for this merchant');
+  }
+  if (qr.type !== 'DYNAMIC') return;
+  if (qr.usedAt) throw new PaymentRejectedError('QR_ALREADY_USED', 'This payment request has already been paid');
+  if (qr.expiresAt && qr.expiresAt <= new Date()) {
+    throw new PaymentRejectedError('QR_EXPIRED', 'This payment request has expired. Ask the merchant for a new code.');
+  }
+  if (qr.amount !== amount || qr.currencyCode !== currency) {
+    throw new PaymentRejectedError('QR_AMOUNT_MISMATCH', 'The amount must match the payment request');
+  }
+}
+
+/** Marks a dynamic QR as used; throws (rolling back the payment) if it was used or expired meanwhile. */
+async function claimDynamicQr(tx: Prisma.TransactionClient, qrCodeId: string): Promise<void> {
+  const qr = await tx.qrCode.findUniqueOrThrow({ where: { id: qrCodeId }, select: { type: true } });
+  if (qr.type !== 'DYNAMIC') return;
+  const now = new Date();
+  const { count } = await tx.qrCode.updateMany({
+    where: { id: qrCodeId, usedAt: null, isActive: true, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+    data: { usedAt: now },
+  });
+  if (count !== 1) throw new PaymentRejectedError('QR_ALREADY_USED', 'This payment request has already been paid or has expired');
 }
 
 export interface ExternalTransferInput {

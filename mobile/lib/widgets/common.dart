@@ -38,9 +38,9 @@ class SurePesaLogo extends StatelessWidget {
         ),
         SizedBox(width: size * 0.4),
         Text.rich(
-          TextSpan(children: [
-            const TextSpan(text: 'Sure', style: TextStyle(color: SpColors.ink)),
-            const TextSpan(text: 'Pesa', style: TextStyle(color: SpColors.teal)),
+          const TextSpan(children: [
+            TextSpan(text: 'Sure', style: TextStyle(color: SpColors.ink)),
+            TextSpan(text: 'Pesa', style: TextStyle(color: SpColors.teal)),
           ]),
           style: TextStyle(fontSize: size, fontWeight: FontWeight.w800, letterSpacing: -0.5),
         ),

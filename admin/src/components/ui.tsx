@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ApiError, Party, Txn } from '../lib/api';
 import { humanize, money, when } from '../lib/format';
@@ -209,15 +209,24 @@ export function useApi<T>(load: () => Promise<T>, deps: unknown[]) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
+  // Only the newest request may update state: with slow responses, an older load that
+  // finishes last would otherwise overwrite fresher data.
+  const latest = useRef(0);
   const reload = useCallback(() => {
+    const id = ++latest.current;
     setLoading(true);
     load()
       .then((d) => {
+        if (id !== latest.current) return;
         setData(d);
         setError(null);
       })
-      .catch(setError)
-      .finally(() => setLoading(false));
+      .catch((e) => {
+        if (id === latest.current) setError(e);
+      })
+      .finally(() => {
+        if (id === latest.current) setLoading(false);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
   useEffect(reload, [reload]);

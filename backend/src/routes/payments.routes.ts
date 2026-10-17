@@ -151,17 +151,30 @@ paymentsRouter.post('/payments/send', async (req, res) => {
 
 paymentsRouter.post('/payments/merchant', async (req, res) => {
   const input = z
-    .object({ merchantCode: z.string().trim().min(3).max(20), amount: decimalAmount, pin, qrCodeId: z.string().uuid().optional() })
+    .object({
+      merchantCode: z.string().trim().min(3).max(20),
+      amount: decimalAmount,
+      pin,
+      qrCodeId: z.string().uuid().optional(),
+      // The token a scanned TANQR code carries in its reference label (tag 62/05).
+      qrToken: z.string().trim().min(8).max(64).optional(),
+    })
     .parse(req.body);
   const key = idempotencyKey(req);
   const business = await findMerchant(input.merchantCode);
+  let qrCodeId = input.qrCodeId;
+  if (!qrCodeId && input.qrToken) {
+    const qr = await prisma.qrCode.findUnique({ where: { token: input.qrToken }, select: { id: true } });
+    if (!qr) throw new AppError('QR_INVALID', 'This QR code is not valid for this merchant', 422);
+    qrCodeId = qr.id;
+  }
   await verifyPin(req.user!.id, input.pin);
   const txn = await payMerchant({
     payerUserId: req.user!.id,
     businessId: business.id,
     amount: await toMinor(input.amount, 'TZS'),
     idempotencyKey: key,
-    qrCodeId: input.qrCodeId,
+    qrCodeId,
   });
   res.status(201).json(await receipt(txn, req.user!.id));
 });

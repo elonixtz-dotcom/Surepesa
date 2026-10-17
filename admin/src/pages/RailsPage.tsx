@@ -31,6 +31,7 @@ const OUTCOME_TEXT: Record<string, string> = {
   APPLIED: 'The rail gave a final answer and it was applied.',
   NOT_FINAL: 'The rail still has no final answer. Funds stay held.',
   ESCALATED: 'Still unanswered after the retry window. Escalated to Finance.',
+  ALREADY_FINAL: 'Already settled: the rail answered before this check.',
 };
 
 /**
