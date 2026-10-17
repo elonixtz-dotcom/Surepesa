@@ -65,4 +65,9 @@ class PaymentsApi {
   Future<void> setPin(String pin, {String? currentPin}) async {
     await _api.put('/v1/me/pin', {'pin': pin, if (currentPin != null) 'currentPin': currentPin});
   }
+
+  /// Checks the PIN to unlock the app. WRONG_PIN and PIN_LOCKED count like a payment would.
+  Future<void> verifyPin(String pin) async {
+    await _api.post('/v1/me/pin/verify', {'pin': pin});
+  }
 }

@@ -15,7 +15,7 @@ class VirtualCardFace extends StatelessWidget {
   static const _gradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF0F2E2C), Color(0xFF125E57), Color(0xFF1BA898)],
+    colors: [SpColors.ink, SpColors.inkSurface, Color(0xFF0E4A4A)],
   );
 
   @override
@@ -30,7 +30,7 @@ class VirtualCardFace extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             DecoratedBox(
-              decoration: BoxDecoration(gradient: muted ? null : _gradient, color: muted ? const Color(0xFF9AA7A5) : null),
+              decoration: BoxDecoration(gradient: muted ? null : _gradient, color: muted ? SpColors.inkMuted : null),
             ),
             // Soft light sweep so the card reads as a physical object, not a flat box.
             Positioned(
@@ -39,7 +39,7 @@ class VirtualCardFace extends StatelessWidget {
               child: Container(
                 width: 220,
                 height: 220,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.07)),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: SpColors.tealLight.withValues(alpha: 0.08)),
               ),
             ),
             Padding(
@@ -57,7 +57,7 @@ class VirtualCardFace extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(fontWeight: FontWeight.w700, fontSize: compact ? 14 : 16)),
                         ),
-                        const Text('SurePesa', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.2)),
+                        const Text('SurePesa', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.2, color: SpColors.tealLight)),
                       ],
                     ),
                     const Spacer(),
@@ -65,7 +65,8 @@ class VirtualCardFace extends StatelessWidget {
                       number,
                       style: TextStyle(
                         fontSize: compact ? 16 : 20,
-                        fontWeight: FontWeight.w600,
+                        fontFamily: referenceStyle().fontFamily,
+                        fontWeight: FontWeight.w500,
                         letterSpacing: details != null ? 1.6 : 1.2,
                         fontFeatures: const [FontFeature.tabularFigures()],
                       ),
@@ -117,13 +118,13 @@ class _Frosted extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        color: const Color(0xFFDCEFF5).withValues(alpha: 0.55),
+        color: SpColors.infoSoft.withValues(alpha: 0.6),
         alignment: Alignment.center,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(999)),
           child: const Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.ac_unit_rounded, size: 16, color: SpColors.tealDark),
+            Icon(Icons.ac_unit_rounded, size: 16, color: SpColors.info),
             SizedBox(width: 6),
             Text('Frozen', style: TextStyle(fontWeight: FontWeight.w700, color: SpColors.ink)),
           ]),

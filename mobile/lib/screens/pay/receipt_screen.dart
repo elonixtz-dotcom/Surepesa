@@ -64,7 +64,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     final (icon, color) = r.succeeded
         ? (Icons.check_circle_rounded, SpColors.positive)
         : !r.isFinal
-            ? (Icons.schedule_rounded, const Color(0xFFE0A100))
+            ? (Icons.schedule_rounded, SpColors.warning)
             : r.status == 'REVERSED'
                 ? (Icons.undo_rounded, SpColors.inkMuted)
                 : (Icons.cancel_rounded, SpColors.negative);
@@ -79,13 +79,21 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
           child: Column(
             children: [
               Icon(icon, color: color, size: 56),
-              const SizedBox(height: 8),
-              Text(r.typeLabel, style: const TextStyle(color: SpColors.inkMuted, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 4),
-              Text(
-                '${r.isIncoming ? '+' : ''}${r.amount.formatted}',
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+              const SizedBox(height: 10),
+              StatusPill(
+                label: r.succeeded ? 'Completed' : !r.isFinal ? 'In progress' : r.status == 'REVERSED' ? 'Reversed' : 'Failed',
+                tone: r.succeeded
+                    ? PillTone.positive
+                    : !r.isFinal
+                        ? PillTone.warning
+                        : r.status == 'REVERSED'
+                            ? PillTone.neutral
+                            : PillTone.negative,
               ),
+              const SizedBox(height: 10),
+              Text('${r.isIncoming ? '+' : ''}${r.amount.formatted}', style: moneyStyle(size: 32)),
+              const SizedBox(height: 4),
+              Text(r.typeLabel, style: const TextStyle(color: SpColors.ink2, fontWeight: FontWeight.w600)),
               const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -94,7 +102,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                     const SizedBox(
                       width: 14,
                       height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFE0A100)),
+                      child: CircularProgressIndicator(strokeWidth: 2, color: SpColors.warning),
                     ),
                     const SizedBox(width: 8),
                   ],
@@ -102,7 +110,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                     child: Text(
                       r.statusText,
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: color, fontWeight: FontWeight.w700),
+                      style: TextStyle(color: r.isFinal ? color : SpColors.ink2, fontWeight: FontWeight.w600, height: 1.4),
                     ),
                   ),
                 ],
@@ -110,6 +118,14 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
             ],
           ),
         ),
+        if (!r.isFinal) ...[
+          const SizedBox(height: 14),
+          const InfoNotice(
+            icon: Icons.shield_outlined,
+            tone: PillTone.neutral,
+            text: 'Your money is held safely and will never be sent twice. If it cannot be completed, it returns to your balance.',
+          ),
+        ],
         const SizedBox(height: 14),
         SpCard(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
@@ -129,12 +145,14 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
               DetailRow(
                 label: 'SurePesa ref.',
                 value: r.reference,
+                mono: true,
                 onCopy: () => copyToClipboard(context, r.reference),
               ),
               if (r.rail != null)
                 DetailRow(
                   label: '${r.rail!.name} ref.',
-                  value: r.rail!.reference ?? (r.isFinal ? 'Not given' : 'Waiting for ${r.rail!.name}'),
+                  value: r.rail!.reference ?? (r.isFinal ? 'Not given' : 'Shown once confirmed'),
+                  mono: r.rail!.reference != null,
                   onCopy: r.rail!.reference == null ? null : () => copyToClipboard(context, r.rail!.reference!),
                 ),
               if (r.relatedTo != null) DetailRow(label: 'Related to', value: r.relatedTo!),
@@ -151,6 +169,11 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
             style: const TextStyle(color: SpColors.inkMuted, fontSize: 12),
           ),
         ],
+        const SizedBox(height: 4),
+        TextButton(
+          onPressed: () => showComingSoon(context, 'Reporting a problem'),
+          child: const Text('Report a problem with this payment'),
+        ),
       ],
     );
   }

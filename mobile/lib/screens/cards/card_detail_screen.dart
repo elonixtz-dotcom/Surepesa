@@ -263,7 +263,7 @@ class _CardDetailScreenState extends State<CardDetailScreen> with WidgetsBinding
         Row(children: [
           const Text('Card balance', style: TextStyle(color: SpColors.inkMuted)),
           const Spacer(),
-          Text(card.balance.formatted, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: SpColors.ink)),
+          Text(card.balance.formatted, style: moneyStyle(size: 22)),
         ]),
         if (card.status == 'REQUESTED') const Padding(padding: EdgeInsets.only(top: 12), child: NoticeBox(text: 'Your card is being issued. This usually takes under a minute.')),
         if (card.isClosed) const Padding(padding: EdgeInsets.only(top: 12), child: NoticeBox(text: 'This card is closed. Its balance was returned to your wallet.')),

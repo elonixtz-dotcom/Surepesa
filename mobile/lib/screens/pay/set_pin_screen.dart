@@ -77,7 +77,7 @@ class _SetPinScreenState extends State<SetPinScreen> {
           if (!widget.changing)
             TextButton(
               onPressed: _busy ? null : () => AppScope.read(context).signOut(),
-              child: const Text('Sign out', style: TextStyle(color: SpColors.inkMuted)),
+              child: const Text('Sign out', style: TextStyle(color: SpColors.ink2)),
             ),
         ],
       ),
@@ -91,18 +91,18 @@ class _SetPinScreenState extends State<SetPinScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.lock_outline_rounded, size: 44, color: SpColors.teal),
+                  const Center(child: IconChip(icon: Icons.lock_outline_rounded, color: SpColors.teal, background: SpColors.mint, size: 64)),
                   const SizedBox(height: 12),
                   Text(
                     widget.changing ? 'Change your PIN' : 'Create your PIN',
                     textAlign: TextAlign.center,
-                    style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+                    style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.4),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     'You will enter it to confirm every payment. Use 4 to 6 digits and avoid 1234 or 1111.',
                     textAlign: TextAlign.center,
-                    style: text.bodyMedium?.copyWith(color: SpColors.inkMuted),
+                    style: text.bodyMedium?.copyWith(color: SpColors.ink2, height: 1.5),
                   ),
                   const SizedBox(height: 28),
                   if (widget.changing) ...[
@@ -125,6 +125,12 @@ class _SetPinScreenState extends State<SetPinScreen> {
                   InlineError(_error),
                   const SizedBox(height: 28),
                   BusyButton(label: widget.changing ? 'Change PIN' : 'Set PIN', busy: _busy, onPressed: _submit),
+                  const SizedBox(height: 16),
+                  const InfoNotice(
+                    icon: Icons.shield_outlined,
+                    tone: PillTone.neutral,
+                    text: 'SurePesa staff will never ask for your PIN. Do not share it with anyone.',
+                  ),
                 ],
               ),
             ),

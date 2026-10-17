@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
-import '../widgets/common.dart';
+import 'cards/cards_screen.dart';
 import 'history_screen.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
-import 'services_screen.dart';
 
-/// Bottom navigation: Home · History · [Scan] · Services · Profile.
+/// The four main tabs: Home · Activity · Cards · Profile.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -15,83 +14,49 @@ class HomeShell extends StatefulWidget {
   State<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends State<HomeShell> {
-  int _index = 0;
+enum ShellTab { home, activity, cards, profile }
 
-  static const _pages = [HomeScreen(), HistoryScreen(), ServicesScreen(), ProfileScreen()];
+/// Lets a screen inside the shell switch tabs ("See all" on Home opens Activity).
+class ShellNav extends InheritedWidget {
+  const ShellNav({super.key, required this.goTo, required super.child});
+
+  final void Function(ShellTab tab) goTo;
+
+  static void go(BuildContext context, ShellTab tab) =>
+      context.getInheritedWidgetOfExactType<ShellNav>()?.goTo(tab);
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      body: GradientBackground(child: IndexedStack(index: _index, children: _pages)),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: SizedBox(
-        width: 62,
-        height: 62,
-        child: FloatingActionButton(
-          heroTag: 'scan',
-          elevation: 4,
-          backgroundColor: SpColors.teal,
-          foregroundColor: Colors.white,
-          shape: const CircleBorder(side: BorderSide(color: Colors.white, width: 4)),
-          onPressed: () => showComingSoon(context, 'Scan to pay'),
-          child: const Icon(Icons.qr_code_scanner_rounded, size: 28),
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.white,
-        elevation: 12,
-        shadowColor: Colors.black12,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 6,
-        height: 68,
-        padding: EdgeInsets.zero,
-        child: Row(
-          children: [
-            _NavItem(icon: Icons.home_rounded, label: 'Home', selected: _index == 0, onTap: () => _go(0)),
-            _NavItem(icon: Icons.history_rounded, label: 'History', selected: _index == 1, onTap: () => _go(1)),
-            const SizedBox(width: 72),
-            _NavItem(icon: Icons.grid_view_rounded, label: 'Services', selected: _index == 2, onTap: () => _go(2)),
-            _NavItem(icon: Icons.person_outline_rounded, label: 'Profile', selected: _index == 3, onTap: () => _go(3)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _go(int index) => setState(() => _index = index);
+  bool updateShouldNotify(ShellNav oldWidget) => false;
 }
 
-class _NavItem extends StatelessWidget {
-  const _NavItem({required this.icon, required this.label, required this.selected, required this.onTap});
+class _HomeShellState extends State<HomeShell> {
+  ShellTab _tab = ShellTab.home;
 
-  final IconData icon;
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
+  static const _pages = [HomeScreen(), HistoryScreen(), CardsScreen(), ProfileScreen()];
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? SpColors.teal : SpColors.inkMuted;
-    return Expanded(
-      child: InkResponse(
-        onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-              decoration: BoxDecoration(
-                color: selected ? SpColors.mint : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 2),
-            Text(label, style: TextStyle(fontSize: 11, color: color, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)),
-          ],
+    return ShellNav(
+      goTo: (t) => setState(() => _tab = t),
+      child: Scaffold(
+        body: IndexedStack(index: _tab.index, children: _pages),
+        bottomNavigationBar: DecoratedBox(
+          decoration: const BoxDecoration(border: Border(top: BorderSide(color: Color(0xFFE1E6EE)))),
+          child: NavigationBar(
+            selectedIndex: _tab.index,
+            onDestinationSelected: (i) => setState(() => _tab = ShellTab.values[i]),
+            backgroundColor: SpColors.surface,
+            surfaceTintColor: Colors.transparent,
+            indicatorColor: SpColors.mint,
+            height: 68,
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            destinations: const [
+              NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded, color: SpColors.teal), label: 'Home'),
+              NavigationDestination(icon: Icon(Icons.show_chart_rounded), selectedIcon: Icon(Icons.show_chart_rounded, color: SpColors.teal), label: 'Activity'),
+              NavigationDestination(icon: Icon(Icons.credit_card_outlined), selectedIcon: Icon(Icons.credit_card_rounded, color: SpColors.teal), label: 'Cards'),
+              NavigationDestination(icon: Icon(Icons.person_outline_rounded), selectedIcon: Icon(Icons.person_rounded, color: SpColors.teal), label: 'Profile'),
+            ],
+          ),
         ),
       ),
     );

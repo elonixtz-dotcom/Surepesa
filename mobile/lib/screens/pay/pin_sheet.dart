@@ -16,7 +16,7 @@ Future<T?> showPinSheet<T>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(SpRadii.hero))),
     builder: (_) => _PinSheet<T>(summary: summary, submit: submit),
   );
 }
@@ -82,13 +82,15 @@ class _PinSheetState<T> extends State<_PinSheet<T>> {
               child: Container(
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(color: const Color(0xFFD5EEEA), borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(color: SpColors.border, borderRadius: BorderRadius.circular(2)),
               ),
             ),
             const SizedBox(height: 18),
-            const Text('Enter your PIN', textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            const Center(child: Icon(Icons.lock_outline_rounded, color: SpColors.teal, size: 28)),
+            const SizedBox(height: 10),
+            const Text('Enter your PIN', textAlign: TextAlign.center, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, letterSpacing: -0.2)),
             const SizedBox(height: 4),
-            Text(widget.summary, textAlign: TextAlign.center, style: const TextStyle(color: SpColors.inkMuted)),
+            Text(widget.summary, textAlign: TextAlign.center, style: const TextStyle(color: SpColors.ink2, height: 1.4)),
             const SizedBox(height: 20),
             PinField(
               controller: _pin,

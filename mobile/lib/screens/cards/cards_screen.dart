@@ -4,6 +4,7 @@ import '../../core/theme.dart';
 import '../../services/api_client.dart';
 import '../../state/app_state.dart';
 import '../../state/card_models.dart';
+import '../../widgets/common.dart';
 import '../../widgets/virtual_card_face.dart';
 import '../pay/pay_widgets.dart';
 import 'card_detail_screen.dart';
@@ -54,7 +55,7 @@ class _CardsScreenState extends State<CardsScreen> {
     final open = cards?.where((c) => c.isOpen || c.status == 'REQUESTED').length ?? 0;
     final canCreate = cards != null && open < _max;
     return PayScaffold(
-      title: 'My cards',
+      title: 'Cards',
       bottom: cards == null
           ? null
           : FilledButton.icon(
@@ -80,11 +81,34 @@ class _CardsScreenState extends State<CardsScreen> {
                     children: [
                       VirtualCardFace(card: c),
                       const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       Row(children: [
-                        Text(c.isClosed ? 'Closed' : c.balance.formatted,
-                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: SpColors.ink)),
+                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          const Text('Card balance', style: TextStyle(fontSize: 12, color: SpColors.inkMuted)),
+                          Text(c.isClosed ? '—' : c.balance.formatted, style: moneyStyle(size: 16)),
+                        ]),
                         const Spacer(),
-                        if (c.status == 'REQUESTED') const Text('Being issued…', style: TextStyle(color: SpColors.inkMuted)),
+                        StatusPill(
+                          label: c.isFrozen
+                              ? 'Frozen'
+                              : c.isClosed
+                                  ? 'Closed'
+                                  : c.status == 'REQUESTED'
+                                      ? 'Being issued'
+                                      : c.isOpen
+                                          ? 'Active'
+                                          : 'Failed',
+                          tone: c.isFrozen
+                              ? PillTone.info
+                              : c.isClosed
+                                  ? PillTone.neutral
+                                  : c.status == 'REQUESTED'
+                                      ? PillTone.warning
+                                      : c.isOpen
+                                          ? PillTone.positive
+                                          : PillTone.negative,
+                        ),
+                        const SizedBox(width: 4),
                         const Icon(Icons.chevron_right_rounded, color: SpColors.inkMuted),
                       ]),
                     ],
@@ -104,14 +128,14 @@ class _Empty extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Column(children: [
-          const Icon(Icons.credit_card_rounded, size: 56, color: SpColors.teal),
+          const IconChip(icon: Icons.credit_card_rounded, size: 64),
           const SizedBox(height: 12),
           Text('Pay online with a virtual Visa', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
           const SizedBox(height: 6),
           const Text(
             'Create a card in seconds, load it from your SurePesa balance, and use it for Netflix, Spotify, shopping and subscriptions. Freeze it any time.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: SpColors.inkMuted, height: 1.4),
+            style: TextStyle(color: SpColors.ink2, height: 1.5),
           ),
         ]),
       );

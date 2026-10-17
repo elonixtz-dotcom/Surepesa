@@ -74,7 +74,7 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
     return PayScaffold(
       title: 'Confirm',
       bottom: BusyButton(
-        label: isDeposit ? 'Send request to my phone' : 'Confirm and enter PIN',
+        label: isDeposit ? 'Send request to my phone' : 'Confirm with PIN',
         busy: _busy,
         onPressed: quote.sufficientBalance ? _confirm : null,
       ),
@@ -93,32 +93,24 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
                 style: const TextStyle(color: SpColors.inkMuted),
               ),
               const SizedBox(height: 10),
-              Container(
-                width: 56,
-                height: 56,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(gradient: SpColors.cardGradient, shape: BoxShape.circle),
-                child: Icon(
-                  flow == PayFlow.merchant ? Icons.storefront_rounded : Icons.person_rounded,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
+              flow == PayFlow.send
+                  ? InitialsAvatar(name: recipient.name, size: 56)
+                  : IconChip(
+                      icon: flow == PayFlow.merchant ? Icons.storefront_rounded : Icons.account_balance_outlined,
+                      color: SpColors.ink2,
+                      background: SpColors.line,
+                      size: 56,
+                    ),
               const SizedBox(height: 10),
               Text(
                 recipient.name ?? 'Name not available',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: 0.4),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.2),
               ),
               if (recipient.account != null) ...[
                 const SizedBox(height: 2),
                 Text(recipient.account!, style: const TextStyle(color: SpColors.inkMuted, fontWeight: FontWeight.w600)),
               ],
-              const SizedBox(height: 6),
-              const Text(
-                'Check the name before you continue.',
-                style: TextStyle(color: SpColors.inkMuted, fontSize: 12),
-              ),
             ],
           ),
         ),
@@ -149,7 +141,17 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
           const SizedBox(height: 14),
           NoticeBox(text: quote.notice!),
         ],
+        if (flow == PayFlow.send) ...[
+          const SizedBox(height: 14),
+          const InfoNotice(text: 'Check the name. Money sent to the wrong person can only be returned if they agree.'),
+        ],
         InlineError(_error),
+        const SizedBox(height: 8),
+        TextButton(
+          onPressed: _busy ? null : () => Navigator.of(context).popUntil((r) => r.isFirst),
+          style: TextButton.styleFrom(foregroundColor: SpColors.ink2),
+          child: const Text('Cancel'),
+        ),
       ],
     );
   }

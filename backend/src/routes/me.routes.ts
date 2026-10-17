@@ -5,7 +5,7 @@ import { AppError } from '../lib/errors';
 import { fromMinorUnits } from '../lib/money';
 import { requireAuth } from '../middleware/auth';
 import { getOrCreateUserWallet } from '../services/wallet.service';
-import { setPin } from '../services/pin.service';
+import { setPin, verifyPin } from '../services/pin.service';
 
 export const meRouter = Router();
 meRouter.use(requireAuth);
@@ -78,5 +78,15 @@ const pinSchema = z.object({
 meRouter.put('/pin', async (req, res) => {
   const { pin, currentPin } = pinSchema.parse(req.body);
   await setPin(req.user!.id, pin, currentPin);
+  res.status(204).end();
+});
+
+/**
+ * Check the PIN to unlock the app on open. Same lockout as payments: wrong attempts count
+ * towards PIN_LOCKED, so this cannot be used to guess a PIN faster than paying would.
+ */
+meRouter.post('/pin/verify', async (req, res) => {
+  const { pin } = pinSchema.pick({ pin: true }).parse(req.body);
+  await verifyPin(req.user!.id, pin);
   res.status(204).end();
 });

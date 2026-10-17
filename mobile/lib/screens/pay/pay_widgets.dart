@@ -97,12 +97,15 @@ String? validatePinFormat(String? v) =>
 
 /// Label on the left, value on the right; used on confirmation and receipt screens.
 class DetailRow extends StatelessWidget {
-  const DetailRow({super.key, required this.label, required this.value, this.sub, this.bold = false, this.onCopy});
+  const DetailRow({super.key, required this.label, required this.value, this.sub, this.bold = false, this.onCopy, this.mono = false});
 
   final String label;
   final String value;
   final String? sub;
   final bool bold;
+
+  /// References (SPX-…) use the monospace style.
+  final bool mono;
 
   /// When set, a copy icon appears next to the value.
   final VoidCallback? onCopy;
@@ -122,7 +125,11 @@ class DetailRow extends StatelessWidget {
                 Text(
                   value,
                   textAlign: TextAlign.end,
-                  style: TextStyle(fontWeight: bold ? FontWeight.w800 : FontWeight.w600, fontSize: bold ? 16 : 14),
+                  style: mono
+                      ? referenceStyle()
+                      : bold
+                          ? moneyStyle(size: 17)
+                          : const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, fontFeatures: [FontFeature.tabularFigures()]),
                 ),
                 if (sub != null)
                   Text(sub!, textAlign: TextAlign.end, style: const TextStyle(color: SpColors.inkMuted, fontSize: 12)),
@@ -135,7 +142,7 @@ class DetailRow extends StatelessWidget {
               radius: 18,
               child: const Padding(
                 padding: EdgeInsets.only(left: 8, top: 1),
-                child: Icon(Icons.copy_rounded, size: 16, color: SpColors.teal),
+                child: Icon(Icons.copy_rounded, size: 16, color: SpColors.ink2),
               ),
             ),
         ],
@@ -153,18 +160,10 @@ class NoticeBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = warning ? SpColors.negative : SpColors.tealDark;
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(14)),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(warning ? Icons.error_outline_rounded : Icons.info_outline_rounded, color: color, size: 20),
-          const SizedBox(width: 10),
-          Expanded(child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w600, height: 1.35))),
-        ],
-      ),
+    return InfoNotice(
+      text: text,
+      tone: warning ? PillTone.negative : PillTone.info,
+      icon: warning ? Icons.error_outline_rounded : Icons.info_outline_rounded,
     );
   }
 }

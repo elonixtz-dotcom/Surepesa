@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../core/format.dart';
 import '../core/theme.dart';
 import '../state/app_state.dart';
 import '../state/payment_models.dart';
 import '../widgets/common.dart';
 import '../widgets/receipt_tile.dart';
 
-/// Transaction history as receipts, newest first, paged with `before`.
+/// Activity: receipts newest first, grouped by day, paged with `before`. Search and the
+/// filter chips narrow what has been loaded so far.
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
@@ -22,6 +24,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _loaded = false;
   String? _error;
   int? _version;
+  final _query = TextEditingController();
+  _Filter _filter = _Filter.all;
 
   @override
   void initState() {
@@ -46,6 +50,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void dispose() {
     _scroll.dispose();
+    _query.dispose();
     super.dispose();
   }
 
@@ -77,9 +82,29 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
+  bool _matches(Receipt r) {
+    final ok = switch (_filter) {
+      _Filter.all => true,
+      _Filter.moneyIn => r.isIncoming,
+      _Filter.moneyOut => !r.isIncoming,
+      _Filter.pending => !r.isFinal,
+    };
+    if (!ok) return false;
+    final q = _query.text.trim().toLowerCase();
+    if (q.isEmpty) return true;
+    return [r.counterparty?.name, r.counterparty?.account, r.reference, r.typeLabel]
+        .whereType<String>()
+        .any((v) => v.toLowerCase().contains(q));
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final shown = _items.where(_matches).toList();
+    final groups = <String, List<Receipt>>{};
+    for (final r in shown) {
+      groups.putIfAbsent(dayHeading(r.createdAt), () => []).add(r);
+    }
     return SafeArea(
       bottom: false,
       child: RefreshIndicator(
@@ -88,9 +113,44 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: ListView(
           controller: _scroll,
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
-            Text('History', style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+            Text('Activity', style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.4)),
+            const SizedBox(height: 14),
+            TextField(
+              controller: _query,
+              onChanged: (_) => setState(() {}),
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                hintText: 'Search name, number or SPX reference',
+                prefixIcon: const Icon(Icons.search_rounded, color: SpColors.inkMuted),
+                suffixIcon: _query.text.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Clear search',
+                        icon: const Icon(Icons.close_rounded, color: SpColors.inkMuted),
+                        onPressed: () => setState(_query.clear),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final f in _Filter.values)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(f.label),
+                        selected: _filter == f,
+                        showCheckmark: false,
+                        onSelected: (_) => setState(() => _filter = f),
+                      ),
+                    ),
+                ],
+              ),
+            ),
             const SizedBox(height: 16),
             if (_error != null && _items.isEmpty) ...[
               const SizedBox(height: 40),
@@ -98,40 +158,61 @@ class _HistoryScreenState extends State<HistoryScreen> {
               TextButton(onPressed: _reload, child: const Text('Try again')),
             ] else if (!_loaded)
               const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator()))
-            else if (_items.isEmpty) ...[
+            else if (shown.isEmpty) ...[
               const SizedBox(height: 40),
-              const Icon(Icons.receipt_long_outlined, size: 56, color: SpColors.tealLight),
+              const Center(child: IconChip(icon: Icons.receipt_long_outlined, color: SpColors.ink2, background: SpColors.line, size: 56)),
               const SizedBox(height: 12),
-              Text('Nothing here yet',
+              Text(_items.isEmpty ? 'No activity yet' : 'Nothing matches',
                   textAlign: TextAlign.center, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: 6),
               Text(
-                'Payments you send and receive will show up here,\nwith their SPX reference and status.',
+                _items.isEmpty
+                    ? 'Payments you send and receive will show here, with their SPX reference and status.'
+                    : 'Try another name or reference, or choose All.',
                 textAlign: TextAlign.center,
-                style: text.bodySmall?.copyWith(color: SpColors.inkMuted),
+                style: text.bodySmall?.copyWith(color: SpColors.ink2, height: 1.5),
               ),
             ] else ...[
-              SpCard(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Column(
-                  children: [
-                    for (var i = 0; i < _items.length; i++) ...[
-                      if (i > 0) const Divider(height: 1, indent: 68),
-                      ReceiptTile(receipt: _items[i]),
-                    ],
-                  ],
+              for (final MapEntry(key: day, value: rows) in groups.entries) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+                  child: Text(day.toUpperCase(),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: SpColors.inkMuted)),
                 ),
-              ),
+                SpCard(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < rows.length; i++) ...[
+                        if (i > 0) const Divider(height: 1, indent: 66, endIndent: 16),
+                        ReceiptTile(receipt: rows[i]),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ],
+            if (_loaded && _items.isNotEmpty)
               if (_loading)
                 const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator()))
               else if (_error != null)
                 TextButton(onPressed: _loadMore, child: const Text('Could not load more. Try again'))
               else if (_next != null)
-                TextButton(onPressed: _loadMore, child: const Text('Load more')),
-            ],
+                TextButton(onPressed: _loadMore, child: const Text('Load older activity')),
           ],
         ),
       ),
     );
   }
+}
+
+enum _Filter {
+  all('All'),
+  moneyIn('Money in'),
+  moneyOut('Money out'),
+  pending('In progress');
+
+  const _Filter(this.label);
+  final String label;
 }

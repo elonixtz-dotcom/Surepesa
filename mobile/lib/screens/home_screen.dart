@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import '../core/format.dart';
 import '../core/theme.dart';
 import '../state/app_state.dart';
+import '../state/card_models.dart';
 import '../state/payment_models.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/common.dart';
 import '../widgets/receipt_tile.dart';
+import 'home_shell.dart';
 import 'pay/pay_form_screen.dart';
+import 'verify_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -16,7 +19,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final me = app.me!;
-    final text = Theme.of(context).textTheme;
 
     return SafeArea(
       bottom: false,
@@ -24,59 +26,45 @@ class HomeScreen extends StatelessWidget {
         color: SpColors.teal,
         onRefresh: () async {
           try {
-            await app.refresh();
+            await app.paymentMade();
           } catch (e) {
             if (context.mounted) showError(context, e);
           }
         },
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
-            // Greeting
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                InitialsAvatar(name: me.displayName, size: 42, onDark: true),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('${greetingFor(DateTime.now())},',
-                          style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
-                      Text('${me.firstName ?? ''}!',
-                          style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w800, color: SpColors.teal)),
-                      const SizedBox(height: 4),
-                      Text('Welcome back to your wallet',
-                          style: text.bodySmall?.copyWith(color: SpColors.inkMuted)),
+                      Text(greetingFor(DateTime.now()), style: const TextStyle(fontSize: 13, color: SpColors.inkMuted)),
+                      Text(me.displayName, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                     ],
                   ),
                 ),
                 CircleIconButton(
                   icon: Icons.notifications_none_rounded,
-                  badge: true,
+                  tooltip: 'Notifications',
                   onPressed: () => showComingSoon(context, 'Notifications'),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            BalanceCard(
-              me: me,
-              wallet: me.walletIn('TZS'),
-              onTransfer: () => openPayFlow(context, PayFlow.send),
-            ),
+            const SizedBox(height: 18),
+            BalanceCard(me: me, wallet: me.walletIn('TZS')),
             const SizedBox(height: 18),
             const _QuickActions(),
-            const SizedBox(height: 24),
-            SectionHeader(title: 'Quick Transfer', action: 'View All', onAction: () => showComingSoon(context, 'Contacts')),
-            const SizedBox(height: 12),
-            const _QuickTransferRow(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             if (!me.isVerified) ...[
-              _VerifyCard(kycStatus: me.kycStatus),
-              const SizedBox(height: 24),
+              _VerifyBanner(kycStatus: me.kycStatus),
+              const SizedBox(height: 14),
             ],
-            const SectionHeader(title: 'Recent Transactions'),
-            const SizedBox(height: 12),
-            const _RecentTransactions(),
+            const _CardStrip(),
+            const _RecentActivity(),
           ],
         ),
       ),
@@ -91,29 +79,37 @@ class _QuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     const actions = [
       (Icons.north_east_rounded, 'Send', PayFlow.send),
-      (Icons.south_west_rounded, 'Request', null),
-      (Icons.add_rounded, 'Add Money', PayFlow.deposit),
+      (Icons.qr_code_2_rounded, 'Pay', PayFlow.merchant),
+      (Icons.add_rounded, 'Add money', PayFlow.deposit),
       (Icons.account_balance_outlined, 'Withdraw', PayFlow.withdraw),
     ];
     return Row(
       children: [
-        for (final (icon, label, flow) in actions)
+        for (final (i, (icon, label, flow)) in actions.indexed)
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: SpCard(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                onTap: () => flow == null ? showComingSoon(context, label) : openPayFlow(context, flow),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(9),
-                      decoration: BoxDecoration(color: SpColors.mint, borderRadius: BorderRadius.circular(12)),
-                      child: Icon(icon, color: SpColors.tealDark, size: 20),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  ],
+            child: Semantics(
+              button: true,
+              label: label,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () => openPayFlow(context, flow),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: i == 0 ? SpColors.teal : SpColors.surface,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Icon(icon, color: i == 0 ? Colors.white : SpColors.ink, size: 22),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -123,47 +119,8 @@ class _QuickActions extends StatelessWidget {
   }
 }
 
-/// Placeholder until recent recipients are available from the payments API.
-class _QuickTransferRow extends StatelessWidget {
-  const _QuickTransferRow();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () => openPayFlow(context, PayFlow.send),
-          child: Column(
-            children: [
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  border: Border.all(color: SpColors.tealLight, width: 1.5),
-                ),
-                child: const Icon(Icons.add_rounded, color: SpColors.teal),
-              ),
-              const SizedBox(height: 6),
-              const Text('New', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-            ],
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Text(
-            'People you pay will appear here for one-tap transfers.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: SpColors.inkMuted),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _VerifyCard extends StatelessWidget {
-  const _VerifyCard({required this.kycStatus});
+class _VerifyBanner extends StatelessWidget {
+  const _VerifyBanner({required this.kycStatus});
 
   final String kycStatus;
 
@@ -171,56 +128,116 @@ class _VerifyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final pending = kycStatus == 'PENDING';
     return SpCard(
-      padding: const EdgeInsets.all(18),
+      onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const VerifyScreen())),
       child: Row(
         children: [
+          IconChip(
+            icon: pending ? Icons.schedule_rounded : Icons.badge_outlined,
+            color: pending ? SpColors.warning : SpColors.teal,
+            background: pending ? SpColors.warningSoft : SpColors.mint,
+            size: 42,
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(pending ? 'Verification in review' : 'Verify your identity',
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+                const SizedBox(height: 2),
                 Text(
-                  pending ? 'Verification in review' : 'Verify your identity\nto start sending',
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, height: 1.3),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  pending ? 'We will notify you once approved.' : 'Takes about 2 minutes with your NIDA ID.',
+                  pending ? 'We review within one working day.' : 'Needed before you can send money or create cards.',
                   style: const TextStyle(color: SpColors.inkMuted, fontSize: 12),
                 ),
-                if (!pending) ...[
-                  const SizedBox(height: 14),
-                  FilledButton.icon(
-                    style: FilledButton.styleFrom(minimumSize: const Size(0, 40), padding: const EdgeInsets.symmetric(horizontal: 16)),
-                    onPressed: () => showComingSoon(context, 'Identity verification'),
-                    icon: const Text('Verify now'),
-                    label: const Icon(Icons.arrow_forward_rounded, size: 18),
-                  ),
-                ],
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(gradient: SpColors.cardGradient, borderRadius: BorderRadius.circular(20)),
-            child: Icon(pending ? Icons.hourglass_top_rounded : Icons.badge_outlined, color: Colors.white, size: 34),
-          ),
+          const Icon(Icons.chevron_right_rounded, color: SpColors.inkMuted),
         ],
       ),
     );
   }
 }
 
-/// The latest few receipts; reloads whenever a payment is made.
-class _RecentTransactions extends StatefulWidget {
-  const _RecentTransactions();
+/// The customer's first open virtual card, if any; opens the Cards tab.
+class _CardStrip extends StatefulWidget {
+  const _CardStrip();
 
   @override
-  State<_RecentTransactions> createState() => _RecentTransactionsState();
+  State<_CardStrip> createState() => _CardStripState();
 }
 
-class _RecentTransactionsState extends State<_RecentTransactions> {
+class _CardStripState extends State<_CardStrip> {
+  VirtualCard? _card;
+  int? _version;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final version = AppScope.of(context).activityVersion;
+    if (version != _version) {
+      _version = version;
+      Future.microtask(_load);
+    }
+  }
+
+  Future<void> _load() async {
+    try {
+      final (cards, _) = await AppScope.read(context).cards.list();
+      final open = cards.where((c) => c.isOpen).toList();
+      if (mounted) setState(() => _card = open.isEmpty ? null : open.first);
+    } catch (_) {
+      // Optional on Home.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = _card;
+    if (c == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: SpCard(
+        padding: const EdgeInsets.all(14),
+        onTap: () => ShellNav.go(context, ShellTab.cards),
+        child: Row(
+          children: [
+            Container(
+              width: 54,
+              height: 36,
+              alignment: Alignment.bottomRight,
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(color: SpColors.ink, borderRadius: BorderRadius.circular(8)),
+              child: const Text('VISA', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900, fontStyle: FontStyle.italic)),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${c.nickname} · ${c.masked}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                  Text(c.isFrozen ? 'Frozen' : 'Card balance ${c.balance.formatted}',
+                      style: TextStyle(fontSize: 12, color: c.isFrozen ? SpColors.info : SpColors.inkMuted)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: SpColors.inkMuted),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The latest few receipts; reloads whenever money moves.
+class _RecentActivity extends StatefulWidget {
+  const _RecentActivity();
+
+  @override
+  State<_RecentActivity> createState() => _RecentActivityState();
+}
+
+class _RecentActivityState extends State<_RecentActivity> {
   List<Receipt>? _items;
   int? _version;
 
@@ -239,46 +256,34 @@ class _RecentTransactionsState extends State<_RecentTransactions> {
       final page = await AppScope.read(context).payments.history(limit: 4);
       if (mounted) setState(() => _items = page.items);
     } catch (_) {
-      // Home still works without it; History shows the error.
+      // Home still works without it; Activity shows the error.
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final items = _items;
-    if (items == null || items.isEmpty) return const _EmptyTransactions();
     return SpCard(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.only(top: 4, bottom: 4),
       child: Column(
         children: [
-          for (var i = 0; i < items.length; i++) ...[
-            if (i > 0) const Divider(height: 1, indent: 68),
-            ReceiptTile(receipt: items[i]),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _EmptyTransactions extends StatelessWidget {
-  const _EmptyTransactions();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SpCard(
-      padding: EdgeInsets.symmetric(vertical: 28, horizontal: 16),
-      child: Column(
-        children: [
-          Icon(Icons.receipt_long_outlined, size: 36, color: SpColors.tealLight),
-          SizedBox(height: 10),
-          Text('No transactions yet', style: TextStyle(fontWeight: FontWeight.w700)),
-          SizedBox(height: 4),
-          Text(
-            'Add money or receive a payment to get started.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: SpColors.inkMuted, fontSize: 12),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 6, 0),
+            child: SectionHeader(title: 'Recent activity', action: 'See all', onAction: () => ShellNav.go(context, ShellTab.activity)),
           ),
+          if (items == null)
+            const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()))
+          else if (items.isEmpty)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 20),
+              child: Text('No activity yet. Add money or receive a payment to get started.',
+                  style: TextStyle(color: SpColors.inkMuted, fontSize: 13)),
+            )
+          else
+            for (var i = 0; i < items.length; i++) ...[
+              if (i > 0) const Divider(indent: 66, endIndent: 16),
+              ReceiptTile(receipt: items[i], dense: true),
+            ],
         ],
       ),
     );

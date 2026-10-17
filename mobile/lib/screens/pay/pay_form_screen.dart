@@ -113,7 +113,7 @@ class _PayFormScreenState extends State<PayFormScreen> {
     final wallet = AppScope.of(context).me?.walletIn('TZS');
     return PayScaffold(
       title: flow.title,
-      bottom: BusyButton(label: 'Continue', busy: _busy, onPressed: _continue),
+      bottom: BusyButton(label: flow == PayFlow.deposit ? 'Continue' : 'Review payment', busy: _busy, onPressed: _continue),
       children: [
         Form(
           key: _form,
@@ -124,8 +124,8 @@ class _PayFormScreenState extends State<PayFormScreen> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: Text(
-                    'Available: ${formatMoney(wallet.balance, wallet.currency)}',
-                    style: const TextStyle(color: SpColors.inkMuted, fontWeight: FontWeight.w600),
+                    'Available balance  ${formatMoney(wallet.balance, wallet.currency)}',
+                    style: const TextStyle(color: SpColors.ink2, fontWeight: FontWeight.w600, fontSize: 13),
                   ),
                 ),
               ..._targetFields(),
@@ -140,13 +140,21 @@ class _PayFormScreenState extends State<PayFormScreen> {
                     (old, next) => RegExp(r'^\d{0,15}(\.\d{0,2})?$').hasMatch(next.text) ? next : old,
                   ),
                 ],
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                style: moneyStyle(size: 28),
                 decoration: const InputDecoration(hintText: '0', prefixText: 'TZS  '),
                 validator: (v) {
                   final value = num.tryParse(v?.trim() ?? '');
                   return value == null || value <= 0 ? 'Enter an amount greater than zero' : null;
                 },
               ),
+              const SizedBox(height: 10),
+              Wrap(spacing: 8, children: [
+                for (final q in const ['5000', '10000', '50000'])
+                  ActionChip(
+                    label: Text(splitAmount(q).whole),
+                    onPressed: () => setState(() => _amount.text = q),
+                  ),
+              ]),
               InlineError(_error),
             ],
           ),
@@ -169,7 +177,7 @@ class _PayFormScreenState extends State<PayFormScreen> {
               hintText: '712 345 678',
               prefixIcon: Padding(
                 padding: EdgeInsets.only(left: 16, right: 8),
-                child: Center(widthFactor: 1, child: Text('🇹🇿 +255', style: TextStyle(fontWeight: FontWeight.w600))),
+                child: Center(widthFactor: 1, child: Text('+255', style: TextStyle(fontWeight: FontWeight.w700, color: SpColors.ink2, fontSize: 16))),
               ),
             ),
             validator: (v) => isTzMobile(toE164(v ?? '')) ? null : 'Enter a valid Tanzanian mobile number',
@@ -242,6 +250,6 @@ class _PayFormScreenState extends State<PayFormScreen> {
 
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8, left: 4),
-        child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700)),
+        child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: SpColors.ink2)),
       );
 }
