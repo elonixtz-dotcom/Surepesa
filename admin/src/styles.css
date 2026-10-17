@@ -182,7 +182,7 @@ tr.clickable:hover td { background: var(--surface-2); }
 }
 .input:focus, select:focus, textarea:focus, .btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
 textarea { resize: vertical; min-height: 84px; }
-label.field { display: grid; gap: 6px; font-weight: 600; font-size: 13px; }
+label.field, div.field { display: grid; gap: 6px; font-weight: 600; font-size: 13px; }
 .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .toolbar .input { max-width: 340px; }
 .toolbar select { width: auto; }
@@ -263,3 +263,13 @@ tr.escalated td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .form-grid .full { grid-column: 1 / -1; }
 @media (max-width: 760px) { .form-grid { grid-template-columns: 1fr; } }
+
+.password-wrap { position: relative; }
+.password-wrap .input { padding-right: 48px; }
+.password-wrap .eye {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 8px;
+  background: transparent; color: var(--muted); cursor: pointer;
+}
+.password-wrap .eye:hover { color: var(--ink); }
+.password-wrap .eye:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
