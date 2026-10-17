@@ -24,6 +24,12 @@ const schema = z.object({
   RAIL_SYNC_INTERVAL_MS: z.coerce.number().int().min(0).default(60_000),
   // Vercel Cron sends `Authorization: Bearer <CRON_SECRET>`; unset = the cron route is disabled.
   CRON_SECRET: z.string().min(16).optional(),
+  // Who may move money through the simulated rail (which approves every deposit):
+  //   open      anyone (local development)
+  //   verified  only customers whose identity staff approved (default in production, so a public
+  //             deployment cannot be used to create balances just by signing up)
+  //   off       nobody (real rails connected)
+  SIMULATED_RAILS: z.enum(['open', 'verified', 'off']).optional(),
 });
 
 const parsed = schema.safeParse(process.env);
@@ -36,4 +42,7 @@ if (parsed.data.NODE_ENV === 'production' && parsed.data.SIMULATED_WEBHOOK_SECRE
   process.exit(1);
 }
 
-export const env = parsed.data;
+export const env = {
+  ...parsed.data,
+  SIMULATED_RAILS: parsed.data.SIMULATED_RAILS ?? (parsed.data.NODE_ENV === 'production' ? 'verified' : 'open'),
+} as const;

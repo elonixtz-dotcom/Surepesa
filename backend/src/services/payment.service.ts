@@ -17,7 +17,9 @@ import {
   getSystemWallet,
   systemWalletCode,
 } from './wallet.service';
-import { getProvider } from '../providers';
+import { env } from '../config/env';
+import { getProvider, simulatedProvider } from '../providers';
+import { assertSimulatorAllowed } from '../providers/simulator-policy';
 import { ProviderResult } from '../providers/payment-provider';
 
 /**
@@ -423,6 +425,7 @@ export async function deposit(input: ExternalTransferInput): Promise<Transaction
   if (user.status !== 'ACTIVE') throw new PaymentRejectedError('ACCOUNT_NOT_ACTIVE', 'Your account is not active');
   const method = await loadPaymentMethod(user.id, input.paymentMethodId);
   const provider = getProvider(method.provider);
+  if (provider.name === simulatedProvider.name) assertSimulatorAllowed(env.SIMULATED_RAILS, user);
   const currency = method.currencyCode;
 
   const [wallet, float] = await Promise.all([
@@ -468,6 +471,7 @@ export async function withdraw(input: ExternalTransferInput): Promise<Transactio
   assertCanSend(user);
   const method = await loadPaymentMethod(user.id, input.paymentMethodId);
   const provider = getProvider(method.provider);
+  if (provider.name === simulatedProvider.name) assertSimulatorAllowed(env.SIMULATED_RAILS, user);
   const currency = method.currencyCode;
 
   const [wallet, float] = await Promise.all([

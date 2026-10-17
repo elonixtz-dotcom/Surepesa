@@ -4,6 +4,7 @@ import { SimulatedProvider } from '../src/providers/simulated.provider';
 import { assertStrongPin } from '../src/services/pin.service';
 import { applyFeeRule } from '../src/services/fee.service';
 import { luhnValid, SimulatedCardIssuer } from '../src/providers/simulated-card-issuer';
+import { assertSimulatorAllowed } from '../src/providers/simulator-policy';
 
 const secret = 'test-secret-that-is-at-least-32-characters';
 const rail = new SimulatedProvider(secret);
@@ -111,5 +112,22 @@ describe('simulated card issuer', () => {
 
   it('refuses applications the simulator is told to decline', async () => {
     expect((await issuer.issueCard({ reference: 'x', holderName: 'PLEASE DECLINE', phoneNumber: '', currency: 'TZS', validityMonths: 12 })).status).toBe('FAILED');
+  });
+});
+
+describe('simulated rail access policy', () => {
+  it('lets anyone use the simulator only in open mode', () => {
+    expect(() => assertSimulatorAllowed('open', { kycStatus: 'NOT_STARTED' })).not.toThrow();
+  });
+
+  it('serves only identity-verified customers in verified mode (the production default)', () => {
+    expect(() => assertSimulatorAllowed('verified', { kycStatus: 'APPROVED' })).not.toThrow();
+    for (const kycStatus of ['NOT_STARTED', 'PENDING', 'REJECTED'] as const) {
+      expect(() => assertSimulatorAllowed('verified', { kycStatus })).toThrow('Verify your identity');
+    }
+  });
+
+  it('refuses everyone when switched off', () => {
+    expect(() => assertSimulatorAllowed('off', { kycStatus: 'APPROVED' })).toThrow('switched off');
   });
 });
