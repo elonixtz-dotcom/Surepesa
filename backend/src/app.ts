@@ -13,6 +13,7 @@ import { paymentsRouter } from './routes/payments.routes';
 import { qrRouter } from './routes/qr.routes';
 import { merchantRouter } from './routes/merchant.routes';
 import { cardsRouter } from './routes/cards.routes';
+import { cronRouter } from './routes/cron.routes';
 
 export function createApp() {
   const app = express();
@@ -28,6 +29,7 @@ export function createApp() {
   app.use(express.json({ limit: '100kb' }));
 
   app.use('/health', healthRouter);
+  app.use('/api/cron', cronRouter);
   app.use('/v1/me', meRouter);
   app.use('/v1/kyc', kycRouter);
   app.use('/v1/merchants', qrRouter); // static QR is public: must come before paymentsRouter's auth

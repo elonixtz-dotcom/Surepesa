@@ -22,6 +22,8 @@ const schema = z.object({
   // How often the API asks rails about unresolved deposits/withdrawals. 0 disables the loop
   // (run `npm run rail-sync` from a scheduler instead).
   RAIL_SYNC_INTERVAL_MS: z.coerce.number().int().min(0).default(60_000),
+  // Vercel Cron sends `Authorization: Bearer <CRON_SECRET>`; unset = the cron route is disabled.
+  CRON_SECRET: z.string().min(16).optional(),
 });
 
 const parsed = schema.safeParse(process.env);

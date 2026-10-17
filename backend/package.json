@@ -19,7 +19,8 @@
     "rail-sync": "tsx scripts/rail-sync.ts",
     "admin:create": "tsx scripts/create-admin.ts",
     "seed:demo": "tsx scripts/seed-demo.ts",
-    "seed:demo-rails": "tsx scripts/seed-demo-rails.ts"
+    "seed:demo-rails": "tsx scripts/seed-demo-rails.ts",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
