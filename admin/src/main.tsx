@@ -8,6 +8,7 @@ import { Layout } from './components/Layout';
 import { ToastHost } from './components/ui';
 import { LoginPage } from './pages/LoginPage';
 import { OverviewPage } from './pages/OverviewPage';
+import { ReportsPage } from './pages/ReportsPage';
 import { SupportDeskPage } from './pages/SupportDeskPage';
 import { CustomersPage } from './pages/CustomersPage';
 import { CustomerDetailPage } from './pages/CustomerDetailPage';
@@ -43,6 +44,7 @@ function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="overview" element={<Guard permission="overview:view"><OverviewPage /></Guard>} />
+        <Route path="reports" element={<Guard permission="reports:view"><ReportsPage /></Guard>} />
         <Route path="desk" element={<Guard permission="cases:view"><SupportDeskPage /></Guard>} />
         <Route path="customers" element={<Guard permission="customers:view"><CustomersPage /></Guard>} />
         <Route path="customers/:id" element={<Guard permission="customers:view"><CustomerDetailPage /></Guard>} />

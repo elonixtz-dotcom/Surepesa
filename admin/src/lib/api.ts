@@ -60,7 +60,7 @@ export async function api<T>(path: string, options: { method?: string; body?: un
 export type Permission =
   | 'overview:view' | 'customers:view' | 'customers:status' | 'transactions:view' | 'cases:manage' | 'cases:view'
   | 'approvals:request' | 'approvals:decide' | 'kyc:review' | 'audit:view' | 'system:view'
-  | 'rails:manage' | 'fees:view' | 'fees:manage';
+  | 'rails:manage' | 'fees:view' | 'fees:manage' | 'reports:view' | 'reports:export';
 
 export interface Staff {
   id: string;

@@ -29,6 +29,9 @@ export const PERMISSIONS = {
   // Pricing and regulatory fee caps.
   'fees:view': ['SUPER_ADMIN', 'FINANCE', 'COMPLIANCE'],
   'fees:manage': ['SUPER_ADMIN'],
+  // Money movement reports; the CSV export lists every transaction, so Finance and the Controller only.
+  'reports:view': ['SUPER_ADMIN', 'FINANCE', 'COMPLIANCE'],
+  'reports:export': ['SUPER_ADMIN', 'FINANCE'],
 } as const satisfies Record<string, readonly AdminRole[]>;
 
 export type Permission = keyof typeof PERMISSIONS;

@@ -14,6 +14,7 @@ interface NavItem {
 
 const CONTROL: NavItem[] = [
   { to: '/overview', label: 'Overview', icon: '◧', permission: 'overview:view' },
+  { to: '/reports', label: 'Reports', icon: '▥', permission: 'reports:view' },
   { to: '/kyc', label: 'KYC review', icon: '◎', permission: 'kyc:review', countKey: 'kyc' },
   { to: '/system', label: 'System health', icon: '♡', permission: 'system:view' },
   { to: '/audit', label: 'Audit log', icon: '☰', permission: 'audit:view' },

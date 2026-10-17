@@ -12,6 +12,7 @@ import { overviewRouter } from './routes/overview.routes';
 import { transactionsRouter } from './routes/transactions.routes';
 import { railsRouter } from './routes/rails.routes';
 import { feesRouter } from './routes/fees.routes';
+import { reportsRouter } from './routes/reports.routes';
 
 /** Back-office API: /admin/v1 */
 export const adminRouter = Router();
@@ -58,6 +59,7 @@ adminRouter.use(casesRouter);
 adminRouter.use(approvalsRouter);
 adminRouter.use(kycReviewRouter);
 adminRouter.use(railsRouter);
+adminRouter.use(reportsRouter);
 adminRouter.use(feesRouter);
 
 /** Audit trail with actor names resolved. */

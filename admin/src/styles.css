@@ -231,6 +231,17 @@ label.field { display: grid; gap: 6px; font-weight: 600; font-size: 13px; }
 .chart .bar { fill: var(--chart); }
 .chart .bar-hit { fill: transparent; cursor: default; }
 .chart .bar-hit:hover + .bar, .chart .bar.hover { filter: brightness(1.12); }
+.chart .bar.flow-in { fill: var(--chart); }
+.chart .bar.flow-out { fill: var(--info); }
+.chart .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); margin-bottom: 8px; }
+.chart .legend .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.chart .legend .swatch.in { background: var(--chart); }
+.chart .legend .swatch.out { background: var(--info); }
+.seg { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); color: var(--ink-2); padding: 8px 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--border-strong); }
+.seg button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand-ink); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
 .chart-tooltip {
   position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 10px;
   padding: 8px 10px; font-size: 12.5px; box-shadow: var(--shadow); white-space: nowrap; transform: translate(-50%, -100%);
