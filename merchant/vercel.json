@@ -3,7 +3,7 @@
   "framework": "vite",
   "rewrites": [
     { "source": "/v1/:path*", "destination": "https://surepesa-api.vercel.app/v1/:path*" },
-    { "source": "/auth/:path*", "destination": "https://ep-misty-sunset-b53hcj2o.neonauth.c-7.us-east-2.aws.neon.tech/neondb/auth/:path*" },
+    { "source": "/auth/:path*", "destination": "https://surepesa-api.vercel.app/auth/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

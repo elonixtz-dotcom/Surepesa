@@ -5,6 +5,8 @@ import { AppError } from '../lib/errors';
 import { requireAuth } from '../middleware/auth';
 import { displayMoney, maskPhone, presentReceipt, receiptInclude, registeredName } from '../services/receipt.service';
 import { getOrCreateBusinessWallet } from '../services/wallet.service';
+import { Prisma } from '@prisma/client';
+import { newMerchantCode } from '../lib/reference';
 
 /**
  * Merchant portal: /v1/merchant
@@ -142,3 +144,75 @@ export async function merchantOverview(userId: string, businessId?: string) {
     openPaymentRequests: openRequests,
   };
 }
+
+// ───────────────────────── Onboarding ─────────────────────────
+
+/** Where a signed-in merchant is in onboarding: profile done? any business yet? */
+merchantRouter.get('/session', async (req, res) => {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: req.user!.id },
+    include: { profile: true, businesses: { orderBy: { createdAt: 'asc' }, select: { id: true, tradingName: true, merchantCode: true } } },
+  });
+  res.json({
+    email: user.email,
+    name: registeredName(user.profile),
+    phone: maskPhone(user.phoneNumber),
+    profileComplete: Boolean(user.profile && user.phoneNumber),
+    businesses: user.businesses,
+  });
+});
+
+const MAX_BUSINESSES = 3;
+const tzPhone = z.string().regex(/^\+255[67]\d{8}$/, 'Use the format +2557XXXXXXXX');
+const businessFields = {
+  legalName: z.string().trim().min(2).max(120),
+  tradingName: z.string().trim().min(2).max(80),
+  category: z.string().trim().min(2).max(60),
+  region: z.string().trim().min(2).max(60),
+  address: z.string().trim().max(200).optional(),
+  phoneNumber: tzPhone.optional(),
+  email: z.string().trim().email().max(120).optional(),
+  // BRELA registration number and/or TRA Taxpayer Identification Number.
+  registrationNo: z.string().trim().min(3).max(40).optional(),
+  tin: z.string().trim().regex(/^\d{3}-?\d{3}-?\d{3}$/, 'A TIN has 9 digits, e.g. 123-456-789').optional(),
+};
+
+/** Register a business. The owner must have completed their own profile first. */
+merchantRouter.post('/businesses', async (req, res) => {
+  const input = z.object(businessFields).parse(req.body);
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.id }, include: { profile: true } });
+  if (!user.profile || !user.phoneNumber || user.status !== 'ACTIVE') {
+    throw new AppError('PROFILE_REQUIRED', 'Add your name and phone number before registering a business', 409);
+  }
+  if ((await prisma.business.count({ where: { ownerId: user.id } })) >= MAX_BUSINESSES) {
+    throw new AppError('TOO_MANY_BUSINESSES', `You can register up to ${MAX_BUSINESSES} businesses`, 409);
+  }
+
+  // Merchant codes are random; retry on the rare collision.
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const business = await prisma.business.create({
+        data: { ...input, ownerId: user.id, merchantCode: newMerchantCode() },
+      });
+      await getOrCreateBusinessWallet(prisma, business.id, CURRENCY);
+      if (user.accountType !== 'BUSINESS') await prisma.user.update({ where: { id: user.id }, data: { accountType: 'BUSINESS' } });
+      res.status(201).json({ id: business.id, tradingName: business.tradingName, merchantCode: business.merchantCode });
+      return;
+    } catch (err) {
+      if (!(err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002')) throw err;
+    }
+  }
+  throw new AppError('MERCHANT_CODE_UNAVAILABLE', 'Could not allocate a till number. Please try again.', 503);
+});
+
+/** Complete or correct business details (the "Business details" onboarding step). */
+merchantRouter.patch('/businesses/:id', async (req, res) => {
+  const input = z.object(businessFields).partial().parse(req.body);
+  const business = await prisma.business.findUnique({ where: { id: String(req.params.id) } });
+  if (!business || business.ownerId !== req.user!.id) throw new AppError('BUSINESS_NOT_FOUND', 'Business not found', 404);
+  if (business.kycStatus === 'APPROVED' && (input.legalName || input.registrationNo || input.tin)) {
+    throw new AppError('VERIFIED_DETAILS_LOCKED', 'Contact support to change the legal name, BRELA number or TIN of a verified business', 409);
+  }
+  const updated = await prisma.business.update({ where: { id: business.id }, data: input });
+  res.json({ id: updated.id, tradingName: updated.tradingName, merchantCode: updated.merchantCode });
+});

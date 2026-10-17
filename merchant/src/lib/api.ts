@@ -29,11 +29,37 @@ async function authFetch(path: string, init: RequestInit = {}) {
 export async function signIn(email: string, password: string): Promise<void> {
   if (DEMO) return;
   const res = await authFetch('sign-in/email', { method: 'POST', body: JSON.stringify({ email, password }) });
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    throw new ApiError(body?.message ?? 'Email or password is incorrect', res.status, body?.code);
-  }
+  if (!res.ok) throw await authError(res, 'The email or password is incorrect.');
   jwt = null;
+}
+
+/** Friendly messages for Neon Auth (Better Auth) error codes. */
+const AUTH_MESSAGES: Record<string, string> = {
+  INVALID_EMAIL_OR_PASSWORD: 'The email or password is incorrect.',
+  USER_ALREADY_EXISTS: 'An account with this email already exists. Sign in instead.',
+  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: 'An account with this email already exists. Sign in instead.',
+  PASSWORD_TOO_SHORT: 'Use at least 8 characters for your password.',
+  PASSWORD_TOO_LONG: 'That password is too long.',
+  INVALID_EMAIL: 'Enter a valid email address.',
+  EMAIL_NOT_VERIFIED: 'Verify your email address first. Check your inbox for the link.',
+};
+
+async function authError(res: Response, fallback: string): Promise<ApiError> {
+  const body = await res.json().catch(() => null);
+  const code = body?.code ?? body?.error?.code;
+  return new ApiError(AUTH_MESSAGES[code] ?? body?.message ?? body?.error?.message ?? fallback, res.status, code);
+}
+
+/**
+ * Creates a Neon Auth account. Resolves 'signed-in' when a session was started, or
+ * 'verify-email' when the account must be confirmed by email first.
+ */
+export async function signUp(name: string, email: string, password: string): Promise<'signed-in' | 'verify-email'> {
+  if (DEMO) return 'signed-in';
+  const res = await authFetch('sign-up/email', { method: 'POST', body: JSON.stringify({ name, email, password }) });
+  if (!res.ok) throw await authError(res, 'We could not create your account. Please try again.');
+  jwt = null;
+  return (await accessToken()) ? 'signed-in' : 'verify-email';
 }
 
 export async function signOut(): Promise<void> {
@@ -53,10 +79,14 @@ async function accessToken(): Promise<string | null> {
   return token;
 }
 
-async function api<T>(path: string): Promise<T> {
+async function api<T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
   const token = await accessToken();
   if (!token) throw new ApiError('Please sign in', 401, 'SIGNED_OUT');
-  const res = await fetch(path, { headers: { authorization: `Bearer ${token}` } });
+  const res = await fetch(path, {
+    method: init.method ?? 'GET',
+    headers: { authorization: `Bearer ${token}`, ...(init.body ? { 'content-type': 'application/json' } : {}) },
+    body: init.body ? JSON.stringify(init.body) : undefined,
+  });
   const body = await res.json().catch(() => null);
   if (!res.ok) throw new ApiError(body?.error?.message ?? 'Something went wrong', res.status, body?.error?.code);
   return body as T;
@@ -77,4 +107,39 @@ export async function createPaymentRequest(merchantCode: string, amount: string)
 export async function hasSession(): Promise<boolean> {
   if (DEMO) return true;
   return (await accessToken()) !== null;
+}
+
+export interface MerchantSession {
+  email: string | null;
+  name: string | null;
+  phone: string | null;
+  profileComplete: boolean;
+  businesses: { id: string; tradingName: string; merchantCode: string }[];
+}
+
+/** Also provisions the SurePesa user on the first call after sign-up. */
+export async function loadSession(): Promise<MerchantSession> {
+  if (DEMO) return { email: 'demo@surepesa.test', name: 'JUMA HAMISI', phone: '+255 69* *** 008', profileComplete: true, businesses: [{ id: 'demo', tradingName: 'Mama Ntilie Restaurant', merchantCode: 'SPM100001' }] };
+  await api('/v1/me');
+  return api<MerchantSession>('/v1/merchant/session');
+}
+
+export async function saveProfile(input: { firstName: string; lastName: string; phoneNumber: string }): Promise<void> {
+  if (DEMO) return;
+  await api('/v1/me/onboarding', { method: 'POST', body: input });
+}
+
+export interface BusinessInput {
+  legalName: string;
+  tradingName: string;
+  category: string;
+  region: string;
+  phoneNumber?: string;
+  registrationNo?: string;
+  tin?: string;
+}
+
+export async function registerBusiness(input: BusinessInput): Promise<{ id: string; merchantCode: string }> {
+  if (DEMO) return { id: 'demo', merchantCode: 'SPM100001' };
+  return api('/v1/merchant/businesses', { method: 'POST', body: input });
 }

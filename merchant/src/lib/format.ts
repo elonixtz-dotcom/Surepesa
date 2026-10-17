@@ -30,8 +30,7 @@ export const titleCase = (s: string | null | undefined) =>
 export const initials = (s: string | null | undefined) =>
   titleCase(s).split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('') || '·';
 
-/** Morning/afternoon/evening greeting in Swahili, as Tanzanian merchants expect. */
 export function greeting(date = new Date()): string {
   const h = date.getHours();
-  return h < 12 ? 'Habari za asubuhi' : h < 17 ? 'Habari za mchana' : 'Habari za jioni';
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
 }

@@ -3,6 +3,7 @@ import { DEMO, loadOverview } from '../lib/api';
 import { greeting, initials, relativeTime, short, splitMoney, titleCase } from '../lib/format';
 import type { MerchantOverview, Money, OnboardingStep, Receipt } from '../lib/types';
 import { RequestPaymentDialog } from '../components/RequestPaymentDialog';
+import { Brand } from '../components/Brand';
 
 export function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const [data, setData] = useState<MerchantOverview | null>(null);
@@ -59,7 +60,7 @@ export function Dashboard({ onSignOut }: { onSignOut: () => void }) {
           <div className="hero-actions">
             <TillChip code={business.merchantCode} />
             <button className="btn primary" onClick={() => setRequesting(true)}>
-              <span aria-hidden>＋</span> Request payment
+              Request payment
             </button>
           </div>
         </section>
@@ -111,10 +112,7 @@ export function Dashboard({ onSignOut }: { onSignOut: () => void }) {
 function Topbar({ data, onSignOut }: { data?: MerchantOverview; onSignOut?: () => void }) {
   return (
     <header className="topbar">
-      <div className="brand">
-        <div className="brand-mark" aria-hidden>₷</div>
-        <span>SurePesa <small>for Business</small></span>
-      </div>
+      <Brand />
       <div className="spacer" />
       {data && (
         <div className="account">

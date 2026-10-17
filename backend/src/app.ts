@@ -14,6 +14,7 @@ import { qrRouter } from './routes/qr.routes';
 import { merchantRouter } from './routes/merchant.routes';
 import { cardsRouter } from './routes/cards.routes';
 import { cronRouter } from './routes/cron.routes';
+import { authProxyRouter } from './routes/auth-proxy.routes';
 
 export function createApp() {
   const app = express();
@@ -26,6 +27,8 @@ export function createApp() {
   app.use(cors({ origin: env.CORS_ORIGINS.length ? env.CORS_ORIGINS : false }));
   // Provider callbacks need the raw body for signature checks: mount before the JSON parser.
   app.use('/v1/providers', providerCallbacksRouter);
+  // Neon Auth for the web portals, before the JSON parser so bodies pass through untouched.
+  app.use('/auth', authProxyRouter);
   app.use(express.json({ limit: '100kb' }));
 
   app.use('/health', healthRouter);
