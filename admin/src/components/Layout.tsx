@@ -9,7 +9,7 @@ interface NavItem {
   label: string;
   icon: string;
   permission: Permission;
-  countKey?: 'approvals' | 'kyc' | 'myCases';
+  countKey?: 'approvals' | 'kyc' | 'myCases' | 'rails';
 }
 
 const CONTROL: NavItem[] = [
@@ -28,6 +28,8 @@ const SERVICE: NavItem[] = [
 const MONEY: NavItem[] = [
   { to: '/transactions', label: 'Transactions', icon: '⇄', permission: 'transactions:view' },
   { to: '/approvals', label: 'Approvals', icon: '✓', permission: 'approvals:request', countKey: 'approvals' },
+  { to: '/rails', label: 'Unsettled rails', icon: '⧗', permission: 'rails:manage', countKey: 'rails' },
+  { to: '/fees', label: 'Fees', icon: '%', permission: 'fees:view' },
 ];
 
 export function Layout() {
@@ -43,6 +45,9 @@ export function Layout() {
         can('approvals:decide') &&
           api<Page<unknown>>('/approvals?status=PENDING&pageSize=5').then((r) => (next.approvals = r.total)),
         can('kyc:review') && api<Page<unknown>>('/kyc?status=PENDING&pageSize=5').then((r) => (next.kyc = r.total)),
+        // Only escalated ones: those need a person; the rest are still being re-checked automatically.
+        can('rails:manage') &&
+          api<{ escalated: number }>('/rails/open?escalated=true&pageSize=5').then((r) => (next.rails = r.escalated)),
         can('cases:manage') && api<Page<unknown>>('/cases?mine=1&open=1&pageSize=5').then((r) => (next.myCases = r.total)),
       ]).catch(() => undefined);
       setCounts(next);

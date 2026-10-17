@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, Party, Txn } from '../lib/api';
 import { useAuth } from '../lib/auth';
-import { humanize, money, when } from '../lib/format';
+import { fromMinor, humanize, money, toMinor, when } from '../lib/format';
 import { Badge, ErrorBox, Loading, PageHead, ReasonModal, toast, useApi } from '../components/ui';
 
 interface TxnDetail extends Txn {
@@ -13,7 +13,7 @@ interface TxnDetail extends Txn {
   events: { id: string; from: string | null; to: string; actorType: string; note: string | null; at: string }[];
   ledger: { id: string; account: Party | null; entryType: string; amount: string; balanceAfter: string }[];
   cases: { id: string; reference: string; subject: string; status: string }[];
-  approvals: { id: string; status: string; reason: string; requestedBy: string; decidedBy: string | null; decisionNote: string | null; createdAt: string }[];
+  approvals: { id: string; type: string; status: string; reason: string; requestedBy: string; decidedBy: string | null; decisionNote: string | null; createdAt: string }[];
 }
 
 export function TransactionDetailPage() {
@@ -21,13 +21,17 @@ export function TransactionDetailPage() {
   const { can } = useAuth();
   const { data: t, error, loading, reload } = useApi(() => api<TxnDetail>(`/transactions/${id}`), [id]);
   const [requesting, setRequesting] = useState(false);
+  const [refunding, setRefunding] = useState(false);
 
   if (error != null) return <ErrorBox error={error} />;
   if (loading && !t) return <div className="card"><Loading rows={8} /></div>;
   if (!t) return null;
 
   const pendingApproval = t.approvals.some((a) => a.status === 'PENDING');
-  const reversible = t.status === 'SUCCESS' && t.type !== 'REVERSAL' && !t.reversedBy && !pendingApproval;
+  const reversible = t.status === 'SUCCESS' && t.type !== 'REVERSAL' && t.type !== 'REFUND' && !t.reversedBy && !pendingApproval;
+  // Merchant payments can also be refunded in part; the server checks what is left to refund.
+  const refundable = t.status === 'SUCCESS' && t.type === 'MERCHANT_PAYMENT' && !t.reversedBy && !pendingApproval;
+  const pendingType = t.approvals.find((a) => a.status === 'PENDING')?.type;
 
   return (
     <>
@@ -35,9 +39,12 @@ export function TransactionDetailPage() {
         title={t.reference}
         subtitle={<>{humanize(t.type)} · {money(t.amount, t.currency)} · <Badge value={t.status} /></>}
         actions={
-          can('approvals:request') && reversible ? (
-            <button className="btn danger" onClick={() => setRequesting(true)}>Request reversal</button>
-          ) : pendingApproval ? <span className="badge warn">Reversal awaiting approval</span> : null
+          can('approvals:request') && (reversible || refundable) ? (
+            <>
+              {refundable && <button className="btn" onClick={() => setRefunding(true)}>Request refund</button>}
+              {reversible && <button className="btn danger" onClick={() => setRequesting(true)}>Request reversal</button>}
+            </>
+          ) : pendingApproval ? <span className="badge warn">{pendingType === 'TRANSACTION_REFUND' ? 'Refund' : 'Reversal'} awaiting approval</span> : null
         }
       />
 
@@ -107,7 +114,7 @@ export function TransactionDetailPage() {
                 ))}
                 {t.approvals.map((a) => (
                   <div key={a.id} className="note">
-                    <div className="note-meta">Reversal request · {when(a.createdAt)} · by {a.requestedBy}</div>
+                    <div className="note-meta">{a.type === 'TRANSACTION_REFUND' ? 'Refund' : 'Reversal'} request · {when(a.createdAt)} · by {a.requestedBy}</div>
                     <Badge value={a.status} /> {a.reason}
                     {a.decidedBy && <div className="muted" style={{ marginTop: 4 }}>Decided by {a.decidedBy}{a.decisionNote ? `: ${a.decisionNote}` : ''}</div>}
                   </div>
@@ -133,7 +140,66 @@ export function TransactionDetailPage() {
           onClose={() => setRequesting(false)}
         />
       )}
+      {refunding && <RefundModal txn={t} onDone={reload} onClose={() => setRefunding(false)} />}
     </>
+  );
+}
+
+/** Refund all or part of a merchant payment: amount in TZS, sent as minor units, plus a reason. */
+function RefundModal({ txn, onDone, onClose }: { txn: TxnDetail; onDone: () => void; onClose: () => void }) {
+  const [amount, setAmount] = useState(txn.amount);
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const minor = toMinor(amount);
+  const max = toMinor(txn.amount);
+  const tooBig = minor !== null && max !== null && BigInt(minor) > BigInt(max);
+  const valid = minor !== null && minor !== '0' && !tooBig && reason.trim().length >= 10;
+
+  async function submit() {
+    setBusy(true);
+    setError(null);
+    try {
+      await api('/approvals', { method: 'POST', body: { type: 'TRANSACTION_REFUND', transactionId: txn.id, amount: minor, reason: reason.trim() } });
+      toast(`Refund of ${fromMinor(minor, txn.currency)} sent for approval.`);
+      onDone();
+      onClose();
+    } catch (e) {
+      setError(e);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={`Request refund of ${txn.reference}`} onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h2>Request refund of {txn.reference}</h2>
+        <div className="muted">
+          Returns money from {txn.to?.name ?? 'the merchant'} to {txn.from?.name ?? 'the payer'}. You can refund part of the payment; all refunds together can never exceed {money(txn.amount, txn.currency)}. The fee is not returned. Money moves only after <strong>another</strong> authorised person approves it.
+        </div>
+        <label className="field">
+          Amount to refund ({txn.currency})
+          <input className="input" inputMode="decimal" autoFocus value={amount} onChange={(e) => setAmount(e.target.value)} />
+          {minor === null || minor === '0' ? (
+            <span style={{ color: 'var(--bad)', fontWeight: 400 }}>Enter an amount above zero, like 5,000</span>
+          ) : tooBig ? (
+            <span style={{ color: 'var(--bad)', fontWeight: 400 }}>More than the payment of {money(txn.amount, txn.currency)}</span>
+          ) : (
+            <span className="muted" style={{ fontWeight: 400 }}>{fromMinor(minor, txn.currency)}{minor === max ? ' (full amount)' : ' (partial)'}</span>
+          )}
+        </label>
+        <label className="field">
+          Reason (shown to the approver)
+          <textarea value={reason} onChange={(e) => setReason(e.target.value)} />
+        </label>
+        {error != null && <ErrorBox error={error} />}
+        <div className="modal-actions">
+          <button className="btn" onClick={onClose} disabled={busy}>Cancel</button>
+          <button className="btn primary" disabled={busy || !valid} onClick={submit}>{busy ? 'Working…' : 'Send for approval'}</button>
+        </div>
+      </div>
+    </div>
   );
 }
 

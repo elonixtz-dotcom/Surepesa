@@ -59,7 +59,8 @@ export async function api<T>(path: string, options: { method?: string; body?: un
 
 export type Permission =
   | 'overview:view' | 'customers:view' | 'customers:status' | 'transactions:view' | 'cases:manage' | 'cases:view'
-  | 'approvals:request' | 'approvals:decide' | 'kyc:review' | 'audit:view' | 'system:view';
+  | 'approvals:request' | 'approvals:decide' | 'kyc:review' | 'audit:view' | 'system:view'
+  | 'rails:manage' | 'fees:view' | 'fees:manage';
 
 export interface Staff {
   id: string;
@@ -121,8 +122,10 @@ export interface CaseSummary {
 
 export interface Approval {
   id: string;
-  type: string;
+  type: 'TRANSACTION_REVERSAL' | 'TRANSACTION_REFUND' | string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  /** TRANSACTION_REFUND only: minor units as a string. */
+  amount: string | null;
   reason: string;
   transaction: Txn | null;
   case: { id: string; reference: string; subject: string } | null;

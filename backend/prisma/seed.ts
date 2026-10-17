@@ -36,6 +36,20 @@ async function main() {
     await prisma.exchangeRate.create({ data: { baseCurrency: 'USD', quoteCurrency: 'TZS', rate: '2500', source: 'MANUAL' } });
   }
 
+  // Fee schedule as data (see fee.service.ts). Only seeded once, so later changes made in the
+  // back office are never overwritten.
+  if ((await prisma.feeRule.count()) === 0) {
+    await prisma.feeRule.create({
+      data: {
+        transactionType: 'WITHDRAWAL',
+        bps: 50,
+        minFee: 50_000n,
+        maxFee: 500_000n,
+        note: 'Prototype pricing: 0.5%, TZS 500 – 5,000. Max matches the reported BoT wallet-to-bank cap (circular effective 2025-07-01); confirm against the official circular.',
+      },
+    });
+  }
+
   console.log('Seed complete');
 }
 

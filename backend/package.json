@@ -16,8 +16,10 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "reconcile": "tsx scripts/reconcile.ts",
+    "rail-sync": "tsx scripts/rail-sync.ts",
     "admin:create": "tsx scripts/create-admin.ts",
-    "seed:demo": "tsx scripts/seed-demo.ts"
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "seed:demo-rails": "tsx scripts/seed-demo-rails.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

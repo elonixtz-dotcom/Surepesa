@@ -5,6 +5,7 @@ import { AppError } from '../lib/errors';
 import { fromMinorUnits } from '../lib/money';
 import { requireAuth } from '../middleware/auth';
 import { getOrCreateUserWallet } from '../services/wallet.service';
+import { setPin } from '../services/pin.service';
 
 export const meRouter = Router();
 meRouter.use(requireAuth);
@@ -22,6 +23,7 @@ async function loadMe(userId: string) {
     accountType: user.accountType,
     status: user.status,
     kycStatus: user.kycStatus,
+    hasPin: Boolean(user.pinHash),
     profile: user.profile,
     wallets: user.wallets.map((w) => ({
       id: w.id,
@@ -65,4 +67,16 @@ meRouter.post('/onboarding', async (req, res) => {
   });
   await getOrCreateUserWallet(prisma, req.user!.id, 'TZS');
   res.status(201).json(await loadMe(req.user!.id));
+});
+
+const pinSchema = z.object({
+  pin: z.string().regex(/^\d{4,6}$/, 'Your PIN must be 4 to 6 digits'),
+  currentPin: z.string().regex(/^\d{4,6}$/).optional(),
+});
+
+/** Set the transaction PIN, or change it (needs the current PIN). */
+meRouter.put('/pin', async (req, res) => {
+  const { pin, currentPin } = pinSchema.parse(req.body);
+  await setPin(req.user!.id, pin, currentPin);
+  res.status(204).end();
 });

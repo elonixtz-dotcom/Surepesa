@@ -5,6 +5,7 @@ import 'core/theme.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_shell.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/pay/set_pin_screen.dart';
 import 'state/app_state.dart';
 import 'widgets/common.dart';
 
@@ -47,6 +48,7 @@ class _Root extends StatelessWidget {
       AppStage.starting => const _Splash(),
       AppStage.signedOut => const AuthScreen(),
       AppStage.onboarding => const OnboardingScreen(),
+      AppStage.setPin => const SetPinScreen(),
       AppStage.ready => const HomeShell(),
     };
     return AnimatedSwitcher(duration: const Duration(milliseconds: 250), child: screen);

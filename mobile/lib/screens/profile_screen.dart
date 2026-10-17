@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../state/app_state.dart';
 import '../widgets/common.dart';
+import 'linked_accounts_screen.dart';
+import 'pay/set_pin_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -58,12 +60,12 @@ class ProfileScreen extends StatelessWidget {
                   onTap: () => showComingSoon(context, 'Identity verification'),
                 ),
                 const Divider(height: 1, indent: 56),
-                _Tile(icon: Icons.pin_outlined, title: 'Transaction PIN', onTap: () => showComingSoon(context, 'Transaction PIN')),
+                _Tile(icon: Icons.pin_outlined, title: 'Transaction PIN', onTap: () => _push(context, const SetPinScreen(changing: true))),
                 const Divider(height: 1, indent: 56),
                 _Tile(
                   icon: Icons.account_balance_outlined,
                   title: 'Linked accounts',
-                  onTap: () => showComingSoon(context, 'Linked mobile money & bank accounts'),
+                  onTap: () => _push(context, const LinkedAccountsScreen()),
                 ),
                 const Divider(height: 1, indent: 56),
                 _Tile(icon: Icons.help_outline_rounded, title: 'Help & support', onTap: () => showComingSoon(context, 'Support')),
@@ -85,6 +87,9 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
+
+void _push(BuildContext context, Widget screen) =>
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
 
 class _Tile extends StatelessWidget {
   const _Tile({required this.icon, required this.title, this.trailing, this.onTap, this.color});

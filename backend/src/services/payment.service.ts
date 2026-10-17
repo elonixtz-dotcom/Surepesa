@@ -10,7 +10,7 @@ import { prisma, TX_OPTIONS } from '../lib/prisma';
 import { AppError, PaymentRejectedError } from '../lib/errors';
 import { newTransactionReference } from '../lib/reference';
 import { LedgerLine, postLedgerLines } from './ledger.service';
-import { calculateFee } from './fee.service';
+import { quoteFee } from './fee.service';
 import {
   getOrCreateBusinessWallet,
   getOrCreateUserWallet,
@@ -18,6 +18,7 @@ import {
   systemWalletCode,
 } from './wallet.service';
 import { getProvider } from '../providers';
+import { ProviderResult } from '../providers/payment-provider';
 
 /**
  * Payment engine.
@@ -29,7 +30,7 @@ import { getProvider } from '../providers';
  *   4. Record the outcome: SUCCESS, or FAILED with a reason — money never half-moves.
  */
 
-interface Actor {
+export interface Actor {
   type: ActorType;
   id?: string;
 }
@@ -265,7 +266,7 @@ export async function sendMoney(input: SendMoneyInput): Promise<Transaction> {
     getOrCreateUserWallet(prisma, sender.id, currency),
     getOrCreateUserWallet(prisma, recipient.id, currency),
   ]);
-  const fee = calculateFee('P2P_TRANSFER', input.amount);
+  const fee = await quoteFee('P2P_TRANSFER', input.amount);
   const actor: Actor = { type: 'USER', id: sender.id };
 
   const opened = await openTransaction(
@@ -322,7 +323,7 @@ export async function payMerchant(input: PayMerchantInput): Promise<Transaction>
     getOrCreateUserWallet(prisma, payer.id, currency),
     getOrCreateBusinessWallet(prisma, business.id, currency),
   ]);
-  const fee = calculateFee('MERCHANT_PAYMENT', input.amount);
+  const fee = await quoteFee('MERCHANT_PAYMENT', input.amount);
   const actor: Actor = { type: 'USER', id: payer.id };
 
   const opened = await openTransaction(
@@ -393,7 +394,7 @@ export async function deposit(input: ExternalTransferInput): Promise<Transaction
       destinationWalletId: wallet.id,
       amount: input.amount,
       currencyCode: currency,
-      fee: calculateFee('DEPOSIT', input.amount),
+      fee: await quoteFee('DEPOSIT', input.amount),
       paymentMethodId: method.id,
       providerName: provider.name,
     },
@@ -401,36 +402,19 @@ export async function deposit(input: ExternalTransferInput): Promise<Transaction
   );
 
   return run(opened, async (txn) => {
-    const result = await provider.collect({
-      reference: txn.reference,
-      amount: txn.amount,
-      currency,
-      accountNumber: method.accountNumber,
-    });
-    if (result.status === 'FAILED') {
-      return failTransaction(txn, result.failureCode ?? 'PROVIDER_DECLINED', result.failureReason ?? 'Declined by provider');
-    }
-    if (result.status === 'PENDING') {
-      // Real rails confirm asynchronously; the provider webhook will call settle().
-      return prisma.transaction.update({
-        where: { id: txn.id },
-        data: { providerReference: result.providerReference },
-      });
-    }
-    return settle(
-      txn,
-      async (tx) => transferLines(float.id, wallet.id, txn.amount, txn.fee, (await getSystemWallet(tx, systemWalletCode.fees(currency))).id),
-      SYSTEM,
-      'SUCCESS',
-      { providerReference: result.providerReference },
+    // Nothing is credited until the rail confirms the money arrived.
+    const result = await callRail(() =>
+      provider.collect({ reference: txn.reference, amount: txn.amount, currency, accountNumber: method.accountNumber }),
     );
+    return (await applyRailOutcome(txn.id, result, 'initial response')).txn;
   });
 }
 
 /**
  * Withdraw to the user's mobile-money / bank account.
  * Funds leave the wallet *before* the payout is requested, so they cannot be spent twice;
- * a failed payout is automatically reversed.
+ * a failed payout is automatically reversed. A timed-out or ambiguous payout keeps the funds
+ * held until the rail answers — they are never returned while the payout might have gone out.
  */
 export async function withdraw(input: ExternalTransferInput): Promise<Transaction> {
   assertPositive(input.amount);
@@ -455,7 +439,7 @@ export async function withdraw(input: ExternalTransferInput): Promise<Transactio
       destinationWalletId: float.id,
       amount: input.amount,
       currencyCode: currency,
-      fee: calculateFee('WITHDRAWAL', input.amount),
+      fee: await quoteFee('WITHDRAWAL', input.amount),
       paymentMethodId: method.id,
       providerName: provider.name,
     },
@@ -472,32 +456,145 @@ export async function withdraw(input: ExternalTransferInput): Promise<Transactio
     );
     if (debited.status === 'FAILED') return debited;
 
-    // Step 2: ask the rail to pay out.
-    const result = await provider.payout({
-      reference: txn.reference,
-      amount: txn.amount,
-      currency,
-      accountNumber: method.accountNumber,
-    });
-    if (result.status === 'SUCCESS') {
-      return transition(prisma, debited, 'SUCCESS', SYSTEM, { providerReference: result.providerReference });
+    // Step 2: ask the rail to pay out. Step 3 (confirm or refund) happens in applyRailOutcome,
+    // now or later from a callback or the rail-sync job.
+    const result = await callRail(() =>
+      provider.payout({ reference: txn.reference, amount: txn.amount, currency, accountNumber: method.accountNumber }),
+    );
+    return (await applyRailOutcome(txn.id, result, 'initial response')).txn;
+  });
+}
+
+// ─────────────────── External rail outcomes ───────────────────
+
+/** Selcom's documented guidance for INPROGRESS/AMBIGUOUS: re-query every 3 minutes. */
+export const RAIL_RECHECK_MS = 3 * 60_000;
+/** After this many unanswered status checks (~30 minutes) Finance must investigate. */
+export const RAIL_MAX_CHECKS = 10;
+
+/** A thrown error (timeout, connection reset) means we cannot know whether money moved. */
+async function callRail(call: () => Promise<ProviderResult>): Promise<ProviderResult> {
+  try {
+    return await call();
+  } catch (err) {
+    return { status: 'AMBIGUOUS', failureReason: err instanceof Error ? err.message : 'Rail call failed' };
+  }
+}
+
+export type RailOutcome = 'APPLIED' | 'ALREADY_FINAL' | 'NOT_FINAL' | 'ESCALATED';
+
+const RAIL_TYPES: TransactionType[] = ['DEPOSIT', 'WITHDRAWAL'];
+
+/**
+ * Applies a rail's answer to a deposit or withdrawal. Safe to call any number of times and
+ * concurrently (initial response, callbacks and the status poller all funnel through here):
+ * the transaction row is locked and only a PROCESSING transaction changes.
+ */
+export async function applyRailOutcome(
+  transactionId: string,
+  result: ProviderResult,
+  source: string,
+): Promise<{ txn: Transaction; outcome: RailOutcome }> {
+  const current = await prisma.transaction.findUniqueOrThrow({ where: { id: transactionId } });
+  if (!RAIL_TYPES.includes(current.type)) {
+    throw new AppError('NOT_A_RAIL_TRANSACTION', `${current.type} does not use an external rail`, 409);
+  }
+  if (current.status !== 'PROCESSING') return { txn: current, outcome: 'ALREADY_FINAL' };
+
+  if (result.status === 'PENDING' || result.status === 'AMBIGUOUS') {
+    const waiting = await recordRailWaiting(current, result, source);
+    return { txn: waiting, outcome: waiting.escalatedAt ? 'ESCALATED' : 'NOT_FINAL' };
+  }
+
+  const railFields = {
+    providerReference: result.providerReference ?? current.providerReference ?? undefined,
+    railStatus: result.status,
+    nextRailCheckAt: null,
+  } satisfies Prisma.TransactionUpdateInput;
+
+  if (current.type === 'WITHDRAWAL' && result.status === 'FAILED') {
+    // The payout did not happen: give the held funds back. reverseTransaction locks the row
+    // and refuses if someone else already finalised it.
+    try {
+      await reverseTransaction(current.id, {
+        actor: SYSTEM,
+        reason: result.failureReason ?? 'Payout failed',
+        allowFromStatus: 'PROCESSING',
+        markOriginalAs: 'FAILED',
+        originalUpdate: { ...railFields, failureCode: result.failureCode ?? 'PAYOUT_FAILED', failureReason: result.failureReason },
+      });
+    } catch (err) {
+      if (!(err instanceof AppError && (err.code === 'NOT_REVERSIBLE' || err.code === 'ALREADY_REVERSED'))) throw err;
+      return { txn: await prisma.transaction.findUniqueOrThrow({ where: { id: current.id } }), outcome: 'ALREADY_FINAL' };
     }
-    if (result.status === 'PENDING') {
-      return prisma.transaction.update({ where: { id: txn.id }, data: { providerReference: result.providerReference } });
-    }
-    // Step 3: payout failed — return the money; the withdrawal itself ends FAILED.
-    await reverseTransaction(txn.id, {
-      actor: SYSTEM,
-      reason: result.failureReason ?? 'Payout failed',
-      allowFromStatus: 'PROCESSING',
-      markOriginalAs: 'FAILED',
-      originalUpdate: {
-        failureCode: result.failureCode ?? 'PAYOUT_FAILED',
-        failureReason: result.failureReason,
-        providerReference: result.providerReference,
+    return { txn: await prisma.transaction.findUniqueOrThrow({ where: { id: current.id } }), outcome: 'APPLIED' };
+  }
+
+  try {
+    return await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM transactions WHERE id = ${current.id}::uuid FOR UPDATE`;
+      const txn = await tx.transaction.findUniqueOrThrow({ where: { id: current.id } });
+      if (txn.status !== 'PROCESSING') return { txn, outcome: 'ALREADY_FINAL' as const };
+
+      if (result.status === 'FAILED') {
+        // Deposit the rail declined: nothing was credited, so nothing to undo.
+        const reason = result.failureReason ?? 'Declined by provider';
+        const failed = await transition(tx, txn, 'FAILED', SYSTEM, { ...railFields, failureCode: result.failureCode ?? 'PROVIDER_DECLINED', failureReason: reason }, `${reason} (${source})`);
+        return { txn: failed, outcome: 'APPLIED' as const };
+      }
+
+      if (txn.type === 'DEPOSIT') {
+        const feeWallet = await getSystemWallet(tx, systemWalletCode.fees(txn.currencyCode));
+        await postLedgerLines(tx, txn.id, transferLines(txn.sourceWalletId!, txn.destinationWalletId!, txn.amount, txn.fee, feeWallet.id));
+      }
+      // Withdrawal: the wallet was already debited when the payout was requested.
+      const done = await transition(tx, txn, 'SUCCESS', SYSTEM, railFields, `Confirmed by rail (${source})`);
+      return { txn: done, outcome: 'APPLIED' as const };
+    }, TX_OPTIONS);
+  } catch (err) {
+    if (!(err instanceof PaymentRejectedError)) throw err;
+    // The rail took the customer's money but we cannot credit the wallet (frozen, closed ...).
+    // Failing it would lose the money; a person has to decide.
+    return { txn: await escalate(current, `${err.code}: ${err.message}`), outcome: 'ESCALATED' };
+  }
+}
+
+async function recordRailWaiting(txn: Transaction, result: ProviderResult, source: string): Promise<Transaction> {
+  const checks = source === 'status query' ? txn.railCheckCount + 1 : txn.railCheckCount;
+  const exhausted = checks >= RAIL_MAX_CHECKS;
+  const updated = await prisma.transaction.update({
+    where: { id: txn.id },
+    data: {
+      providerReference: result.providerReference ?? txn.providerReference ?? undefined,
+      railStatus: result.status,
+      railCheckCount: checks,
+      nextRailCheckAt: txn.escalatedAt || exhausted ? null : new Date(Date.now() + RAIL_RECHECK_MS),
+      events: {
+        create: {
+          fromStatus: txn.status,
+          toStatus: txn.status,
+          actorType: 'SYSTEM',
+          note: `Rail answered ${result.status} (${source})${result.failureReason ? `: ${result.failureReason}` : ''}`,
+        },
       },
-    });
-    return prisma.transaction.findUniqueOrThrow({ where: { id: txn.id } });
+    },
+  });
+  if (exhausted && !txn.escalatedAt) {
+    return escalate(updated, `No final answer from ${txn.providerName ?? 'the rail'} after ${checks} status checks`);
+  }
+  return updated;
+}
+
+/** Leaves the transaction PROCESSING (funds held, nothing guessed) and flags it for Finance. */
+async function escalate(txn: Transaction, reason: string): Promise<Transaction> {
+  return prisma.transaction.update({
+    where: { id: txn.id },
+    data: {
+      escalatedAt: new Date(),
+      escalationReason: reason,
+      nextRailCheckAt: null,
+      events: { create: { fromStatus: txn.status, toStatus: txn.status, actorType: 'SYSTEM', note: `Escalated to Finance: ${reason}` } },
+    },
   });
 }
 
@@ -522,10 +619,13 @@ export async function reverseTransaction(transactionId: string, opts: ReverseOpt
     await tx.$queryRaw`SELECT id FROM transactions WHERE id = ${transactionId}::uuid FOR UPDATE`;
     const original = await tx.transaction.findUnique({
       where: { id: transactionId },
-      include: { ledgerEntries: { orderBy: { id: 'asc' } }, reversedBy: true },
+      include: { ledgerEntries: { orderBy: { id: 'asc' } }, reversedBy: true, refundedBy: { where: { status: 'SUCCESS' }, select: { id: true } } },
     });
     if (!original) throw new AppError('TRANSACTION_NOT_FOUND', 'Transaction not found', 404);
     if (original.reversedBy) throw new AppError('ALREADY_REVERSED', 'Transaction has already been reversed', 409);
+    if (original.refundedBy.length) {
+      throw new AppError('PARTIALLY_REFUNDED', 'This payment already has refunds; refund the remaining amount instead', 409);
+    }
     const allowed: TransactionStatus[] = ['SUCCESS', ...(opts.allowFromStatus ? [opts.allowFromStatus] : [])];
     if (!allowed.includes(original.status) || original.type === 'REVERSAL') {
       throw new AppError('NOT_REVERSIBLE', `A ${original.status} ${original.type} cannot be reversed`, 409);
@@ -572,5 +672,100 @@ export async function reverseTransaction(transactionId: string, opts: ReverseOpt
       });
     }
     return transition(tx, reversal, 'SUCCESS', opts.actor);
+  }, TX_OPTIONS);
+}
+
+// ───────────────────────── Refunds ─────────────────────────
+
+export interface RefundInput {
+  transactionId: string;
+  amount: bigint;
+  reason: string;
+  actor: Actor;
+}
+
+/** Amount of a payment that can still be refunded. */
+export async function refundableAmount(transactionId: string): Promise<bigint> {
+  const original = await prisma.transaction.findUnique({
+    where: { id: transactionId },
+    include: { refundedBy: { where: { status: 'SUCCESS' }, select: { amount: true } } },
+  });
+  if (!original || original.type !== 'MERCHANT_PAYMENT' || original.status !== 'SUCCESS') return 0n;
+  return original.amount - original.refundedBy.reduce((sum, r) => sum + r.amount, 0n);
+}
+
+/**
+ * Returns all or part of a merchant payment to the payer, as a new REFUND transaction linked
+ * to the original. Several partial refunds are allowed; together they can never exceed the
+ * original amount. The payment fee is not returned. Mobile money has no card-style refund
+ * rail, so this is a wallet-to-wallet movement inside SurePesa.
+ */
+export async function refundPayment(input: RefundInput): Promise<Transaction> {
+  assertPositive(input.amount);
+  return prisma.$transaction(async (tx) => {
+    // Lock the original so concurrent refunds cannot together exceed it.
+    await tx.$queryRaw`SELECT id FROM transactions WHERE id = ${input.transactionId}::uuid FOR UPDATE`;
+    const original = await tx.transaction.findUnique({
+      where: { id: input.transactionId },
+      include: { refundedBy: { where: { status: 'SUCCESS' }, select: { amount: true } } },
+    });
+    if (!original) throw new AppError('TRANSACTION_NOT_FOUND', 'Transaction not found', 404);
+    if (original.type !== 'MERCHANT_PAYMENT' || original.status !== 'SUCCESS') {
+      throw new AppError('NOT_REFUNDABLE', `A ${original.status} ${original.type} cannot be refunded`, 409);
+    }
+    const refunded = original.refundedBy.reduce((sum, r) => sum + r.amount, 0n);
+    const remaining = original.amount - refunded;
+    if (input.amount > remaining) {
+      throw new AppError('REFUND_EXCEEDS_PAYMENT', 'Refund is larger than the amount left to refund', 409, {
+        remaining: remaining.toString(),
+      });
+    }
+
+    const refund = await tx.transaction.create({
+      data: {
+        reference: newTransactionReference(),
+        type: 'REFUND',
+        status: 'PROCESSING',
+        initiatorUserId: input.actor.type === 'USER' ? input.actor.id : undefined,
+        initiatorAdminId: input.actor.type === 'ADMIN' ? input.actor.id : undefined,
+        sourceWalletId: original.destinationWalletId,
+        destinationWalletId: original.sourceWalletId,
+        amount: input.amount,
+        currencyCode: original.currencyCode,
+        refundsTransactionId: original.id,
+        description: input.reason,
+        events: { create: { toStatus: 'PROCESSING', actorType: input.actor.type, actorId: input.actor.id, note: input.reason } },
+      },
+    });
+
+    // Throws PaymentRejectedError (rolling everything back) if the merchant lacks the funds.
+    await postLedgerLines(tx, refund.id, [
+      { walletId: original.destinationWalletId!, amount: -input.amount, entryType: 'PRINCIPAL' },
+      { walletId: original.sourceWalletId!, amount: input.amount, entryType: 'PRINCIPAL' },
+    ]);
+
+    await tx.transactionEvent.create({
+      data: {
+        transactionId: original.id,
+        fromStatus: original.status,
+        toStatus: original.status,
+        actorType: input.actor.type,
+        actorId: input.actor.id,
+        note: `Refunded ${input.amount} (${refund.reference}); ${remaining - input.amount} left`,
+      },
+    });
+    if (input.actor.type === 'ADMIN') {
+      await tx.auditLog.create({
+        data: {
+          actorType: 'ADMIN',
+          actorId: input.actor.id,
+          action: 'TRANSACTION_REFUNDED',
+          entityType: 'Transaction',
+          entityId: original.id,
+          after: { refundId: refund.id, amount: input.amount.toString(), reason: input.reason },
+        },
+      });
+    }
+    return transition(tx, refund, 'SUCCESS', input.actor);
   }, TX_OPTIONS);
 }

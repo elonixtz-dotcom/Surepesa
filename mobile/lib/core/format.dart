@@ -18,6 +18,21 @@ String formatMoney(String decimal, String currency) {
   return '$currency ${p.whole}${p.fraction}';
 }
 
+/// Accepts 0712345678 or 712345678 (or +255712345678) and returns +255712345678.
+String toE164(String input) {
+  var digits = input.replaceAll(RegExp(r'\D'), '');
+  if (digits.startsWith('255')) digits = digits.substring(3);
+  return '+255${digits.startsWith('0') ? digits.substring(1) : digits}';
+}
+
+bool isTzMobile(String e164) => RegExp(r'^\+255[67]\d{8}$').hasMatch(e164);
+
+final _dateTime = DateFormat('d MMM y, HH:mm');
+final _dayTime = DateFormat('d MMM, HH:mm');
+
+String formatDateTime(DateTime t) => _dateTime.format(t);
+String formatShortDateTime(DateTime t) => _dayTime.format(t);
+
 String greetingFor(DateTime now) {
   if (now.hour < 12) return 'Good Morning';
   if (now.hour < 17) return 'Good Afternoon';

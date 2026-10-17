@@ -24,6 +24,11 @@ export const PERMISSIONS = {
   'kyc:review': ['SUPER_ADMIN', 'COMPLIANCE'],
   'audit:view': ['SUPER_ADMIN', 'COMPLIANCE'],
   'system:view': ['SUPER_ADMIN', 'FINANCE'],
+  // Deposits/withdrawals the rails have not settled: watch, re-query, see escalations.
+  'rails:manage': ['SUPER_ADMIN', 'FINANCE'],
+  // Pricing and regulatory fee caps.
+  'fees:view': ['SUPER_ADMIN', 'FINANCE', 'COMPLIANCE'],
+  'fees:manage': ['SUPER_ADMIN'],
 } as const satisfies Record<string, readonly AdminRole[]>;
 
 export type Permission = keyof typeof PERMISSIONS;

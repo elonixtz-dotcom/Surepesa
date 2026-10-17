@@ -20,6 +20,8 @@ import { KycPage } from './pages/KycPage';
 import { KycDetailPage } from './pages/KycDetailPage';
 import { SystemPage } from './pages/SystemPage';
 import { AuditPage } from './pages/AuditPage';
+import { RailsPage } from './pages/RailsPage';
+import { FeesPage } from './pages/FeesPage';
 
 function Guard({ permission, children }: { permission: Permission; children: JSX.Element }) {
   const { can } = useAuth();
@@ -51,6 +53,8 @@ function App() {
         <Route path="approvals" element={<Guard permission="approvals:request"><ApprovalsPage /></Guard>} />
         <Route path="kyc" element={<Guard permission="kyc:review"><KycPage /></Guard>} />
         <Route path="kyc/:id" element={<Guard permission="kyc:review"><KycDetailPage /></Guard>} />
+        <Route path="rails" element={<Guard permission="rails:manage"><RailsPage /></Guard>} />
+        <Route path="fees" element={<Guard permission="fees:view"><FeesPage /></Guard>} />
         <Route path="system" element={<Guard permission="system:view"><SystemPage /></Guard>} />
         <Route path="audit" element={<Guard permission="audit:view"><AuditPage /></Guard>} />
         <Route path="*" element={<Navigate to="/" replace />} />

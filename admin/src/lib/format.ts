@@ -7,6 +7,20 @@ export function money(amount: string | null | undefined, currency = 'TZS'): stri
   return `${negative ? '−' : ''}${currency} ${grouped}${frac ? `.${frac}` : ''}`;
 }
 
+/** TZS has two minor units: "500000" → "TZS 5,000.00". Integer strings only, no floats. */
+export function fromMinor(minor: string | null | undefined, currency = 'TZS'): string {
+  if (minor == null) return '—';
+  const padded = minor.padStart(3, '0');
+  return money(`${padded.slice(0, -2)}.${padded.slice(-2)}`, currency);
+}
+
+/** What staff type ("5,000" or "5000.5") → minor-unit string ("500050"), or null if not a valid amount. */
+export function toMinor(input: string): string | null {
+  const m = input.replace(/[,\s]/g, '').match(/^(\d+)(?:\.(\d{0,2}))?$/);
+  if (!m) return null;
+  return `${m[1]}${(m[2] ?? '').padEnd(2, '0')}`.replace(/^0+(?=\d)/, '');
+}
+
 /** Compact axis label: 1,330,000.00 → 1.3M */
 export function compact(amount: string): string {
   const n = Number(amount);

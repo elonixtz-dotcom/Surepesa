@@ -2,21 +2,27 @@ import 'package:flutter/widgets.dart';
 
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
+import '../services/payments_api.dart';
 import 'models.dart';
 
-enum AppStage { starting, signedOut, onboarding, ready }
+enum AppStage { starting, signedOut, onboarding, setPin, ready }
 
 /// App-wide session state: who is signed in and their SurePesa account.
 class AppState extends ChangeNotifier {
   AppState({AuthService? auth}) : auth = auth ?? AuthService() {
     api = ApiClient(this.auth);
+    payments = PaymentsApi(api);
   }
 
   final AuthService auth;
   late final ApiClient api;
+  late final PaymentsApi payments;
 
   AppStage stage = AppStage.starting;
   Me? me;
+
+  /// Bumped whenever money moves, so lists of receipts know to reload.
+  int activityVersion = 0;
 
   Future<void> start() async {
     if (await auth.restore()) {
@@ -65,6 +71,22 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Sets (or, with [currentPin], changes) the transaction PIN.
+  Future<void> setPin(String pin, {String? currentPin}) async {
+    await payments.setPin(pin, currentPin: currentPin);
+    await refresh();
+  }
+
+  /// Call after a payment: reloads the balance and tells history lists to refresh.
+  Future<void> paymentMade() async {
+    activityVersion++;
+    try {
+      await refresh();
+    } catch (_) {
+      notifyListeners();
+    }
+  }
+
   Future<void> signOut() async {
     await auth.signOut();
     me = null;
@@ -73,7 +95,11 @@ class AppState extends ChangeNotifier {
 
   void _applyMe(Me value) {
     me = value;
-    _setStage(value.needsOnboarding ? AppStage.onboarding : AppStage.ready);
+    _setStage(switch (value) {
+      Me(needsOnboarding: true) => AppStage.onboarding,
+      Me(hasPin: false) => AppStage.setPin,
+      _ => AppStage.ready,
+    });
   }
 
   void _setStage(AppStage value) {

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
+import '../state/payment_models.dart';
 import '../widgets/common.dart';
+import 'linked_accounts_screen.dart';
+import 'pay/pay_form_screen.dart';
 
 class ServicesScreen extends StatelessWidget {
   const ServicesScreen({super.key});
@@ -16,6 +19,23 @@ class ServicesScreen extends StatelessWidget {
     (Icons.currency_exchange_rounded, 'Exchange'),
     (Icons.public_rounded, 'Cross-border'),
   ];
+
+  void _open(BuildContext context, String label) {
+    final flow = switch (label) {
+      'Send Money' => PayFlow.send,
+      'Add Money' => PayFlow.deposit,
+      'Withdraw' => PayFlow.withdraw,
+      'Pay Merchant' => PayFlow.merchant,
+      _ => null,
+    };
+    if (flow != null) {
+      openPayFlow(context, flow);
+    } else if (label == 'Mobile Money') {
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const LinkedAccountsScreen()));
+    } else {
+      showComingSoon(context, label);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +57,7 @@ class ServicesScreen extends StatelessWidget {
               for (final (icon, label) in _services)
                 SpCard(
                   padding: const EdgeInsets.all(8),
-                  onTap: () => showComingSoon(context, label),
+                  onTap: () => _open(context, label),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

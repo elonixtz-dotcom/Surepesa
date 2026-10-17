@@ -10,6 +10,8 @@ import { customersRouter } from './routes/customers.routes';
 import { kycReviewRouter } from './routes/kyc.routes';
 import { overviewRouter } from './routes/overview.routes';
 import { transactionsRouter } from './routes/transactions.routes';
+import { railsRouter } from './routes/rails.routes';
+import { feesRouter } from './routes/fees.routes';
 
 /** Back-office API: /admin/v1 */
 export const adminRouter = Router();
@@ -55,6 +57,8 @@ adminRouter.use(transactionsRouter);
 adminRouter.use(casesRouter);
 adminRouter.use(approvalsRouter);
 adminRouter.use(kycReviewRouter);
+adminRouter.use(railsRouter);
+adminRouter.use(feesRouter);
 
 /** Audit trail with actor names resolved. */
 adminRouter.get('/audit-logs', requirePermission('audit:view'), async (req, res) => {

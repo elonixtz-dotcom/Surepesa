@@ -67,6 +67,7 @@ enum SupportCaseCategory {
 
 enum ApprovalType {
   TRANSACTION_REVERSAL
+  TRANSACTION_REFUND // full or partial refund of a merchant payment; amount on the request
 }
 
 enum ApprovalStatus {
@@ -120,6 +121,7 @@ enum TransactionType {
   P2P_TRANSFER // user -> user
   MERCHANT_PAYMENT // user -> business
   REVERSAL // compensating transaction for a previous one
+  REFUND // full or partial return of a merchant payment, linked to the original
   FX_CONVERSION // wallet(currency A) -> wallet(currency B)
   ADJUSTMENT // manual finance correction (admin, audited)
 }
@@ -327,6 +329,7 @@ model ApprovalRequest {
   status        ApprovalStatus @default(PENDING)
   transactionId String?        @map("transaction_id") @db.Uuid
   caseId        String?        @map("case_id") @db.Uuid
+  amount        BigInt? // TRANSACTION_REFUND: minor units to refund
   reason        String
   requestedById String         @map("requested_by_id") @db.Uuid
   decidedById   String?        @map("decided_by_id") @db.Uuid
@@ -495,20 +498,31 @@ model Transaction {
   failureCode           String? @map("failure_code")
   failureReason         String? @map("failure_reason")
   reversesTransactionId String? @unique @map("reverses_transaction_id") @db.Uuid
+  refundsTransactionId  String? @map("refunds_transaction_id") @db.Uuid
   metadata              Json?
+
+  // External rails (deposits/withdrawals) while the outcome is not final.
+  railStatus       String?   @map("rail_status") // last ProviderStatus seen: PENDING, AMBIGUOUS ...
+  nextRailCheckAt  DateTime? @map("next_rail_check_at") // when the rail-sync job should query the rail
+  railCheckCount   Int       @default(0) @map("rail_check_count")
+  escalatedAt      DateTime? @map("escalated_at") // unresolved after the retry window; Finance must act
+  escalationReason String?   @map("escalation_reason")
 
   completedAt DateTime? @map("completed_at")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  initiator         User?          @relation("TransactionInitiator", fields: [initiatorUserId], references: [id])
-  sourceWallet      Wallet?        @relation("SourceWallet", fields: [sourceWalletId], references: [id])
-  destinationWallet Wallet?        @relation("DestinationWallet", fields: [destinationWalletId], references: [id])
-  exchangeRateRef   ExchangeRate?  @relation(fields: [exchangeRateId], references: [id])
-  paymentMethod     PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
-  qrCode            QrCode?        @relation(fields: [qrCodeId], references: [id])
-  reverses          Transaction?   @relation("Reversal", fields: [reversesTransactionId], references: [id])
-  reversedBy        Transaction?   @relation("Reversal")
+  initiator         User?           @relation("TransactionInitiator", fields: [initiatorUserId], references: [id])
+  sourceWallet      Wallet?         @relation("SourceWallet", fields: [sourceWalletId], references: [id])
+  destinationWallet Wallet?         @relation("DestinationWallet", fields: [destinationWalletId], references: [id])
+  exchangeRateRef   ExchangeRate?   @relation(fields: [exchangeRateId], references: [id])
+  paymentMethod     PaymentMethod?  @relation(fields: [paymentMethodId], references: [id])
+  qrCode            QrCode?         @relation(fields: [qrCodeId], references: [id])
+  reverses          Transaction?    @relation("Reversal", fields: [reversesTransactionId], references: [id])
+  reversedBy        Transaction?    @relation("Reversal")
+  refunds           Transaction?    @relation("Refund", fields: [refundsTransactionId], references: [id])
+  refundedBy        Transaction[]   @relation("Refund")
+  providerEvents    ProviderEvent[]
 
   ledgerEntries LedgerEntry[]
   events        TransactionEvent[]
@@ -522,7 +536,47 @@ model Transaction {
   @@index([destinationWalletId, createdAt])
   @@index([status, createdAt])
   @@index([type, createdAt])
+  @@index([status, nextRailCheckAt])
+  @@index([refundsTransactionId])
   @@map("transactions")
+}
+
+// Inbox of provider callbacks. Every delivery is stored once (unique per provider event id)
+// before it is acted on, so duplicate and out-of-order deliveries are harmless.
+model ProviderEvent {
+  id            BigInt    @id @default(autoincrement())
+  providerName  String    @map("provider_name")
+  eventId       String    @map("event_id")
+  transactionId String?   @map("transaction_id") @db.Uuid
+  status        String // ProviderStatus reported by the rail
+  payload       Json // parsed, verified callback (never the raw signature)
+  outcome       String? // APPLIED, ALREADY_FINAL, UNKNOWN_TRANSACTION, NOT_FINAL ...
+  receivedAt    DateTime  @default(now()) @map("received_at")
+  processedAt   DateTime? @map("processed_at")
+
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@unique([providerName, eventId])
+  @@index([transactionId])
+  @@map("provider_events")
+}
+
+// Fee schedule as data, so pricing and regulatory caps (e.g. BoT wallet-to-bank caps)
+// change without a deploy. The newest active rule per type whose effectiveFrom has passed wins.
+model FeeRule {
+  id              String          @id @default(uuid()) @db.Uuid
+  transactionType TransactionType @map("transaction_type")
+  bps             Int // percentage component, 100 bps = 1%
+  minFee          BigInt          @map("min_fee") // minor units
+  maxFee          BigInt?         @map("max_fee") // minor units; null = uncapped
+  note            String? // e.g. "BoT circular, effective 2025-07-01"
+  active          Boolean         @default(true)
+  effectiveFrom   DateTime        @default(now()) @map("effective_from")
+  createdById     String?         @map("created_by_id") @db.Uuid
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([transactionType, active, effectiveFrom])
+  @@map("fee_rules")
 }
 
 // Append-only status history of a transaction.

@@ -17,11 +17,20 @@ const schema = z.object({
     .string()
     .default('')
     .transform((v) => v.split(',').map((s) => s.trim()).filter(Boolean)),
+  // Signs callbacks from the simulated rail. The default is only acceptable outside production.
+  SIMULATED_WEBHOOK_SECRET: z.string().min(32).default('dev-only-simulated-webhook-secret-change-me'),
+  // How often the API asks rails about unresolved deposits/withdrawals. 0 disables the loop
+  // (run `npm run rail-sync` from a scheduler instead).
+  RAIL_SYNC_INTERVAL_MS: z.coerce.number().int().min(0).default(60_000),
 });
 
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
   console.error('Invalid environment configuration:', parsed.error.flatten().fieldErrors);
+  process.exit(1);
+}
+if (parsed.data.NODE_ENV === 'production' && parsed.data.SIMULATED_WEBHOOK_SECRET.startsWith('dev-only')) {
+  console.error('Invalid environment configuration: set SIMULATED_WEBHOOK_SECRET in production');
   process.exit(1);
 }
 

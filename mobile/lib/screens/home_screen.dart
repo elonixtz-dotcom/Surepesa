@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../core/format.dart';
 import '../core/theme.dart';
 import '../state/app_state.dart';
+import '../state/payment_models.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/common.dart';
+import '../widgets/receipt_tile.dart';
+import 'pay/pay_form_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -58,7 +61,7 @@ class HomeScreen extends StatelessWidget {
             BalanceCard(
               me: me,
               wallet: me.walletIn('TZS'),
-              onTransfer: () => showComingSoon(context, 'Send money'),
+              onTransfer: () => openPayFlow(context, PayFlow.send),
             ),
             const SizedBox(height: 18),
             const _QuickActions(),
@@ -73,7 +76,7 @@ class HomeScreen extends StatelessWidget {
             ],
             const SectionHeader(title: 'Recent Transactions'),
             const SizedBox(height: 12),
-            const _EmptyTransactions(),
+            const _RecentTransactions(),
           ],
         ),
       ),
@@ -87,20 +90,20 @@ class _QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const actions = [
-      (Icons.north_east_rounded, 'Send'),
-      (Icons.south_west_rounded, 'Request'),
-      (Icons.add_rounded, 'Add Money'),
-      (Icons.account_balance_outlined, 'Withdraw'),
+      (Icons.north_east_rounded, 'Send', PayFlow.send),
+      (Icons.south_west_rounded, 'Request', null),
+      (Icons.add_rounded, 'Add Money', PayFlow.deposit),
+      (Icons.account_balance_outlined, 'Withdraw', PayFlow.withdraw),
     ];
     return Row(
       children: [
-        for (final (icon, label) in actions)
+        for (final (icon, label, flow) in actions)
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: SpCard(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                onTap: () => showComingSoon(context, label),
+                onTap: () => flow == null ? showComingSoon(context, label) : openPayFlow(context, flow),
                 child: Column(
                   children: [
                     Container(
@@ -129,7 +132,7 @@ class _QuickTransferRow extends StatelessWidget {
     return Row(
       children: [
         GestureDetector(
-          onTap: () => showComingSoon(context, 'Send money'),
+          onTap: () => openPayFlow(context, PayFlow.send),
           child: Column(
             children: [
               Container(
@@ -203,6 +206,55 @@ class _VerifyCard extends StatelessWidget {
             decoration: BoxDecoration(gradient: SpColors.cardGradient, borderRadius: BorderRadius.circular(20)),
             child: Icon(pending ? Icons.hourglass_top_rounded : Icons.badge_outlined, color: Colors.white, size: 34),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The latest few receipts; reloads whenever a payment is made.
+class _RecentTransactions extends StatefulWidget {
+  const _RecentTransactions();
+
+  @override
+  State<_RecentTransactions> createState() => _RecentTransactionsState();
+}
+
+class _RecentTransactionsState extends State<_RecentTransactions> {
+  List<Receipt>? _items;
+  int? _version;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final version = AppScope.of(context).activityVersion;
+    if (version != _version) {
+      _version = version;
+      Future.microtask(_load);
+    }
+  }
+
+  Future<void> _load() async {
+    try {
+      final page = await AppScope.read(context).payments.history(limit: 4);
+      if (mounted) setState(() => _items = page.items);
+    } catch (_) {
+      // Home still works without it; History shows the error.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = _items;
+    if (items == null || items.isEmpty) return const _EmptyTransactions();
+    return SpCard(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        children: [
+          for (var i = 0; i < items.length; i++) ...[
+            if (i > 0) const Divider(height: 1, indent: 68),
+            ReceiptTile(receipt: items[i]),
+          ],
         ],
       ),
     );
