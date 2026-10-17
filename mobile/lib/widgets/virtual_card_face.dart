@@ -15,7 +15,7 @@ class VirtualCardFace extends StatelessWidget {
   static const _gradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [SpColors.ink, SpColors.inkSurface, Color(0xFF0E4A4A)],
+    colors: [Color(0xFF1D140E), Color(0xFF3A2116), Color(0xFF8A3410)],
   );
 
   @override

@@ -3,26 +3,27 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// "Ledger": the SurePesa visual system (see the SurePesa app design canvas).
 ///
-/// Money surfaces sit on ink; everything else is white cards on a cool grey ground with one
-/// deep-teal accent. Status colours always come with words, never colour alone.
+/// Warm system shared with the merchant portal: white cards on a cream ground, one red-orange
+/// accent (solid on controls, a gradient on the balance card and logo), warm near-black text.
+/// Status colours always come with words, never colour alone. Token names predate the palette.
 class SpColors {
-  // Accent. `teal` is dark enough for white text on buttons (WCAG AA).
-  static const teal = Color(0xFF0B7A6C);
-  static const tealDark = Color(0xFF08594F);
-  static const tealLight = Color(0xFF7FD6C6); // accent on ink surfaces
-  static const mint = Color(0xFFDDF2EE); // teal tint: icon chips, focus ring
+  // Accent (named teal for history). Dark enough for bold white text on buttons.
+  static const teal = Color(0xFFD9480F);
+  static const tealDark = Color(0xFFB8460A);
+  static const tealLight = Color(0xFFFFD9C2); // accent on dark and gradient surfaces
+  static const mint = Color(0xFFFDEBE0); // accent tint: icon chips, focus ring
   static const mintSoft = ground; // legacy name: the app background
 
   // Neutrals.
-  static const ink = Color(0xFF0B1B2B); // text, and the ground of money surfaces
-  static const ink2 = Color(0xFF42526B); // secondary text, labels
-  static const inkMuted = Color(0xFF5B6B82); // captions
-  static const inkSurface = Color(0xFF13293F); // raised elements on ink
-  static const inkMutedOnDark = Color(0xFFA9B6C7);
-  static const ground = Color(0xFFF4F6F9);
+  static const ink = Color(0xFF1D140E); // text, and dark surfaces (unlock, cards)
+  static const ink2 = Color(0xFF5A4A3F); // secondary text, labels
+  static const inkMuted = Color(0xFF7A6A5E); // captions
+  static const inkSurface = Color(0x2EFFFFFF); // raised elements on dark or gradient surfaces
+  static const inkMutedOnDark = Color(0xFFFFE6D6);
+  static const ground = Color(0xFFFBF7F3);
   static const surface = Colors.white;
-  static const line = Color(0xFFEEF1F5); // row dividers
-  static const border = Color(0xFFCCD4DF); // control borders
+  static const line = Color(0xFFF3EBE4); // row dividers
+  static const border = Color(0xFFE6D8CD); // control borders
 
   // Status: text colour and its soft background.
   static const positive = Color(0xFF127A4B);
@@ -34,8 +35,14 @@ class SpColors {
   static const info = Color(0xFF23409A);
   static const infoSoft = Color(0xFFE8EEFB);
 
-  // Legacy names kept for screens that still reference them; both are flat now (no washes).
-  static const cardGradient = LinearGradient(colors: [ink, ink]);
+  /// The brand gradient: primary hero surfaces only (balance card, logo, the Send action).
+  static const brandGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFE03A1E), Color(0xFFF57C12)],
+  );
+
+  static const cardGradient = brandGradient;
   static const backgroundGradient = LinearGradient(colors: [ground, ground]);
 }
 
@@ -70,10 +77,19 @@ ThemeData buildTheme() {
     scaffoldBackgroundColor: SpColors.ground,
     splashFactory: InkSparkle.splashFactory,
   );
-  final text = GoogleFonts.plusJakartaSansTextTheme(base.textTheme).apply(
-    bodyColor: SpColors.ink,
-    displayColor: SpColors.ink,
-  );
+  // Inter for reading, Bricolage Grotesque for headings, as in the merchant portal.
+  final body = GoogleFonts.interTextTheme(base.textTheme);
+  TextStyle? display(TextStyle? s) => GoogleFonts.bricolageGrotesque(textStyle: s, fontWeight: FontWeight.w700);
+  final text = body
+      .copyWith(
+        displayLarge: display(body.displayLarge),
+        displayMedium: display(body.displayMedium),
+        displaySmall: display(body.displaySmall),
+        headlineLarge: display(body.headlineLarge),
+        headlineMedium: display(body.headlineMedium),
+        headlineSmall: display(body.headlineSmall),
+      )
+      .apply(bodyColor: SpColors.ink, displayColor: SpColors.ink);
   OutlineInputBorder outline(Color color, [double width = 1.5]) => OutlineInputBorder(
         borderRadius: BorderRadius.circular(SpRadii.control),
         borderSide: BorderSide(color: color, width: width),

@@ -101,7 +101,8 @@ class _QuickActions extends StatelessWidget {
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: i == 0 ? SpColors.teal : SpColors.surface,
+                          gradient: i == 0 ? SpColors.brandGradient : null,
+                          color: i == 0 ? null : SpColors.surface,
                           borderRadius: BorderRadius.circular(18),
                         ),
                         child: Icon(icon, color: i == 0 ? Colors.white : SpColors.ink, size: 22),

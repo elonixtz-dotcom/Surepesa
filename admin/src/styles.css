@@ -1,17 +1,17 @@
 :root {
-  --bg: #f3f8f7;
+  --bg: #fbf7f3;
   --surface: #ffffff;
-  --surface-2: #f6fbfa;
-  --border: #dcebe8;
-  --border-strong: #c5ddd8;
-  --ink: #0f2e2c;
-  --ink-2: #3f5a57;
-  --muted: #6b8380;
-  --brand: #1bb5a5;
-  --brand-ink: #0b7d72;
-  --brand-soft: #e3f6f3;
-  --chart: #009e8c;
-  --grid: #e7efee;
+  --surface-2: #f7f1eb;
+  --border: #efe4db;
+  --border-strong: #e2d3c7;
+  --ink: #1d140e;
+  --ink-2: #5a4a3f;
+  --muted: #7a6a5e;
+  --brand: #d9480f;
+  --brand-ink: #b8460a;
+  --brand-soft: #fdebe0;
+  --chart: #e8590c;
+  --grid: #f3ebe4;
   --good: #12804a;
   --good-bg: #e5f5ec;
   --warn: #9a6400;
@@ -20,27 +20,27 @@
   --bad-bg: #fde8e6;
   --info: #2e5aac;
   --info-bg: #e8eefb;
-  --neutral-bg: #eef2f2;
-  --shadow: 0 1px 2px rgb(15 46 44 / 6%), 0 4px 16px rgb(15 46 44 / 4%);
+  --neutral-bg: #f5efe9;
+  --shadow: 0 1px 2px rgb(68 40 20 / 6%), 0 4px 16px rgb(68 40 20 / 4%);
   --radius: 14px;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #0d1716;
-    --surface: #142120;
-    --surface-2: #182826;
-    --border: #23403c;
-    --border-strong: #2e524d;
-    --ink: #e4f1ef;
-    --ink-2: #b4cbc7;
-    --muted: #86a19d;
-    --brand: #2cc4b3;
-    --brand-ink: #5fd8ca;
-    --brand-soft: #173a36;
-    --chart: #22a898;
-    --grid: #1e3330;
+    --bg: #15100c;
+    --surface: #1e1712;
+    --surface-2: #251c16;
+    --border: #3a2c22;
+    --border-strong: #4a382b;
+    --ink: #f5ece5;
+    --ink-2: #d4c3b6;
+    --muted: #a8968a;
+    --brand: #e8590c;
+    --brand-ink: #ffa774;
+    --brand-soft: #3a2014;
+    --chart: #f07a3a;
+    --grid: #2e231b;
     --good: #5fd497;
     --good-bg: #163526;
     --warn: #f2c063;
@@ -49,7 +49,7 @@
     --bad-bg: #3d1c1a;
     --info: #9ab8f5;
     --info-bg: #1b2a47;
-    --neutral-bg: #1e2c2b;
+    --neutral-bg: #2a211a;
     --shadow: none;
     color-scheme: dark;
   }
@@ -61,7 +61,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 14px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
@@ -69,7 +69,8 @@ body {
 a { color: var(--brand-ink); text-decoration: none; }
 a:hover { text-decoration: underline; }
 h1, h2, h3 { margin: 0; letter-spacing: -0.01em; }
-h1 { font-size: 22px; font-weight: 800; }
+h1, .logo { font-family: 'Bricolage Grotesque', 'Inter', system-ui, sans-serif; }
+h1 { font-size: 24px; font-weight: 700; }
 h2 { font-size: 16px; font-weight: 700; }
 h3 { font-size: 14px; font-weight: 700; }
 .mono { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 12.5px; }
@@ -92,7 +93,7 @@ h3 { font-size: 14px; font-weight: 700; }
 .logo { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; font-weight: 800; font-size: 18px; }
 .logo-mark {
   width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; color: #fff;
-  background: linear-gradient(135deg, #9be8dd, #3cc3b3 55%, #1ba898);
+  background: linear-gradient(135deg, #e03a1e, #f57c12);
 }
 .logo small { display: block; font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
 .nav-section { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 14px 10px 6px; }

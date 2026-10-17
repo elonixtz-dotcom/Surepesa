@@ -49,29 +49,29 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: SpColors.surface,
+      backgroundColor: SpColors.ground,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              color: SpColors.ink,
+              color: SpColors.ground,
               padding: EdgeInsets.fromLTRB(24, MediaQuery.paddingOf(context).top + 32, 24, 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SurePesaLogo(size: 26, onDark: true),
+                  const SurePesaLogo(size: 26),
                   const SizedBox(height: 28),
                   Text(
                     _signUp ? 'Create your account' : 'Welcome back',
-                    style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -0.5, height: 1.15),
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: 30, letterSpacing: -0.6, height: 1.15),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     _signUp
                         ? 'Send money, pay merchants and pay online with virtual cards.'
                         : 'Sign in to send money, pay merchants and manage your cards.',
-                    style: const TextStyle(color: SpColors.inkMutedOnDark, fontSize: 15, height: 1.5),
+                    style: const TextStyle(color: SpColors.ink2, fontSize: 15, height: 1.5),
                   ),
                 ],
               ),

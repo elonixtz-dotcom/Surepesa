@@ -30,7 +30,11 @@ class _BalanceCardState extends State<BalanceCard> {
       label: _hidden ? 'Balance hidden' : 'Available balance ${wallet?.currency ?? 'TZS'} ${amount.whole}${amount.fraction}',
       child: Container(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: SpColors.ink, borderRadius: BorderRadius.circular(SpRadii.hero)),
+        decoration: BoxDecoration(
+          gradient: SpColors.brandGradient,
+          borderRadius: BorderRadius.circular(SpRadii.hero),
+          boxShadow: const [BoxShadow(color: Color(0x33E03A1E), blurRadius: 24, offset: Offset(0, 10))],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -77,12 +81,12 @@ class _BalanceCardState extends State<BalanceCard> {
                       style: const TextStyle(color: SpColors.inkMutedOnDark, fontSize: 12)),
                 ),
                 Icon(widget.me.isVerified ? Icons.check_rounded : Icons.shield_outlined,
-                    size: 15, color: widget.me.isVerified ? SpColors.tealLight : const Color(0xFFF2C063)),
+                    size: 15, color: Colors.white),
                 const SizedBox(width: 4),
                 Text(
                   widget.me.isVerified ? 'Verified' : 'Not verified',
-                  style: TextStyle(
-                    color: widget.me.isVerified ? SpColors.tealLight : const Color(0xFFF2C063),
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),

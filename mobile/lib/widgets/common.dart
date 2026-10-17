@@ -12,7 +12,7 @@ class GradientBackground extends StatelessWidget {
   Widget build(BuildContext context) => ColoredBox(color: SpColors.ground, child: child);
 }
 
-/// The SurePesa wordmark: a solid teal monogram and the name.
+/// The SurePesa wordmark: a gradient monogram and the name.
 class SurePesaLogo extends StatelessWidget {
   const SurePesaLogo({super.key, this.size = 26, this.onDark = false});
 
@@ -28,7 +28,7 @@ class SurePesaLogo extends StatelessWidget {
           width: size * 1.38,
           height: size * 1.38,
           alignment: Alignment.center,
-          decoration: BoxDecoration(color: SpColors.teal, borderRadius: BorderRadius.circular(size * 0.38)),
+          decoration: BoxDecoration(gradient: SpColors.brandGradient, borderRadius: BorderRadius.circular(size * 0.38)),
           child: Text('S', style: TextStyle(color: Colors.white, fontSize: size * 0.72, fontWeight: FontWeight.w800)),
         ),
         SizedBox(width: size * 0.4),
