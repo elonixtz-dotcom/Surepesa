@@ -1,0 +1,24 @@
+# Secrets
+.env
+.env.*
+!.env.example
+.neon
+
+# Dependencies / build output
+node_modules/
+dist/
+coverage/
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+*.iml
+.idea/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json

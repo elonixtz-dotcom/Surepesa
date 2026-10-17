@@ -1,0 +1,549 @@
+// SurePesa — core data model.
+//
+// Money rules (apply everywhere):
+//   * Amounts are BigInt in the currency's MINOR units (TZS 1,500.00 => 150000).
+//   * Every movement of money is a Transaction with ledger entries that sum to zero
+//     per currency (double-entry). Wallet.balance is a cached projection of the ledger
+//     and must always equal SUM(ledger_entries.amount) for that wallet.
+//   * Nothing outside src/services/ledger.service.ts writes to Wallet.balance or LedgerEntry.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // Neon pooled connection (runtime)
+  directUrl = env("DIRECT_URL") // Neon direct connection (migrations)
+}
+
+// ───────────────────────────── Enums ─────────────────────────────
+
+enum AccountType {
+  INDIVIDUAL
+  BUSINESS
+}
+
+enum UserStatus {
+  PENDING_VERIFICATION // registered, phone not yet verified
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  COMPLIANCE // KYC review
+  SUPPORT
+  FINANCE // reversals, reconciliation
+}
+
+enum KycStatus {
+  NOT_STARTED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum KycDocumentType {
+  NATIONAL_ID // NIDA
+  PASSPORT
+  DRIVING_LICENSE
+  VOTER_ID
+  SELFIE
+  BUSINESS_REGISTRATION // BRELA certificate
+  TIN_CERTIFICATE
+  BUSINESS_LICENSE
+}
+
+enum OtpPurpose {
+  REGISTRATION
+  LOGIN
+  PIN_RESET
+  PASSWORD_RESET
+}
+
+enum WalletKind {
+  USER // individual customer wallet
+  BUSINESS // merchant wallet
+  SYSTEM_FLOAT // mirror of money held at an external rail (simulated for now); may go negative
+  SYSTEM_FEES // fee revenue
+  SYSTEM_FX // FX position for currency conversion
+}
+
+enum WalletStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+enum TransactionType {
+  DEPOSIT // external rail -> wallet
+  WITHDRAWAL // wallet -> external rail
+  P2P_TRANSFER // user -> user
+  MERCHANT_PAYMENT // user -> business
+  REVERSAL // compensating transaction for a previous one
+  FX_CONVERSION // wallet(currency A) -> wallet(currency B)
+  ADJUSTMENT // manual finance correction (admin, audited)
+}
+
+enum TransactionStatus {
+  PENDING // created, not yet sent for processing
+  PROCESSING // being processed / awaiting provider confirmation
+  SUCCESS
+  FAILED
+  REVERSED
+  CANCELLED
+}
+
+enum LedgerEntryType {
+  PRINCIPAL
+  FEE
+  FX
+  REVERSAL
+  ADJUSTMENT
+}
+
+enum PaymentMethodType {
+  MOBILE_MONEY
+  BANK_ACCOUNT
+  CARD
+}
+
+enum PaymentMethodStatus {
+  PENDING_VERIFICATION
+  VERIFIED
+  DISABLED
+}
+
+enum QrCodeType {
+  STATIC // customer enters the amount
+  DYNAMIC // amount fixed by merchant, single use
+}
+
+enum NotificationChannel {
+  IN_APP
+  SMS
+  PUSH
+  EMAIL
+}
+
+enum ActorType {
+  USER
+  ADMIN
+  SYSTEM
+}
+
+// ─────────────────────────── Identity ───────────────────────────
+
+model User {
+  id           String      @id @default(uuid()) @db.Uuid
+  // Identity lives in Neon Auth (Managed Better Auth, schema `neon_auth`); this is its user id (JWT `sub`).
+  authUserId   String?     @unique @map("auth_user_id")
+  phoneNumber  String?     @unique @map("phone_number") // E.164, e.g. +255712345678 — collected at onboarding
+  email        String?     @unique
+  accountType  AccountType @default(INDIVIDUAL) @map("account_type")
+  status       UserStatus  @default(PENDING_VERIFICATION)
+  passwordHash String?     @map("password_hash") // unused while Neon Auth owns passwords
+  pinHash      String?     @map("pin_hash") // transaction PIN, set after registration
+  pinAttempts  Int         @default(0) @map("pin_attempts")
+  pinLockedAt  DateTime?   @map("pin_locked_at")
+  phoneVerifiedAt DateTime? @map("phone_verified_at")
+  kycStatus    KycStatus   @default(NOT_STARTED) @map("kyc_status") // denormalised from latest submission
+  lastLoginAt  DateTime?   @map("last_login_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  profile          Profile?
+  businesses       Business[]
+  wallets          Wallet[]
+  kycSubmissions   KycSubmission[]
+  paymentMethods   PaymentMethod[]
+  initiatedTransactions Transaction[] @relation("TransactionInitiator")
+  notifications    Notification[]
+  refreshTokens    RefreshToken[]
+
+  @@map("users")
+}
+
+model Profile {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @unique @map("user_id") @db.Uuid
+  firstName   String    @map("first_name")
+  middleName  String?   @map("middle_name")
+  lastName    String    @map("last_name")
+  dateOfBirth DateTime? @map("date_of_birth") @db.Date
+  gender      String?
+  nationality String?   @default("TZ") // ISO 3166-1 alpha-2
+  region      String?
+  district    String?
+  street      String?
+  avatarUrl   String?   @map("avatar_url")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Business {
+  id             String    @id @default(uuid()) @db.Uuid
+  ownerId        String    @map("owner_id") @db.Uuid
+  merchantCode   String    @unique @map("merchant_code") // public id used in QR codes, e.g. SPM482193
+  legalName      String    @map("legal_name")
+  tradingName    String    @map("trading_name")
+  registrationNo String?   @map("registration_no") // BRELA
+  tin            String?
+  category       String?
+  phoneNumber    String?   @map("phone_number")
+  email          String?
+  region         String?
+  address        String?
+  kycStatus      KycStatus @default(NOT_STARTED) @map("kyc_status")
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  owner          User            @relation(fields: [ownerId], references: [id])
+  wallets        Wallet[]
+  qrCodes        QrCode[]
+  kycSubmissions KycSubmission[]
+
+  @@index([ownerId])
+  @@map("businesses")
+}
+
+model AdminUser {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique
+  fullName     String    @map("full_name")
+  passwordHash String    @map("password_hash")
+  role         AdminRole
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  kycReviews KycSubmission[]
+
+  @@map("admin_users")
+}
+
+model OtpCode {
+  id          String     @id @default(uuid()) @db.Uuid
+  phoneNumber String     @map("phone_number")
+  purpose     OtpPurpose
+  codeHash    String     @map("code_hash") // never store the raw code
+  attempts    Int        @default(0)
+  expiresAt   DateTime   @map("expires_at")
+  consumedAt  DateTime?  @map("consumed_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  @@index([phoneNumber, purpose, createdAt])
+  @@map("otp_codes")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  userAgent String?   @map("user_agent")
+  ipAddress String?   @map("ip_address")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ───────────────────────────── KYC ──────────────────────────────
+
+model KycSubmission {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String?   @map("user_id") @db.Uuid // individual KYC
+  businessId      String?   @map("business_id") @db.Uuid // business KYB
+  status          KycStatus @default(PENDING)
+  // Snapshot of what was declared at submission time (profile may change later).
+  fullName        String    @map("full_name")
+  dateOfBirth     DateTime? @map("date_of_birth") @db.Date
+  idType          KycDocumentType @map("id_type")
+  idNumber        String    @map("id_number")
+  declaredData    Json?     @map("declared_data")
+  submittedAt     DateTime  @default(now()) @map("submitted_at")
+  reviewedById    String?   @map("reviewed_by_id") @db.Uuid
+  reviewedAt      DateTime? @map("reviewed_at")
+  rejectionReason String?   @map("rejection_reason")
+
+  user       User?         @relation(fields: [userId], references: [id])
+  business   Business?     @relation(fields: [businessId], references: [id])
+  reviewedBy AdminUser?    @relation(fields: [reviewedById], references: [id])
+  documents  KycDocument[]
+
+  @@index([status, submittedAt])
+  @@index([userId])
+  @@index([businessId])
+  @@map("kyc_submissions")
+}
+
+model KycDocument {
+  id           String          @id @default(uuid()) @db.Uuid
+  submissionId String          @map("submission_id") @db.Uuid
+  type         KycDocumentType
+  storageKey   String          @map("storage_key") // key in private object storage, never a public URL
+  mimeType     String          @map("mime_type")
+  sizeBytes    Int             @map("size_bytes")
+  sha256       String
+  createdAt    DateTime        @default(now()) @map("created_at")
+
+  submission KycSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@map("kyc_documents")
+}
+
+// ────────────────────────── Money core ──────────────────────────
+
+model Currency {
+  code       String  @id // ISO 4217: TZS, USD, KES ...
+  name       String
+  minorUnits Int     @map("minor_units") // 2 => amounts stored in cents
+  symbol     String?
+  isActive   Boolean @default(true) @map("is_active")
+
+  wallets Wallet[]
+
+  @@map("currencies")
+}
+
+model Wallet {
+  id            String       @id @default(uuid()) @db.Uuid
+  kind          WalletKind
+  userId        String?      @map("user_id") @db.Uuid
+  businessId    String?      @map("business_id") @db.Uuid
+  systemCode    String?      @unique @map("system_code") // e.g. FLOAT_SIMULATED_TZS, FEES_TZS
+  currencyCode  String       @map("currency_code")
+  // Cached projection of SUM(ledger_entries.amount). Written only by the ledger service.
+  balance       BigInt       @default(0)
+  allowNegative Boolean      @default(false) @map("allow_negative") // only system float/FX wallets
+  status        WalletStatus @default(ACTIVE)
+  version       Int          @default(0) // bumped on every posting
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  user     User?    @relation(fields: [userId], references: [id])
+  business Business? @relation(fields: [businessId], references: [id])
+  currency Currency @relation(fields: [currencyCode], references: [code])
+
+  ledgerEntries       LedgerEntry[]
+  outgoingTransactions Transaction[] @relation("SourceWallet")
+  incomingTransactions Transaction[] @relation("DestinationWallet")
+
+  // One wallet per owner per currency.
+  @@unique([userId, currencyCode])
+  @@unique([businessId, currencyCode])
+  @@index([kind])
+  @@map("wallets")
+}
+
+// A business-level money movement ("Send TZS 25,000 to John").
+// Its ledger entries describe exactly how balances changed.
+model Transaction {
+  id                      String            @id @default(uuid()) @db.Uuid
+  reference               String            @unique // customer-facing id, e.g. SPX-7K2M9QX4TB
+  type                    TransactionType
+  status                  TransactionStatus @default(PENDING)
+
+  initiatorUserId         String?           @map("initiator_user_id") @db.Uuid
+  initiatorAdminId        String?           @map("initiator_admin_id") @db.Uuid
+  idempotencyKey          String?           @map("idempotency_key")
+
+  sourceWalletId          String?           @map("source_wallet_id") @db.Uuid
+  destinationWalletId     String?           @map("destination_wallet_id") @db.Uuid
+
+  amount                  BigInt // principal in `currencyCode` minor units
+  currencyCode            String            @map("currency_code")
+  fee                     BigInt            @default(0) // charged to the source, same currency
+  // Cross-currency: what the destination receives.
+  destinationAmount       BigInt?           @map("destination_amount")
+  destinationCurrencyCode String?           @map("destination_currency_code")
+  exchangeRateId          String?           @map("exchange_rate_id") @db.Uuid
+  exchangeRate            Decimal?          @map("exchange_rate") @db.Decimal(24, 10) // snapshot at execution
+
+  description             String?
+  paymentMethodId         String?           @map("payment_method_id") @db.Uuid
+  qrCodeId                String?           @map("qr_code_id") @db.Uuid
+  providerName            String?           @map("provider_name") // SIMULATED, MPESA_TZ, AIRTEL_TZ, NMB ...
+  providerReference       String?           @map("provider_reference")
+  failureCode             String?           @map("failure_code")
+  failureReason           String?           @map("failure_reason")
+  reversesTransactionId   String?           @unique @map("reverses_transaction_id") @db.Uuid
+  metadata                Json?
+
+  completedAt             DateTime?         @map("completed_at")
+  createdAt               DateTime          @default(now()) @map("created_at")
+  updatedAt               DateTime          @updatedAt @map("updated_at")
+
+  initiator         User?          @relation("TransactionInitiator", fields: [initiatorUserId], references: [id])
+  sourceWallet      Wallet?        @relation("SourceWallet", fields: [sourceWalletId], references: [id])
+  destinationWallet Wallet?        @relation("DestinationWallet", fields: [destinationWalletId], references: [id])
+  exchangeRateRef   ExchangeRate?  @relation(fields: [exchangeRateId], references: [id])
+  paymentMethod     PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  qrCode            QrCode?        @relation(fields: [qrCodeId], references: [id])
+  reverses          Transaction?   @relation("Reversal", fields: [reversesTransactionId], references: [id])
+  reversedBy        Transaction?   @relation("Reversal")
+
+  ledgerEntries LedgerEntry[]
+  events        TransactionEvent[]
+
+  // Same client retry => same transaction.
+  @@unique([initiatorUserId, idempotencyKey])
+  @@unique([providerName, providerReference])
+  @@index([sourceWalletId, createdAt])
+  @@index([destinationWalletId, createdAt])
+  @@index([status, createdAt])
+  @@index([type, createdAt])
+  @@map("transactions")
+}
+
+// Append-only status history of a transaction.
+model TransactionEvent {
+  id            BigInt             @id @default(autoincrement())
+  transactionId String             @map("transaction_id") @db.Uuid
+  fromStatus    TransactionStatus? @map("from_status")
+  toStatus      TransactionStatus  @map("to_status")
+  actorType     ActorType          @default(SYSTEM) @map("actor_type")
+  actorId       String?            @map("actor_id")
+  note          String?
+  data          Json?
+  createdAt     DateTime           @default(now()) @map("created_at")
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([transactionId, id])
+  @@map("transaction_events")
+}
+
+// Append-only double-entry ledger. Positive = credit to wallet, negative = debit.
+// For every transaction, SUM(amount) per currency = 0.
+model LedgerEntry {
+  id            BigInt          @id @default(autoincrement())
+  transactionId String          @map("transaction_id") @db.Uuid
+  walletId      String          @map("wallet_id") @db.Uuid
+  entryType     LedgerEntryType @map("entry_type")
+  amount        BigInt
+  currencyCode  String          @map("currency_code")
+  balanceAfter  BigInt          @map("balance_after")
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+  wallet      Wallet      @relation(fields: [walletId], references: [id])
+
+  @@index([walletId, id])
+  @@index([transactionId])
+  @@map("ledger_entries")
+}
+
+// ──────────────────── Payment methods & QR ─────────────────────
+
+model PaymentMethod {
+  id            String              @id @default(uuid()) @db.Uuid
+  userId        String              @map("user_id") @db.Uuid
+  type          PaymentMethodType
+  provider      String // MPESA_TZ, AIRTEL_TZ, YAS_TZ, HALOPESA, CRDB, NMB, NBC ...
+  label         String? // "My M-Pesa"
+  accountName   String?             @map("account_name")
+  // Full identifier is only needed by the provider adapter; UI shows the masked form.
+  accountNumber String              @map("account_number")
+  maskedNumber  String              @map("masked_number") // +255 7** *** 678
+  currencyCode  String              @default("TZS") @map("currency_code")
+  status        PaymentMethodStatus @default(PENDING_VERIFICATION)
+  isDefault     Boolean             @default(false) @map("is_default")
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+
+  @@unique([userId, type, provider, accountNumber])
+  @@map("payment_methods")
+}
+
+model QrCode {
+  id           String     @id @default(uuid()) @db.Uuid
+  businessId   String     @map("business_id") @db.Uuid
+  type         QrCodeType @default(STATIC)
+  token        String     @unique // opaque value encoded in surepesa://pay?qr=<token>
+  label        String? // "Till 1", "Counter A"
+  amount       BigInt? // DYNAMIC only
+  currencyCode String     @default("TZS") @map("currency_code")
+  isActive     Boolean    @default(true) @map("is_active")
+  expiresAt    DateTime?  @map("expires_at")
+  usedAt       DateTime?  @map("used_at") // DYNAMIC: single use
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  business     Business      @relation(fields: [businessId], references: [id])
+  transactions Transaction[]
+
+  @@index([businessId])
+  @@map("qr_codes")
+}
+
+// ───────────────────────────── FX ───────────────────────────────
+
+// 1 unit of baseCurrency = rate units of quoteCurrency (major units).
+model ExchangeRate {
+  id            String   @id @default(uuid()) @db.Uuid
+  baseCurrency  String   @map("base_currency")
+  quoteCurrency String   @map("quote_currency")
+  rate          Decimal  @db.Decimal(24, 10)
+  source        String   @default("MANUAL") // MANUAL, BOT (Bank of Tanzania), provider name
+  effectiveFrom DateTime @default(now()) @map("effective_from")
+  effectiveTo   DateTime? @map("effective_to")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  transactions Transaction[]
+
+  @@index([baseCurrency, quoteCurrency, effectiveFrom])
+  @@map("exchange_rates")
+}
+
+// ───────────────────── Notifications & audit ────────────────────
+
+model Notification {
+  id        String              @id @default(uuid()) @db.Uuid
+  userId    String              @map("user_id") @db.Uuid
+  channel   NotificationChannel @default(IN_APP)
+  title     String
+  body      String
+  data      Json?
+  readAt    DateTime?           @map("read_at")
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+// Append-only record of privileged / sensitive actions.
+model AuditLog {
+  id         BigInt    @id @default(autoincrement())
+  actorType  ActorType @map("actor_type")
+  actorId    String?   @map("actor_id")
+  action     String // KYC_APPROVED, USER_SUSPENDED, TRANSACTION_REVERSED ...
+  entityType String    @map("entity_type")
+  entityId   String?   @map("entity_id")
+  before     Json?
+  after      Json?
+  ipAddress  String?   @map("ip_address")
+  userAgent  String?   @map("user_agent")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([entityType, entityId])
+  @@index([actorType, actorId, createdAt])
+  @@map("audit_logs")
+}
