@@ -100,14 +100,14 @@ class _Splash extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: SpColors.ink,
+      backgroundColor: SpColors.ground,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SurePesaLogo(size: 30, onDark: true),
+            SurePesaLogo(size: 28),
             SizedBox(height: 28),
-            SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: SpColors.inkMutedOnDark)),
+            SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: SpColors.teal)),
           ],
         ),
       ),
