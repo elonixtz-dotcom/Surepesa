@@ -22,6 +22,18 @@ export class ApiError extends Error {
 
 let jwt: { token: string; expiresAt: number } | null = null;
 
+/** The /auth proxy returns the API JWT with a successful sign-in, saving a /token call. */
+function jwtFrom(res: Response): typeof jwt {
+  const token = res.headers.get('set-auth-jwt');
+  if (!token) return null;
+  try {
+    const exp = JSON.parse(atob(token.split('.')[1]!.replace(/-/g, '+').replace(/_/g, '/'))).exp as number;
+    return { token, expiresAt: exp * 1000 };
+  } catch {
+    return null;
+  }
+}
+
 async function authFetch(path: string, init: RequestInit = {}) {
   return fetch(`/auth/${path}`, { ...init, credentials: 'include', headers: { 'content-type': 'application/json', ...init.headers } });
 }
@@ -30,7 +42,7 @@ export async function signIn(email: string, password: string): Promise<void> {
   if (DEMO) return;
   const res = await authFetch('sign-in/email', { method: 'POST', body: JSON.stringify({ email, password }) });
   if (!res.ok) throw await authError(res, 'The email or password is incorrect.');
-  jwt = null;
+  jwt = jwtFrom(res);
 }
 
 /** Friendly messages for Neon Auth (Better Auth) error codes. */
@@ -58,7 +70,7 @@ export async function signUp(name: string, email: string, password: string): Pro
   if (DEMO) return 'signed-in';
   const res = await authFetch('sign-up/email', { method: 'POST', body: JSON.stringify({ name, email, password }) });
   if (!res.ok) throw await authError(res, 'We could not create your account. Please try again.');
-  jwt = null;
+  jwt = jwtFrom(res);
   return (await accessToken()) ? 'signed-in' : 'verify-email';
 }
 

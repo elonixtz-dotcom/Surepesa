@@ -56,7 +56,10 @@ class AuthService {
         .post(_uri(path), headers: {'Content-Type': 'application/json'}, body: jsonEncode(body))
         .timeout(const Duration(seconds: 30));
     if (res.statusCode != 200) throw AuthException(_errorMessage(res));
-    _jwt = null;
+    // The SurePesa /auth proxy hands back the API JWT with the sign-in, saving a /token call.
+    final jwt = res.headers['set-auth-jwt'];
+    _jwt = jwt;
+    _jwtExpiresAt = jwt == null ? null : _expiryOf(jwt);
     if (kIsWeb) {
       _cookie = _browserSession;
       await _storage.write(key: _cookieKey, value: _cookie);
@@ -69,7 +72,6 @@ class AuthService {
       throw AuthException('Signed in, but no session was returned. Please try again.');
     }
     _cookie = matches.map((m) => '${m.group(1)}=${m.group(2)}').join('; ');
-    _jwt = null;
     await _storage.write(key: _cookieKey, value: _cookie);
   }
 

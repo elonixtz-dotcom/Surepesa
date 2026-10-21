@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 
 import 'core/theme.dart';
 import 'screens/auth_screen.dart';
-import 'screens/home_shell.dart';
+// Everything after sign-in (home, payments, cards, profile) is a separate download on the web,
+// so the sign-in screen appears sooner. It starts downloading as soon as the first frame shows.
+import 'screens/home_shell.dart' deferred as shell;
 import 'screens/onboarding_screen.dart';
 import 'screens/pay/set_pin_screen.dart';
 import 'screens/unlock_screen.dart';
@@ -37,6 +39,8 @@ class _SurePesaAppState extends State<SurePesaApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     state.addListener(_onStage);
+    // Fetch the signed-in app while the customer is still on the sign-in screen.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadShell().ignore());
   }
 
   @override
@@ -88,10 +92,56 @@ class _Root extends StatelessWidget {
       AppStage.onboarding => const OnboardingScreen(),
       AppStage.setPin => const SetPinScreen(),
       AppStage.locked => const UnlockScreen(),
-      AppStage.ready => const HomeShell(),
+      AppStage.ready => const _Shell(),
     };
     return AnimatedSwitcher(duration: const Duration(milliseconds: 250), child: screen);
   }
+}
+
+Future<void>? _shellLoading;
+Future<void> _loadShell() => _shellLoading ??= shell.loadLibrary();
+
+/// The signed-in app, once its code has arrived (immediately on mobile; on the web it was
+/// already fetched in the background while the customer signed in).
+class _Shell extends StatelessWidget {
+  const _Shell();
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<void>(
+        future: _loadShell(),
+        builder: (context, snap) => snap.connectionState == ConnectionState.done && !snap.hasError
+            ? shell.HomeShell()
+            : snap.hasError
+                ? const _ShellError()
+                : const _Splash(),
+      );
+}
+
+class _ShellError extends StatelessWidget {
+  const _ShellError();
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: SpColors.ground,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              const Text('SurePesa could not finish loading.', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              const SizedBox(height: 6),
+              const Text('Check your connection and try again.', style: TextStyle(color: SpColors.ink2)),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () {
+                  _shellLoading = null;
+                  AppScope.read(context).paymentMade();
+                },
+                child: const Text('Try again'),
+              ),
+            ]),
+          ),
+        ),
+      );
 }
 
 class _Splash extends StatelessWidget {
