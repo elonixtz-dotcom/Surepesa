@@ -72,91 +72,6 @@ circlesRouter.get('/', async (req, res) => {
   })) });
 });
 
-circlesRouter.get('/:circleId', async (req, res) => {
-  const circleId = String(req.params.circleId);
-  const member = await requireCircleMember(circleId, req.user!.id);
-  const [members, contributions] = await Promise.all([
-    prisma.circleMember.findMany({
-      where: { circleId, status: 'ACTIVE' },
-      include: { user: { include: { profile: true } } },
-      orderBy: { joinedAt: 'asc' },
-    }),
-    prisma.circleContribution.findMany({
-      where: { circleId },
-      orderBy: { contributionDate: 'desc' },
-      take: 100,
-    }),
-  ]);
-  res.json({
-    id: member.circle.id, name: member.circle.name, description: member.circle.description,
-    type: member.circle.type, status: member.circle.status, currencyCode: member.circle.currencyCode,
-    targetAmountMinor: member.circle.targetAmount?.toString() ?? null, targetDate: member.circle.targetDate,
-    role: member.role,
-    members: members.map((m) => ({
-      userId: m.userId, role: m.role,
-      displayName: m.user.profile ? [m.user.profile.firstName, m.user.profile.lastName].join(' ') : 'SurePesa member',
-      joinedAt: m.joinedAt,
-    })),
-    contributions: contributions.map((c) => ({
-      id: c.id, userId: c.userId, amountMinor: c.amount.toString(), currencyCode: c.currencyCode,
-      status: c.status, sourceType: c.sourceType, note: c.note, contributionDate: c.contributionDate,
-    })),
-  });
-});
-
-circlesRouter.post('/:circleId/invitations', async (req, res) => {
-  const circleId = String(req.params.circleId);
-  const input = inviteSchema.parse(req.body);
-  const actor = await requireCircleMember(circleId, req.user!.id);
-  if (actor.role !== 'OWNER' && actor.role !== 'ADMIN') {
-    throw new AppError('CIRCLE_FORBIDDEN', 'Only Circle owners and admins can invite members', 403);
-  }
-  if (input.userId === req.user!.id) throw new AppError('INVALID_INVITEE', 'You are already a Circle member');
-  const invitee = await prisma.user.findUnique({ where: { id: input.userId } });
-  if (!invitee || invitee.status !== 'ACTIVE') throw new AppError('USER_NOT_FOUND', 'Active SurePesa user not found', 404);
-  const existing = await prisma.circleMember.findUnique({ where: { circleId_userId: { circleId, userId: input.userId } } });
-  if (existing?.status === 'ACTIVE' || existing?.status === 'INVITED') {
-    throw new AppError('MEMBERSHIP_EXISTS', 'This user is already a member or has a pending invitation', 409);
-  }
-  const invitation = existing
-    ? await prisma.circleMember.update({ where: { id: existing.id }, data: { status: 'INVITED', role: 'MEMBER', invitedByUserId: req.user!.id, joinedAt: null } })
-    : await prisma.circleMember.create({ data: { circleId, userId: input.userId, invitedByUserId: req.user!.id, status: 'INVITED' } });
-  res.status(201).json({ invitationId: invitation.id, circleId, userId: invitation.userId, status: invitation.status });
-});
-
-
-circlesRouter.post('/:circleId/invitations/accept', async (req, res) => {
-  const circleId = String(req.params.circleId);
-  const invitation = await prisma.circleMember.findUnique({
-    where: { circleId_userId: { circleId, userId: req.user!.id } },
-  });
-  if (!invitation || invitation.status !== 'INVITED') throw new AppError('INVITATION_NOT_FOUND', 'Pending invitation not found', 404);
-  const updated = await prisma.circleMember.update({
-    where: { id: invitation.id },
-    data: { status: 'ACTIVE', joinedAt: new Date() },
-  });
-  res.json({ circleId, status: updated.status, joinedAt: updated.joinedAt });
-});
-
-circlesRouter.post('/:circleId/contributions', async (req, res) => {
-  const circleId = String(req.params.circleId);
-  const input = contributionSchema.parse(req.body);
-  const member = await requireCircleMember(circleId, req.user!.id);
-  if (member.circle.status !== 'ACTIVE') throw new AppError('CIRCLE_PAUSED', 'This Circle is not accepting contributions', 409);
-  const contribution = await prisma.circleContribution.create({
-    data: {
-      circleId, userId: req.user!.id, amount: BigInt(input.amountMinor),
-      currencyCode: member.circle.currencyCode, status: 'SELF_REPORTED', sourceType: 'MANUAL',
-      externalReference: input.externalReference, note: input.note,
-    },
-  });
-  res.status(201).json({
-    id: contribution.id, circleId, amountMinor: contribution.amount.toString(),
-    currencyCode: contribution.currencyCode, status: contribution.status,
-    sourceType: contribution.sourceType, contributionDate: contribution.contributionDate,
-  });
-});
-
 circlesRouter.get('/invitations/pending', async (req, res) => {
   const invitations = await prisma.circleMember.findMany({
     where: { userId: req.user!.id, status: 'INVITED' },
@@ -290,4 +205,91 @@ circlesRouter.post('/:circleId/invitations', async (req, res) => {
     : await prisma.circleMember.create({ data: { circleId, userId: input.userId, invitedByUserId: req.user!.id, status: 'INVITED' } });
   res.status(201).json({ invitationId: invitation.id, circleId, userId: invitation.userId, status: invitation.status });
 });
+
+
+circlesRouter.get('/:circleId', async (req, res) => {
+  const circleId = String(req.params.circleId);
+  const member = await requireCircleMember(circleId, req.user!.id);
+  const [members, contributions] = await Promise.all([
+    prisma.circleMember.findMany({
+      where: { circleId, status: 'ACTIVE' },
+      include: { user: { include: { profile: true } } },
+      orderBy: { joinedAt: 'asc' },
+    }),
+    prisma.circleContribution.findMany({
+      where: { circleId },
+      orderBy: { contributionDate: 'desc' },
+      take: 100,
+    }),
+  ]);
+  res.json({
+    id: member.circle.id, name: member.circle.name, description: member.circle.description,
+    type: member.circle.type, status: member.circle.status, currencyCode: member.circle.currencyCode,
+    targetAmountMinor: member.circle.targetAmount?.toString() ?? null, targetDate: member.circle.targetDate,
+    role: member.role,
+    members: members.map((m) => ({
+      userId: m.userId, role: m.role,
+      displayName: m.user.profile ? [m.user.profile.firstName, m.user.profile.lastName].join(' ') : 'SurePesa member',
+      joinedAt: m.joinedAt,
+    })),
+    contributions: contributions.map((c) => ({
+      id: c.id, userId: c.userId, amountMinor: c.amount.toString(), currencyCode: c.currencyCode,
+      status: c.status, sourceType: c.sourceType, note: c.note, contributionDate: c.contributionDate,
+    })),
+  });
+});
+
+circlesRouter.post('/:circleId/invitations', async (req, res) => {
+  const circleId = String(req.params.circleId);
+  const input = inviteSchema.parse(req.body);
+  const actor = await requireCircleMember(circleId, req.user!.id);
+  if (actor.role !== 'OWNER' && actor.role !== 'ADMIN') {
+    throw new AppError('CIRCLE_FORBIDDEN', 'Only Circle owners and admins can invite members', 403);
+  }
+  if (input.userId === req.user!.id) throw new AppError('INVALID_INVITEE', 'You are already a Circle member');
+  const invitee = await prisma.user.findUnique({ where: { id: input.userId } });
+  if (!invitee || invitee.status !== 'ACTIVE') throw new AppError('USER_NOT_FOUND', 'Active SurePesa user not found', 404);
+  const existing = await prisma.circleMember.findUnique({ where: { circleId_userId: { circleId, userId: input.userId } } });
+  if (existing?.status === 'ACTIVE' || existing?.status === 'INVITED') {
+    throw new AppError('MEMBERSHIP_EXISTS', 'This user is already a member or has a pending invitation', 409);
+  }
+  const invitation = existing
+    ? await prisma.circleMember.update({ where: { id: existing.id }, data: { status: 'INVITED', role: 'MEMBER', invitedByUserId: req.user!.id, joinedAt: null } })
+    : await prisma.circleMember.create({ data: { circleId, userId: input.userId, invitedByUserId: req.user!.id, status: 'INVITED' } });
+  res.status(201).json({ invitationId: invitation.id, circleId, userId: invitation.userId, status: invitation.status });
+});
+
+
+circlesRouter.post('/:circleId/invitations/accept', async (req, res) => {
+  const circleId = String(req.params.circleId);
+  const invitation = await prisma.circleMember.findUnique({
+    where: { circleId_userId: { circleId, userId: req.user!.id } },
+  });
+  if (!invitation || invitation.status !== 'INVITED') throw new AppError('INVITATION_NOT_FOUND', 'Pending invitation not found', 404);
+  const updated = await prisma.circleMember.update({
+    where: { id: invitation.id },
+    data: { status: 'ACTIVE', joinedAt: new Date() },
+  });
+  res.json({ circleId, status: updated.status, joinedAt: updated.joinedAt });
+});
+
+circlesRouter.post('/:circleId/contributions', async (req, res) => {
+  const circleId = String(req.params.circleId);
+  const input = contributionSchema.parse(req.body);
+  const member = await requireCircleMember(circleId, req.user!.id);
+  if (member.circle.status !== 'ACTIVE') throw new AppError('CIRCLE_PAUSED', 'This Circle is not accepting contributions', 409);
+  const contribution = await prisma.circleContribution.create({
+    data: {
+      circleId, userId: req.user!.id, amount: BigInt(input.amountMinor),
+      currencyCode: member.circle.currencyCode, status: 'SELF_REPORTED', sourceType: 'MANUAL',
+      externalReference: input.externalReference, note: input.note,
+    },
+  });
+  res.status(201).json({
+    id: contribution.id, circleId, amountMinor: contribution.amount.toString(),
+    currencyCode: contribution.currencyCode, status: contribution.status,
+    sourceType: contribution.sourceType, contributionDate: contribution.contributionDate,
+  });
+});
+
 
