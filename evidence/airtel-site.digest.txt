@@ -1,0 +1,159 @@
+EVIDENCE ev_73503e1d62b191f14745cba675af4369aace6f3c4340f8fc159b8f450c2bef83
+TITLE Airtel: Prepaid | Postpaid | 4G
+URL https://www.airtel.co.tz/
+COMPLETENESS policy_filtered; conditions: attach_limited | policy_filtered
+DOM nodes 594; a11y nodes 539; scripts 21; requests 0
+
+== PAGE TEXT (accessibility tree, deduped) ==
+[heading] Experience the power of 100% 4G Coverage
+[heading] Enjoy unlimited high speed internet connectivity with our Airtel Home Broadband from your mobile phone
+[option] EN
+[option] SW
+[link] airtel_logo
+[button] PROCEED
+Our Services
+Experience the power of
+100% 4G Coverage
+[link] DATA BUNDLES
+[link] VOICE BUNDLES
+[link] BUY AIRTIME
+[link] SMART CONNECT
+[link] POSTPAID
+Airtel Money Services
+Enjoy unlimited high speed internet connectivity with our Airtel Home Broadband
+from your mobile phone
+[heading] with our Airtel Home Broadband Enjoy unlimited high speed internet connectivity
+[link] VIEW ALL DEVICES
+[button] FIND A SHOP
+[heading] Your Cookie Preferences
+[button] Accept All Cookies
+[button] Accept only Essential Cookies
+[heading] About Airtel Tanzania
+[heading] Quick Access
+[heading] Customer Support
+[heading] Privacy & Legal
+Personal
+Business
+Broadband
+About Us
+[link] Bundle & Top-up 
+[link] Prepaid 
+[link] Airtel Money
+[link] Postpaid 
+[link] Support 
+[heading] Buy airtime, bundles, and much more.
+255
+[textbox] Mobile Number
+PROCEED
+[heading] Ongea Zaidi
+[heading] Hamia Super 4G
+[heading] My Airtel App
+Stream, game, work and connect — without compromise
+with our Airtel Home Broadband
+Enjoy unlimited high speed internet connectivity
+VIEW ALL DEVICES
+Visit any of our Airtel shops nationwide, experience our warm and welcoming service.
+FIND A SHOP
+Your Cookie Preferences
+We use cookies, along with our trusted partners, to enhance and personalise your experience.
+For more details on how your data is handled, please review our data
+[link] privacy policy
+Accept All Cookies
+Accept only Essential Cookies
+About Airtel Tanzania
+Quick Access
+Customer Support
+Privacy & Legal
+Bundle & Top-up
+Prepaid
+Airtel Money
+Postpaid
+Support
+[heading] Introducing UnlimitedFun BundlesStream, chat and scroll Non-stop
+[heading] Airtel Smart ConnectFast Speeds with Unlimited Data
+[heading] Airtel is the Most affordable network on VoiceData and now on Airtel Money
+Buy airtime, bundles, and much more.
+HBB
+DATA BUNDLES
+VOICE BUNDLES
+BUY AIRTIME
+SMART CONNECT
+POSTPAID
+Ongea Zaidi
+Talk More Dial *149*99#
+Hamia Super 4G
+Enjoy super-fast speeds
+My Airtel App
+Win with My Airtel App
+5G Smart Connect Outdoor Unit (Tsh70,000: Up to 25Mbps for 30days + Tsh30,000 connection fee)
+50,000 TSH (MORE THAN 80 GB FREE)
+[heading] Manage all your devices and subscriptions
+[link] Read more 
+Accept All Cookies: Allows all types of cookies, including those used for analytics, personalization, and advertising.
+Accept Only Essential Cookies: Permits only the cookies required for website performance and basic analytics, without storing any personally identifiable information
+privacy policy
+[link] Careers at Airtel
+[link] Leadership
+[link] Airtel Africa Foundation
+[link] My Airtel App
+[link] Find a store
+[link] Network Coverage
+[link] Online Safety
+[link] Airtel Networks Privacy Notice
+[link] Data Protection
+[link] Airtel Mobile Commerce Tanzania T&C
+[link] Merchant T&C
+©2026 Airtel Africa. All Rights Reserved.
+Introducing UnlimitedFun Bundles
+Stream, chat
+and scroll Non-stop
+KNOW MORE
+Airtel Smart Connect
+Fast Speeds
+with Unlimited Data
+Airtel is the Most affordable network on Voice
+Data and now
+on Airtel Money
+Manage all your
+Manage your account, pay bills, recharge, explore offers and more — all in one tap.
+Read more
+Careers at Airtel
+Leadership
+Airtel Africa Foundation
+Find a store
+Network Coverage
+Online Safety
+Airtel Networks Privacy Notice
+Data Protection
+Airtel Mobile Commerce Tanzania T&C
+Merchant T&C
+[link] Contact Us
+[link] Copyright
+[link] Terms & Conditions
+devices and subscriptions
+Contact Us
+Copyright
+Terms & Conditions
+
+== NETWORK (method status mime host/path) ==
+hosts: 
+
+== SCRIPTS (by host) ==
+www.airtel.co.tz(21)
+
+== STORAGE (values redacted by REA) ==
+localStorage: ["lastExternalReferrer","reese84","lastExternalReferrerTime"]
+sessionStorage: ["homePage_en","footer-translation_en","configData","loader-translation_en","footer_en","newTheme","newHomeContent","header_en","newHF","langData"]
+indexedDB: []; caches: []
+
+== METADATA agent hints ==
+[]
+
+== LIMITATIONS ==
+- Artifact identity is unavailable for this observation.
+- Observation starts when REA attaches; prior network and console activity is unavailable.
+- Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.
+- Source maps are reported only as declarative URLs and are not fetched.
+- URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.
+- CDP discovery omitted the target attachment state; attached is reported as unknown.
+- Browser host platform and architecture were not observed.

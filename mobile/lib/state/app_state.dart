@@ -4,6 +4,7 @@ import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../services/cards_api.dart';
 import '../services/payments_api.dart';
+import '../services/pushbill_api.dart';
 import 'models.dart';
 
 enum AppStage { starting, signedOut, onboarding, setPin, locked, ready }
@@ -14,12 +15,14 @@ class AppState extends ChangeNotifier {
     api = ApiClient(this.auth);
     payments = PaymentsApi(api);
     cards = CardsApi(api);
+    pushBills = PushBillApi(api);
   }
 
   final AuthService auth;
   late final ApiClient api;
   late final PaymentsApi payments;
   late final CardsApi cards;
+  late final PushBillApi pushBills;
 
   AppStage stage = AppStage.starting;
   Me? me;

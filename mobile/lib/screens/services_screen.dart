@@ -6,12 +6,14 @@ import '../widgets/common.dart';
 import 'cards/cards_screen.dart';
 import 'linked_accounts_screen.dart';
 import 'pay/pay_form_screen.dart';
+import 'pushbill/pushbill_list_screen.dart';
 
 class ServicesScreen extends StatelessWidget {
   const ServicesScreen({super.key});
 
   static const _services = [
     (Icons.send_to_mobile_rounded, 'Send Money'),
+    (Icons.phone_forwarded_rounded, 'PushBill'),
     (Icons.credit_card_rounded, 'Virtual Cards'),
     (Icons.qr_code_2_rounded, 'My QR Code'),
     (Icons.add_card_rounded, 'Add Money'),
@@ -32,6 +34,8 @@ class ServicesScreen extends StatelessWidget {
     };
     if (flow != null) {
       openPayFlow(context, flow);
+    } else if (label == 'PushBill') {
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const PushBillListScreen()));
     } else if (label == 'Virtual Cards') {
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CardsScreen()));
     } else if (label == 'Mobile Money') {

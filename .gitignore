@@ -31,3 +31,6 @@ Thumbs.db
 
 # Vercel CLI project links
 .vercel
+
+# Vendored tools (cloned external repos)
+tools/unslop/

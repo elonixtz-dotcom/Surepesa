@@ -9,6 +9,22 @@ Flutter app ──REST──▶ Node.js/Express API ──Prisma──▶ Neon P
      └─ Neon Auth (JWT) ────┘        └──▶ Neon Object Storage (KYC documents, private)
 ```
 
+## Product scope
+
+SurePesa is organised around six product capabilities (see `docs/blueprint/SUREPESA_IMPLEMENTATION_BLUEPRINT.md`):
+
+1. **Local Payments & Wallet Management** — send/receive, merchant QR and Lipa Namba payments, deposits and withdrawals. *In progress: prototype wallet, ledger and payment engine are running.*
+2. **PushBill ★** — a customer asks another SurePesa user to pay a merchant/agent directly, confirmed over an ordinary cellular voice call before authorisation. *Planned.*
+3. **Borderless Payments** — cross-border send/receive and FX quotes over supported corridors. *Planned.*
+4. **Circles ★** — open group goal/contribution tracking (Family, Student, Vikoba, Friends, Custom). Monitoring and coordination only: Circles never hold or control members' money. *Planned.*
+5. **Virtual Cards & Online Payments** — issuer-backed virtual cards with freeze/limits and online payments. *In progress: prepaid virtual cards run against a simulated issuer.*
+6. **Escrow ★** — protected buyer/seller deals with a dedicated per-deal escrow holding ledger, evidence, disputes, release and refund. *Planned.*
+
+Two product rules apply everywhere:
+
+- **Provider neutrality:** the customer chooses the payment provider. The app may show fees and recommendations, but never silently reroutes a payment to another provider.
+- **Prototype balances are not e-money.** Wallet balances are a software ledger prototype, not customer-held funds; live e-money requires the licensed issuer, safeguarding and Bank of Tanzania approvals described in the blueprint's compliance section.
+
 | Folder | What |
 | --- | --- |
 | [backend/](backend/) | API, double-entry ledger, payment engine, back-office API (`/admin/v1`) |
@@ -40,7 +56,7 @@ npm run rail-sync             # one pass of the rail status poller (the API also
 - Wallet rows are locked in id order (`SELECT … FOR UPDATE`), so concurrent payments can't overspend or deadlock.
 - Each payment is idempotent per `(initiator, idempotencyKey)`.
 - A failed payment moves no money. A reversal is a new compensating transaction and never an edit.
-- External rails sit behind `src/providers/PaymentProvider`. Today every provider routes to `SimulatedProvider`.
+- External rails sit behind `src/providers/PaymentProvider`. Only explicitly configured adapters resolve; in production an unconfigured provider fails closed with `PROVIDER_UNAVAILABLE` and is never silently rerouted to `SimulatedProvider`. During development/test the `SIMULATE_UNCONFIGURED_PROVIDERS` escape hatch (default on outside production) keeps routing names like `MPESA_TZ` to the simulator, and `SIMULATED_RAILS=off` disables the simulator entirely.
 - Rails are asynchronous. A rail answer that is pending, ambiguous or a timeout never fails a payment, because money may already have moved. The transaction stays `PROCESSING` with the funds held until the rail gives a final answer.
 - There are two ways to resolve a rail transaction, and both go through one idempotent, row-locked `applyRailOutcome`:
   - **Callbacks** to `POST /v1/providers/:provider/callbacks`. Each one is verified against the raw body, rejected if its timestamp is stale, and stored once in `provider_events`.

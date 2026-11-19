@@ -1,0 +1,80 @@
+EVIDENCE ev_6fa7e566a0f6eb4618c79cc262bcb95021a559b4c5492d972d776455b9b376f0
+TITLE Airtel Money
+URL https://airtelmoney.tz/
+COMPLETENESS policy_filtered; conditions: attach_limited | policy_filtered
+DOM nodes 365; a11y nodes 376; scripts 15; requests 0
+
+== PAGE TEXT (accessibility tree, deduped) ==
+[link] airtel_logo
+[heading] Airtel Vikoba
+[heading] Kamilisha
+[heading] About Airtel Money
+[heading] Getting Started
+[heading] Airtel Money Tarrifs
+[heading] Smart Banking
+[heading] Timiza
+[heading] Anti Money Laundering portal
+[heading] Timiza Akiba
+[heading] AFYA bima
+[heading] Send and Receive Money Abroad
+[heading] Lipa Ada kwa Airtel Money
+[heading] LIPA KWA SIMU MITANDAO YOTE
+[heading] Airtel Money Bulk Disbursement
+[link] BACK TO TOP 
+[option] EN
+[option] SW
+Airtel Vikoba
+KNOW MORE
+Kamilisha
+About Airtel Money
+Getting Started
+Airtel Money Tarrifs
+Smart Banking
+Timiza
+Anti Money
+Laundering portal
+Timiza Akiba
+AFYA bima
+Send and Receive
+Money Abroad
+Lipa Ada kwa
+Airtel Money
+LIPA KWA SIMU MITANDAO YOTE
+Airtel Money Bulk Disbursement
+BACK TO TOP
+© 2026 Airtel Money Tanzania. All Rights Reserved.
+[link] CONTACT US
+[link] COPYRIGHT AND PRIVACY NOTICE
+[link] TERMS AND CONDITIONS
+[link] AIRTEL MONEY DATA PROTECTION POLICY
+[link] AIRTEL MONEY PRIVACY NOTICE
+[link] IMT TERMS AND CONDITIONS
+CONTACT US
+COPYRIGHT AND PRIVACY NOTICE
+TERMS AND CONDITIONS
+AIRTEL MONEY DATA PROTECTION POLICY
+AIRTEL MONEY PRIVACY NOTICE
+IMT TERMS AND CONDITIONS
+
+== NETWORK (method status mime host/path) ==
+hosts: 
+
+== SCRIPTS (by host) ==
+airtelmoney.tz(15)
+
+== STORAGE (values redacted by REA) ==
+localStorage: ["reese84"]
+sessionStorage: ["footer_EN","homePage_EN"]
+indexedDB: []; caches: []
+
+== METADATA agent hints ==
+[]
+
+== LIMITATIONS ==
+- Artifact identity is unavailable for this observation.
+- Observation starts when REA attaches; prior network and console activity is unavailable.
+- Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.
+- Source maps are reported only as declarative URLs and are not fetched.
+- URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.
+- CDP discovery omitted the target attachment state; attached is reported as unknown.
+- Browser host platform and architecture were not observed.

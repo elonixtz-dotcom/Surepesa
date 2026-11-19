@@ -208,6 +208,9 @@ model User {
   refreshTokens         RefreshToken[]
   supportCases          SupportCase[]
   virtualCards          VirtualCard[]
+  pushBillRequests      PushBillSession[]     @relation("PushBillRequester")
+  pushBillPayments      PushBillSession[]     @relation("PushBillPayer")
+  pushBillConfirmations PushBillConfirmation[]
 
   @@map("users")
 }
@@ -251,10 +254,11 @@ model Business {
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  owner          User            @relation(fields: [ownerId], references: [id])
-  wallets        Wallet[]
-  qrCodes        QrCode[]
-  kycSubmissions KycSubmission[]
+  owner           User              @relation(fields: [ownerId], references: [id])
+  wallets         Wallet[]
+  qrCodes         QrCode[]
+  kycSubmissions  KycSubmission[]
+  pushBillSessions PushBillSession[]
 
   @@index([ownerId])
   @@map("businesses")
@@ -536,6 +540,7 @@ model Transaction {
   events        TransactionEvent[]
   supportCases  SupportCase[]
   approvals     ApprovalRequest[]
+  pushBillSession PushBillSession?
 
   // Same client retry => same transaction.
   @@unique([initiatorUserId, idempotencyKey])
@@ -663,8 +668,9 @@ model QrCode {
   usedAt       DateTime?  @map("used_at") // DYNAMIC: single use
   createdAt    DateTime   @default(now()) @map("created_at")
 
-  business     Business      @relation(fields: [businessId], references: [id])
+  business     Business          @relation(fields: [businessId], references: [id])
   transactions Transaction[]
+  pushBillSessions PushBillSession[]
 
   @@index([businessId])
   @@map("qr_codes")
@@ -793,4 +799,171 @@ model CardEvent {
   @@index([cardId, receivedAt])
   @@index([issuerName, authId])
   @@map("card_events")
+}
+
+// ──────────────────────────── PushBill ★ ────────────────────────────
+//
+// A requester at a merchant/agent asks another SurePesa user to pay. The payment is
+// authorised only AFTER an ordinary cellular voice call between the two parties and an
+// explicit payer confirmation (blueprint §6). No answer / decline / mismatch / expiry
+// means no payment. A PIN is never collected during the call.
+
+enum PushBillState {
+  CREATED // request captured, destination not yet verified
+  DESTINATION_VERIFIED // server resolved the merchant/agent destination
+  PAYER_SELECTED // payer bound to the session
+  PAYER_NOTIFIED // payer received the in-app/USSD notification
+  CALL_REQUESTED // voice gateway asked to bridge the call
+  CALLING // call legs being established
+  CALL_CONNECTED // both parties on the call — NOT by itself payment consent
+  BOTH_PARTIES_CONFIRMED // each party explicitly confirmed merchant/amount/purpose
+  AWAITING_PAYER_AUTH // call done; payer must authorise in app or fresh USSD session
+  PAYMENT_PROCESSING // payer authorised; selected provider executing
+  PAID // terminal: provider success verified
+  // Terminal / exception states:
+  DECLINED // payer declined
+  NO_ANSWER // call unanswered
+  CALL_FAILED
+  MISMATCH // parties confirmed different details
+  EXPIRED
+  CANCELLED
+  PAYMENT_FAILED
+  PAYMENT_UNKNOWN // provider outcome uncertain: reconcile before any retry
+  REVIEW_REQUIRED
+}
+
+enum PushBillDestinationKind {
+  QR_CODE // scanned SurePesa/TANQR merchant QR
+  MERCHANT_CODE // manually entered Lipa Namba / merchant code
+  AGENT_NUMBER // manually entered agent number
+}
+
+enum PushBillRole {
+  REQUESTER
+  PAYER
+}
+
+enum PushBillConfirmationMethod {
+  IN_APP
+  USSD
+}
+
+enum PushBillConfirmationResult {
+  CONFIRMED
+  REJECTED
+  MISMATCH // what the party heard does not match the session terms
+}
+
+enum VoiceCallStatus {
+  REQUESTED
+  RINGING
+  CONNECTED
+  COMPLETED
+  NO_ANSWER
+  BUSY
+  FAILED
+  CANCELLED
+}
+
+// One PushBill request and its whole lifecycle. The approved amount and destination are
+// pinned by termsHash at approval time; any mutation after payer approval is rejected.
+model PushBillSession {
+  id           String        @id @default(uuid()) @db.Uuid
+  reference    String        @unique // customer-facing id, e.g. PB-7K2M9QX4TB
+  requesterId  String        @map("requester_id") @db.Uuid
+  payerId      String?       @map("payer_id") @db.Uuid // null until PAYER_SELECTED
+  state        PushBillState @default(CREATED)
+
+  destinationKind   PushBillDestinationKind @map("destination_kind")
+  destinationInput  String                  @map("destination_input") // what the requester typed / the scanned token
+  destinationLabel  String?                 @map("destination_label") // verified name shown to BOTH parties
+  businessId        String?                 @map("business_id") @db.Uuid // resolved merchant destination
+  qrCodeId          String?                 @map("qr_code_id") @db.Uuid
+
+  amount       BigInt // minor units
+  currencyCode String  @default("TZS") @map("currency_code")
+  note         String? // purpose/reference from the requester
+  // sha256 over (destination + amount + currency) captured when the payer approves.
+  termsHash    String? @map("terms_hash")
+
+  idempotencyKey       String?  @map("idempotency_key")
+  paymentTransactionId String?  @unique @map("payment_transaction_id") @db.Uuid // the actual payment; the session itself moves no money
+  expiresAt            DateTime @map("expires_at") // one-time, short-lived session
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  requester         User                   @relation("PushBillRequester", fields: [requesterId], references: [id])
+  payer             User?                  @relation("PushBillPayer", fields: [payerId], references: [id])
+  business          Business?              @relation(fields: [businessId], references: [id])
+  qrCode            QrCode?                @relation(fields: [qrCodeId], references: [id])
+  paymentTransaction Transaction?          @relation(fields: [paymentTransactionId], references: [id])
+  confirmations     PushBillConfirmation[]
+  callAttempts      VoiceCallAttempt[]
+  events            PushBillEvent[]
+
+  @@unique([requesterId, idempotencyKey])
+  @@index([requesterId, createdAt])
+  @@index([payerId, createdAt])
+  @@index([state, expiresAt]) // the expiry job sweeps open sessions
+  @@map("pushbill_sessions")
+}
+
+// One party's explicit confirmation of the details discussed on the call. The detailsHash
+// proves WHAT was confirmed, so "yes" to the wrong amount is a MISMATCH, not a consent.
+model PushBillConfirmation {
+  id          String                      @id @default(uuid()) @db.Uuid
+  sessionId   String                      @map("session_id") @db.Uuid
+  userId      String                      @map("user_id") @db.Uuid
+  role        PushBillRole
+  method      PushBillConfirmationMethod
+  detailsHash String                      @map("details_hash") // hash of the details the party was shown
+  result      PushBillConfirmationResult
+  createdAt   DateTime                    @default(now()) @map("created_at")
+
+  session PushBillSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User            @relation(fields: [userId], references: [id])
+
+  @@index([sessionId, createdAt])
+  @@map("pushbill_confirmations")
+}
+
+// One bridged-call attempt through the voice provider. Call audio is NEVER stored.
+// An answered call is not consent: authorisation happens afterwards, in app or fresh USSD.
+model VoiceCallAttempt {
+  id             String         @id @default(uuid()) @db.Uuid
+  sessionId      String         @map("session_id") @db.Uuid
+  provider       String // voice carrier name; webhook signature-verified
+  providerCallId String?        @map("provider_call_id") // the bridge/conference id
+  requesterLegId String?        @map("requester_leg_id")
+  payerLegId     String?        @map("payer_leg_id")
+  status         VoiceCallStatus @default(REQUESTED)
+  failureCode    String?        @map("failure_code")
+  lastEventId    String?        @map("last_event_id") // last webhook event applied: redeliveries are no-ops
+  requestedAt    DateTime       @default(now()) @map("requested_at")
+  connectedAt    DateTime?      @map("connected_at")
+  endedAt        DateTime?      @map("ended_at")
+
+  session PushBillSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerCallId])
+  @@index([sessionId, requestedAt])
+  @@map("voice_call_attempts")
+}
+
+// Append-only state/event history of a PushBill session.
+model PushBillEvent {
+  id         BigInt         @id @default(autoincrement())
+  sessionId  String         @map("session_id") @db.Uuid
+  fromState  PushBillState? @map("from_state")
+  toState    PushBillState  @map("to_state")
+  actorType  ActorType      @default(SYSTEM) @map("actor_type")
+  actorId    String?        @map("actor_id")
+  note       String?
+  data       Json?
+  createdAt  DateTime       @default(now()) @map("created_at")
+
+  session PushBillSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, id])
+  @@map("pushbill_events")
 }

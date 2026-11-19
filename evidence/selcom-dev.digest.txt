@@ -1,0 +1,1479 @@
+EVIDENCE ev_a04ecb9aae09f9e7db06f3c088823e9f914551caf3987c818492c35acd90f924
+TITLE Introduction – Selcom Developers - API Reference
+URL https://developers.selcommobile.com/
+COMPLETENESS policy_filtered; conditions: attach_limited | policy_filtered
+DOM nodes 65083; a11y nodes 18459; scripts 1; requests 0
+
+== PAGE TEXT (accessibility tree, deduped) ==
+[textbox] Search
+[heading] Introduction
+[heading] Client Packages
+[heading] PHP
+[heading] Installation
+[heading] Github Link
+[heading] JAVA
+[heading] CSHARP
+[heading] PYTHON
+[heading] NODE.JS
+[heading] WORDPRESS
+[heading] WOOOCOMMERCE
+[heading] Authentication
+[heading] API Response
+[heading] Handling INPROGRESS and AMBIGUOUS Status Codes
+[heading] Notes
+[heading] Utility Payments
+[heading] Utility Payment Request
+[heading] HTTP Request
+[heading] JSON Payload Parameters
+[heading] Utility Look Up
+[heading] Query Parameters
+[heading] Query Payment Status
+[heading] Utilitycode Definitions for UtilityPayments
+[heading] Utility Services
+[heading] TV Subscriptions
+[heading] Prepaid Internet
+[heading] Government Payments
+[heading] Travel & Ticket Booking
+[heading] Investment & Pension Funds
+[heading] Merchant Payments (Over 20K Merchants)
+[heading] Wallet Cashin
+[heading] Cashin Request
+[heading] Wallet Cashin Name Look Up
+[heading] Query Transaction Status
+[heading] Utilitycode Definitions for WalletCashin
+[heading] Selcom Pesa
+[heading] Selcom Pesa Cashin Request
+[heading] Selcom Pesa Name Look Up
+[heading] Selcom Pesa Query Transaction Status
+[heading] POS/Agent Cashout
+[heading] Agent Cashout Process
+[heading] Transaction Status Query
+[heading] Utilitycode Definitions for Agent Cashout
+[heading] Float Account Management
+[heading] Get Float Balance
+[heading] C2B/Collection Services
+[heading] Authentication C2B
+[heading] Payment Lookup
+[heading] Request Format
+[heading] Expected Response Format
+[heading] Payment Validation
+[heading] Payment Notification
+[heading] Expected Error codes from thirdparty business
+[heading] Wallet Pull Funds (Push USSD)
+[heading] Query C2B Transaction Status
+[heading] Status Response
+[heading] Qwiksend
+[heading] Bank Transfer
+[heading] Account Name Lookup
+[heading] Query Transaction Status Qwiksend
+[heading] List of Bank Short Names
+[heading] VCN
+[heading] Create VCN
+[heading] Create VCN Status Enquiry
+[heading] Block/Unblock/Suspend Card (Change Status)
+[heading] Show Card
+[heading] Get Card Status
+[heading] Set Transaction Limit
+[heading] Checkout API
+[heading] Create Order
+[heading] Create Order - Minimal
+[heading] Cancel Order
+[heading] Get Order Status
+[heading] JSON Response data field
+[heading] List All Orders
+[heading] Fetch Stored Card Tokens
+[heading] Delete Stored Card
+[heading] Process Order - Card Payment
+[heading] Process Order - Wallet Pull Payment
+[heading] Process Order - Selcom Pesa Push Payment
+[heading] Create Till Alias
+[heading] Webhook Callback
+[heading] Integrated Merchants
+[heading] Authentication C2B (to be implemented on Merchants Side)
+[heading] Payment Validation to Merchant's ERP
+[heading] Payment Notification to Merchant's ERP
+[heading] Expected Error codes from Merchant's System or ERP
+[heading] Prompt Payment Flow on POS Terminal
+[heading] Pos Payment Status
+[heading] International Money Transfer API (IMT)
+[heading] Wallet Name Look Up
+[heading] Utilty Codes
+[heading] Bank Account Name Lookup
+[heading] Send Money
+[heading] Transaction Status
+[heading] Transaction Callback - Selcom to Thirdparty
+[heading] IMT Errorcodes
+[heading] Synchronous Response
+[heading] Callback Status
+[link] Introduction
+[link] Client Packages
+[link] Authentication
+[link] API Response
+[link] Utility Payments
+[link] Wallet Cashin
+[link] Selcom Pesa
+[link] POS/Agent Cashout
+[link] Float Account Management
+[link] C2B/Collection Services
+[link] Qwiksend
+[link] VCN
+[link] Checkout API
+[link] Integrated Merchants
+[link] International Money Transfer API (IMT)
+[link] Email support@selcom.net for API Keys and credentials
+Introduction
+Welcome to the Selcom Developers!
+Selcom Developer offers a set of Application Programming Interfaces (APIs) that gives you the ability to incorporate Selcom functionality into your projects. Our API's are State of Art with complete security module and structured to meet Market needs.
+We are excited to work with you to innovate on the next generation of applications using Selcom proprietary APIs. Each step below outlines what it takes to get your project off the ground. From finding a use case that meets your needs, to launching that project to your customers.
+To access Selcom API endpoints for services like Utility Payments, Wallet Cashin and Qwiksend. One has to get in touch with our Teams (info@selcom.net). Our Developer Zone has language bindings in PHP, Java and Shell. Code examples are on the right side of the Panel, switching to different Programmi
+Client Packages
+Following are links to the client library code repositories on github and ways to install from online using package managers. For more information and source code visit the github pages.
+PHP
+Installation
+composer require selcom/selcom-apigw-client
+Github Link
+[link] PHP GITHUB REPOSITORY
+JAVA
+Get Snippet for relevant package manager from https://central.sonatype.com/artifact/io.github.selcompaytechltd/apigwClient/1.0.3/overview
+or search for io.github.selcompaytechltd/apigwClient using package manager
+[link] JAVA GITHUB REPOSITORY
+CSHARP
+dotnet add package selcom-apigw-client
+[link] CSHARP GITHUB REPOSITORY
+PYTHON
+pip install selcom_apigw_client
+[link] PYTHON GITHUB REPOSITORY
+NODE.JS
+npm i selcom-apigw-client
+[link] NODE.JS GITHUB REPOSITORY
+WORDPRESS
+Download plugin and install
+[link] WORDPRESS GITHUB REPOSITORY
+WOOOCOMMERCE
+[link] WOOOCOMMERCE GITHUB REPOSITORY
+Authentication
+Selcom Developers uses API key and API secret to allow access to our APIs. Kindly reach out to our business team for further information on getting access
+All API requests must be authenticated using your API Key and API Secret.
+You must include the required HTTP headers and generate a cryptographic signature (Digest) for every request (GET or POST).
+Refer to the below example
+API Response
+Handling INPROGRESS and AMBIGUOUS Status Codes
+If a transaction returns a status of
+or
+, follow the steps below:
+1. Wait for 3 minutes before taking any action.
+2. Invoke the Transaction Status Query API to check the latest status.
+3. If the status remains unchanged:
+Repeat the query at 3-minute intervals for a reasonable retry window.
+4. If the transaction still does not resolve after multiple attempts:
+Escalate the issue by contacting Selcom Contact Center at helpdesk@selcom.net
+Notes
+Utility Payments
+The Utility Payment Request API from Selcom enables businesses to process payments for third-party service providers (utilities) such as electricity, water, TV subscriptions, and telecom services. It acts as a payment aggregation layer, allowing your system to:
+Utility Payment Request
+The Utility Payment Request API from Selcom allows merchants to initiate and process payments for various utility services through a single integration. It enables your system to:
+HTTP Request
+JSON Payload Parameters
+Utility Look Up
+The Utility Lookup API from Selcom is used to validate and retrieve customer details before initiating a utility payment. It ensures that the provided utility reference (e.g., meter number, account number, or phone number) is valid and returns relevant billing information.
+Query Parameters
+Query Payment Status
+Query status of the Utility Payment or Bill Pay transaction in case of a timeout or ambigous response.
+**Note : Receipt data in response is present only for successful transactions and is dependent availability from thridparty FI
+Utilitycode Definitions for UtilityPayments
+In the Selcom Utility Payments API, a
+is a unique identifier that specifies the service provider and payment type you are targeting. It tells the gateway which utility/biller to route the transaction to.
+Utility Services
+NHC and DAWASA has been migrated to GEPG. Please refer to
+section below.
+TV Subscriptions
+Prepaid Internet
+Government Payments
+Travel & Ticket Booking
+Investment & Pension Funds
+Merchant Payments (Over 20K Merchants)
+Wallet Cashin
+The Wallet Cashin API in Selcom is used to credit (top up) a wallet/mobile money account from an external funding source such as mobile money, bank, or agent network. It enables systems to add funds into a registered wallet/mobile money balance that can later be used for payments, transfers, or sett
+Cashin Request
+Wallet Cashin Name Look Up
+Query Transaction Status
+Query status of the Walelt Cashin transaction in case of a timeout or ambigous response.
+Utilitycode Definitions for WalletCashin
+Selcom Pesa
+Selcom Pesa Cashin Request
+This API is allows you to transfer funds to a Selcom Pesa account, using either Selcom Pesa account number or mobile number.
+Selcom Pesa Name Look Up
+Selcom Pesa Query Transaction Status
+Query status of the Selcompesa Cashin transaction in case of a timeout or ambigous response.
+POS/Agent Cashout
+Agent Cashout Process
+The API allows thrid party businesses to send funds to a customer for a direct cashout option at Selcom Huduma agents. The API, upon debiting the float balance credits a temporary wallet of the customer on the Selcom platform, which the customer can access dialing
+and selecting option 4 Selcom, ‘Huduma Cashout’. The customer can visit any Selcom Huduma agent, dial the shortcode, enter agent code and amount to complete the withdrawal process before receiving cash from Agent.
+Transaction Status Query
+Query status of the POS/Agent Cashout transaction in case of a timeout or ambigous response.
+Utilitycode Definitions for Agent Cashout
+Float Account Management
+Get Float Balance
+Get available balance from float account.
+C2B/Collection Services
+This is a realtime API which is invoked when a payment is received from one of Selcom channels to be posted to third party systems. Channels include mobile wallets, bank accounts, POS and non-POS Selcom Huduma/Huduma+ agents. The API is intiated from Selcom Gateway notifying third party system.
+Authentication C2B
+All requests will include authentication token “Bearer $token” in header. Token will be shared by 3rd party. The authentication method for this API is different the one description at the first section of the documentation as its consumed by Selcom Gateway from thirdparty.
+Payment Lookup
+Payment lookup leg, verify amount, utility reference, phone number etc.
+Request Format
+Expected Response Format
+Payment Validation
+Payment validation leg, verify amount, utility reference, phone number etc. A timeout or failure from this API return failure to the source channel and auto reverse the funds.
+Payment Notification
+Payment confirmation after successful validation. The payload is exactly same as validate api. A timeout or no response from this API return not auto reverse funds on the source channel, transactions will be held on ambiguous status for manual recon process to be completed.
+Expected Error codes from thirdparty business
+Wallet Pull Funds (Push USSD)
+This API is used to trigger or push the USSD menu of a given wallet with a PIN entry request. A success response from this API shall not mean the customer wallet has been debited; it only means that the customer's wallet provider returned a successful response to a push request. The business will be
+Query C2B Transaction Status
+This API is used to check the status of a C2B transaction using Selcom unique reference. The reference returned during
+API or Selcom reference passed during validation. In cases when transaction notification is not received for a succcessfully validated c2b collection transaction clients can check the status of the transaction against Selcom gateway.
+Status Response
+Qwiksend
+Qwiksend is a Selcom's bank disbursement product for FI and other institutions to send money to a bank.
+Bank Transfer
+Account Name Lookup
+Query Transaction Status Qwiksend
+Query status of the Qwiksend transaction in case of a timeout or ambigous response.
+List of Bank Short Names
+VCN
+Create VCN
+Create VCN Status Enquiry
+The API is used to get the VCN card creation status. No sms will be triggered to end customer on using this API
+Block/Unblock/Suspend Card (Change Status)
+Show Card
+API is used to push VCN card info to the customer by delivering a secure link to the customer
+Get Card Status
+The API is used to get the current VCN card status. No sms will be triggered to end customer on using this API
+Set Transaction Limit
+Set transaction limit for ecommerce transactions for the VCN
+Checkout API
+This allows you to consume selcom's payment gateway for a complete ecommerce check process that supports Masterpass, Debit/Credit cards (Master, VISA. Amex), Mobile Money pull payments etc. Refer to the below process flow.
+On demand subcription or stored card payment flow.
+Create Order
+Create a new order post checkout from your ecommerce website. Card payments with no billing info will get rejected. Note: All urls in the request and response are base64 encoded.
+Create Order - Minimal
+Create a new order post checkout from your ecommerce website for non-card payments. This api cannot be used for card payments. Card payment option wont be displayed on the payment gateway page after redirection. Ideal for mobile wallet push payments and manual payments when merchant is capable of pr
+Cancel Order
+Cancel an order before customer completes the payment. An expired or completed order cannot be cancelled.
+Get Order Status
+Get status of an order.
+JSON Response data field
+List All Orders
+Fetch Stored Card Tokens
+This API allows the eccomerce website to fetch stored cards for specific user passing the gateway_buyer_uuid that was generated for each user on there first order creation.
+Delete Stored Card
+This API allows the eccomerce website to delete stored cards for specific user passing the gateway_buyer_uuid that was generated for each user on there first order creation.
+Process Order - Card Payment
+Process Order api allows the ecommerce website to process an order using stored cards directly without redirecting the user to payment gateway page. Can be used for in-app payments where users can select stored cards or for ondemand subscription type recurring payments.
+Process Order - Wallet Pull Payment
+Process Order api allows the ecommerce website to process an order using mobile wallets directly without redirecting the user to payment gateway page. Can be used for in-app payments where users can select linked mobile numbers, tigger this api call to reiceve a PUSH ussd from the mobile wallet to c
+Process Order - Selcom Pesa Push Payment
+Process Order api allows the ecommerce website to process an order using Selcom Pesa directly without redirecting the user to payment gateway page. Can be used for in-app payments where users can select Selcom Pesa registered mobile numbers, tigger this api call to recieve an in app Selcom Pesa paym
+Create Till Alias
+A Till Alias enables merchants to create a unique secondary till number under their primary till profile. This alias is linked to the main till for payments, while settlements are processed directly to the primary till number.
+The Till Alias functions as an open till number (Lipa Number) that can receive payments from any channel across Tanzania through TanQR, ensuring seamless transactions.
+The merchant will integrate the Selcom PG API to enable the creation of Till Aliases, which will generate unique Till Numbers/Lipa Numbers. These aliases will be seamlessly linked to customer profiles within the ERP system, ensuring efficient payment processing and streamlined settlements.
+Webhook Callback
+Payment status callback api from payment gateway to ecommerce website. **Note : Webhook only on successful transcations
+Integrated Merchants
+Authentication C2B (to be implemented on Merchants Side)
+Payment Validation to Merchant's ERP
+This API request is initiated from Selcom to Merchant's ERP system.
+Payment Notification to Merchant's ERP
+Expected Error codes from Merchant's System or ERP
+Prompt Payment Flow on POS Terminal
+API is used to trigger a Payment on POS terminal by a Merchant intiated by the Merchant Billing System, ERP or Cash counter. On completion on payment flow on the POS terminal the Notification Api in the previous section is triggered.
+Pos Payment Status
+API is used to fetch a Payment status by a Merchant initiated from the Billing System, ERP or Cash counter.
+International Money Transfer API (IMT)
+Wallet Name Look Up
+Utilty Codes
+Bank Account Name Lookup
+Send Money
+An IMT Hub or Financial institution invokes this API to an FI connected to Selcom. Note : This API is async and callback gives final confirmation that the recipient has recieved the funds.
+Type: M - Mandatory, O - Optional and C - Conditional Mandatory
+Transaction Status
+Transaction Callback - Selcom to Thirdparty
+IMT Errorcodes
+Synchronous Response
+Callback Status
+[link] shell
+[link] php
+[link] java
+[link] python
+[link] csharp
+[link] nodejs
+Email support@selcom.net for API Keys and credentials
+PHP GITHUB REPOSITORY
+JAVA GITHUB REPOSITORY
+CSHARP GITHUB REPOSITORY
+PYTHON GITHUB REPOSITORY
+NODE.JS GITHUB REPOSITORY
+WORDPRESS GITHUB REPOSITORY
+WOOOCOMMERCE GITHUB REPOSITORY
+To authorize, use this code:
+[cell] Authorization
+[cell] Base64-encoded API Key prefixed with SELCOM
+[cell] Timestamp
+[cell] Datetime in ISO 8601 date format (YYYY-MM-DDThh:mm:ssTZD). Example 2019-02-26T09:30:46+03:00
+[cell] Digest-Method
+[cell] Signature algorithm: HS256 (HMAC-SHA256) or RS256 (RSA-SHA256)
+[cell] Digest
+[cell] Base64-encoded signature of the request payload
+[cell] Signed-Fields
+[cell] Comma-separated list of request parameter keys used to generate the signature
+[cell] SELCOM <Base64(API_KEY)>
+[cell] Must match exactly what is used in signature generation. Time drift may cause request rejection.
+[cell] Signature (Digest) Generation: Step 1: Build Signing String Construct a string in this exact format: timestamp=&field1=value1&field2=value2&... Rules: Fields must follow the order in Signed-Fields timestamp is always included first (even if not listed in Signed-Fields) No extra spaces Values must ma
+[cell] Must match the exact order used in signing string. Case-sensitive. Only include request parameters (exclude timestamp).
+Authorization: SELCOM MjAyY2I5NjJhYzU5MDc1Yjk2NGIwNzE1MmQyMzRiNzA=
+Digest-Method: HS256
+Digest: tW32A+O1FcpRj2o2mbWgF2r+vmILqqKwHqDryj+7lvI=
+Timestamp: 2019-02-26T09:30:46+03:00
+Signed-Fields: utilitycode,utilityref,vendor,pin,transid,amount
+API responses for failure scenario
+API responses for Success scenario
+[cell] SUCCESS
+[cell] 000
+[cell] Transaction successful
+[cell] INPROGRESS
+[cell] 111,927
+[cell] Transaction in progress please query to know the exact status of the transaction
+[cell] AMBIGOUS
+[cell] 999
+[cell] Transactions status unknown wait for recon
+[cell] FAIL
+[cell] All others
+[cell] Transaction failed
+INPROGRESS
+AMBIGUOUS
+Avoid immediate retries to prevent duplicate processing.
+AMBIGUOUS typically indicates uncertain transaction outcome (e.g., network timeout).
+INPROGRESS indicates the transaction is still being processed on the backen.
+Validate customer utility accounts
+Initiate payments
+Receive real-time or asynchronous transaction status
+Submit customer payments to utility providers
+Use a utility reference (e.g., meter number, account number, phone number)
+Receive transaction status (immediate or via query API)
+This API is commonly used for bill payments, prepaid services, and subscriptions
+Utility Payment Request Sample
+POST /v1/utilitypayment/process
+[cell] transid
+[cell] Mandatory
+[cell] XYZ123444
+[cell] Unique Transaction ID of the transaction
+[cell] utilitycode
+[cell] LUKU
+[cell] Transaction type that Identifies the Utility you are paying for. Refer to Utilitycode Definitions for UtilityPayments section
+[cell] utilityref
+[cell] 01234567891
+[cell] Payment reference for the Utility service
+[cell] amount
+[cell] 1000
+[cell] Transaction amount
+[cell] vendor
+[cell] Float account identifier
+[cell] pin
+[cell] Float account PIN
+[cell] msisdn
+[cell] Optional
+[cell] End-user mobile number
+Utility Look Up Sample
+GET /v1/utilitypayment/lookup?utilitycode=LUKU&utilityref=XYZ123444&transid=1001
+[cell] Utility Type Identifier
+[cell] Payment reference for the utility
+[cell] Transaction ID to match request and response. Transid used for lookup can be used for transaction call. transid field cannot duplicate for multiple transaction calls.
+Luku Lookup Sample response:
+GEPG Lookup Sample response:
+Query Payment Status Sample
+GET /v1/utilitypayment/query?transid=XYZ123444
+Response Example
+utilitycode
+[cell] Meter No
+[cell] Numeric(11)
+[cell] Yes
+[cell] Prepaid Electricity
+[cell] TOP
+[cell] Mobile No
+[cell] Numeric(10,12)
+[cell] 068XXXXXXX
+[cell] No
+[cell] Prepaid Airtime
+[cell] TUKUZA
+[cell] Numeric(11,16)
+[cell] NCARD
+[cell] Card No
+[cell] Numeric(16)
+[cell] 8888111188881111
+[cell] N-Card Top up
+[cell] DSTV
+[cell] Smartcard No
+[cell] DSTV Subscriptions
+[cell] DSTVBO
+[cell] DSTV Box Office
+[cell] AZAMTV
+[cell] Numeric(12)
+[cell] 012345678912
+[cell] AZAMTV Subscriptions
+[cell] STARTIMES
+[cell] Customer ID or Smartcard No
+[cell] Numeric(10,11)
+[cell] ZUKU
+[cell] Account No
+[cell] Numeric(6)
+[cell] 012345
+[cell] ZUKU Subscriptions
+[cell] SMILE
+[cell] Numeric(10)
+[cell] SMILE 4G Internet
+[cell] ZUKUFIBER
+[cell] ZUKU Fiber Internet
+[cell] TTCL
+[cell] TTCL Prepaid and Broadband
+[cell] GEPG
+[cell] Control No
+[cell] 991234567891
+[cell] Goverment Bill Payment (150 Gov Enties including DAWASA, NHC, etc)
+[cell] ZANMALIPO
+[cell] Goverment Bill Payment
+[cell] PW
+[cell] Booking Ref
+[cell] Numeric(5-10)
+[cell] Precision Air
+[cell] COASTAL
+[cell] Numeric(8)
+[cell] 0123456
+[cell] COASTAL Aviation
+[cell] AURIC
+[cell] Auric Air
+[cell] ATCL
+[cell] AlphaNumeric(6-10)
+[cell] 2QCD123
+[cell] Air Tanzania
+[cell] UTT
+[cell] Numeric(9)
+[cell] 012345678
+[cell] UTT Amis
+[cell] SELCOMPAY
+[cell] AlphaNumeric(6-20)
+[cell] SelcomPay/Masterpass Merchant Payments
+Cashin Request Sample
+POST /v1/walletcashin/process
+[cell] VMCASHIN
+[cell] Transaction type that Identifies the Wallet you are sending money to. Refer to Utilitycode Definitions for WalletCashin section below.
+[cell] 075XXXXXXX
+[cell] Mobile number that identifies the wallet (receiver)
+[cell] 06534567891
+[cell] End-user or initiator mobile number.(sender)
+Wallet Cashin Name Lookup Sample
+Wallet Cashin Name Lookup Sample response:
+GET /v1/walletcashin/namelookup?utilitycode=VMCASHIN&utilityref=XYZ123444&transid=1001
+[cell] 25575XXXXXXXXX
+[cell] Mobile number associated with the wallet
+Query Transaction Status Sample
+GET /v1/walletcashin/query?transid=XYZ123444
+[cell] Wallet
+[cell] 076XXXXXXX
+[cell] Vodacom Mpesa cashin
+[cell] AMCASHIN
+[cell] AirtelMoney cashin
+[cell] TPCASHIN
+[cell] 065XXXXXXX
+[cell] Mixx by Yas cashin
+[cell] EZCASHIN
+[cell] 077XXXXXXX
+[cell] EzyPesa cashin
+[cell] HPCASHIN
+[cell] 062XXXXXXX
+[cell] HaloPesa cashin
+[cell] TTCASHIN
+[cell] 073XXXXXXX
+[cell] TTCLPesa cashin
+[cell] CASHIN
+[cell] All wallet cashin (selcom will automatically route the traffic based on MNP Lookup)
+Selcom Pesa Cashin Request Sample
+POST /v1/selcompesa/cashin
+[cell] Unique Transaction ID of the transactionsending money to.
+[cell] Selcom Pesa account or mobile number
+[cell] Static
+[cell] SPSCASHIN
+[cell] Selcom Pesa cashin static utility code
+[cell] End-user or initiator mobile number.(Sender Mobile number)
+Selcom Pesa Name Lookup Sample
+Selcompesa Cashin Name Lookup Sample response:
+GET /v1/selcompesa/namelookup?transid=X12455&utilitref=<selcompesa account or mobile number>
+[cell] 25575XXXXXXX
+GET /v1/selcompesa/query?transid=X12455
+Agent Cashout Process Sample
+Cashout Sample response:
+*150*50#
+POST /v1/hudumacashin/process
+[cell] HUDUMACI
+[cell] Transaction type that Identifies the type of cashout. Use HUDUMACI for Agent cashout
+[cell] Mobile number of the customer whom the token/voucher will be send
+[cell] VENDORXYZ
+[cell] 3122
+[cell] name
+[cell] John Mushi
+[cell] Name of the customer
+GET /v1/hudumacashin/query?transid=XYZ123444
+[cell] Agent
+[cell] POS/Agent cashout
+Get Float Balance Sample
+POST /v1/vendor/balance
+[cell] A1234
+[cell] Unique transaction ID
+Balance Sample response:
+Authorization: Bearer lfksa823wera342o23
+Content-Type: application/json
+POST /lookup HTTP/1.1
+[cell] operator
+[cell] Available
+[cell] AIRTELMONEY
+[cell] Name of the channel. Values passed for mobile wallet originating transactions (AIRTELMONEY, MPESA-TZ, TIGOPESATZ, HALOPESATZ, TTCLMOBILE and ZANTELEZPESA)
+[cell] reference
+[cell] 033XX12211
+[cell] Unique transaction Identifier from Selcom Gateway
+[cell] AB12345
+[cell] Payment reference or account number from business who will recieve the funds
+[cell] End-user or initiator mobile number.
+[cell] Same value as in request
+[cell] resultcode
+[cell] Error codes. Refer to Expected Error codes from thirdpary businesses section for better guideness
+[cell] result
+[cell] Transaction status. SUCCESS ro FAILED. This value is not used.
+[cell] message
+[cell] Error description
+[cell] Name of the customer associated with the account or utilityref (Optional)
+[cell] Amount associated with the reference. If the amount is fixed for the payment requested (Optional)
+POST /validation HTTP/1.1
+POST /notification HTTP/1.1
+[cell] Unique Transaction ID from the channel
+[cell] Error codes. Refer to Expected Error codes from thirdparty business section for better guideness
+[cell] Success.
+[cell] 010
+[cell] Invalid account or payment reference (utilityref)
+[cell] 012
+[cell] Invalid amount
+[cell] 014
+[cell] Amount too high
+[cell] 015
+[cell] Amount too low
+[cell] 4XX
+[cell] for other failure cases from your system.
+POST /v1/wallet/pushussd
+[cell] Payment reference or account number from business who will recieve the funds or paid against
+[cell] Wallet mobile number to which push ussd should be triggered to complate wallet authentication
+Sample response:
+Wallet Pull funds (Push USSD)
+GET /v1/c2b/query-status
+[cell] Mandatory (Optional if reference used)
+[cell] Unique Transaction ID of the transaction from Selcom Gateway
+[cell] Mandatory (Optional if transid used)
+[cell] Unique Reference of the transaction from Selcom Gateway
+Bank Transfer Sample
+POST /v1/qwiksend/process
+[cell] recipientFiCode
+[cell] AKIBA
+[cell] Destination bank shortocde. Refer to List of Bank Short Names section
+[cell] recipientAccount
+[cell] 1234567890
+[cell] Destination account number
+[cell] recipientName
+[cell] ROBERT MUSHI
+[cell] Source account holder name
+[cell] senderAccount
+[cell] Source account number or Unique identifier of the sender on the source platform
+[cell] senderName
+[cell] BANKX
+[cell] Float account identifier ( Used to identify the source service provider)
+[cell] 4343
+[cell] Sender mobile number
+[cell] purpose
+[cell] GIFT
+[cell] Purpose of the transfer
+[cell] remarks
+[cell] Salary
+[cell] Purpose of the payment or payment description
+Account Name Lookup SAmple
+GET /v1/qwiksend/lookup/?bank=AKIBA&account=XYZ123444&transid=1001
+[cell] bank
+[cell] AIBA
+[cell] Bank short name
+[cell] account
+[cell] Account number
+Query Transaction Status Qwiksend Sample
+GET/v1/qwiksend/query?transid=XYZ123444
+[cell] ABSA BANK
+[cell] ABSA
+[cell] SELCOM MICROFINANCE BANK / Selcom Pesa
+[cell] AKIBA COMMERCIAL BANK
+[cell] AMANA BANK
+[cell] AMANABANK
+[cell] AZANIA BANCORP BANK
+[cell] AZANIA
+[cell] ACCESS BANK TANZANIA
+[cell] BANCABC
+[cell] BANK OF AFRICA (TANZANIA) LTD
+[cell] BOA
+[cell] BANK OF BARODA (T) LTD
+[cell] BANKOFBARODA
+[cell] BANK OF INDIA (T) LTD
+[cell] BANKOFINDIA
+[cell] CHINA DASHENG BANK LTD
+[cell] CHINADASHENG
+[cell] CITIBANK TANZANIA LIMITED
+[cell] CITIBANK
+[cell] CRDB BANK LIMITED
+[cell] CRDBBANK
+[cell] DCB COMMERCIAL BANK
+[cell] DCBBANK
+[cell] DIAMOND TRUST BANK
+[cell] DTB
+[cell] ECOBANK TANZANIA LTD
+[cell] ECOBANK
+[cell] EQUITY BANK (T) LTD
+[cell] EQUITYBANK
+[cell] EXIM BANK
+[cell] EXIMBANK
+[cell] FINCA MICROFINANCE BANK
+[cell] FINCA
+[cell] GUARANTY TRUST BANK TANZANIA LTD
+[cell] GTBANK
+[cell] HABIB AFRICAN BANK
+[cell] HABIBBANK
+[cell] I&M BANK (T) LTD
+[cell] IMBANK
+[cell] INTERNATIONAL COMMERCIAL BANK (T)
+[cell] ICB
+[cell] KCB BANK TANZANIA LIMITED
+[cell] KCB
+[cell] COOP BANK TANZANIA
+[cell] KILIMANJARO
+[cell] LETSHEGO BANK TANZANIA LTD
+[cell] LETSHEGO
+[cell] MAENDELEO BANK
+[cell] MAENDELEO
+[cell] MKOMBOZI COMMERCIAL BANK PUBLIC LTD
+[cell] MKOMBOZI
+[cell] MWALIMU COMMERCIAL BANK OF TANZANIA
+[cell] MWALIMU
+[cell] MWANGA HAKIKA MICROFINANCE BANK
+[cell] MWANGA
+[cell] NATIONAL MICROFINANCE BANK
+[cell] NMB
+[cell] NBC LIMITED
+[cell] NBC
+[cell] NCBA BANK TANZANIA LTD
+[cell] NCBA
+[cell] PEOPLE'S BANK OF ZANZIBAR
+[cell] PBZ
+[cell] STANBIC BANK TANZANIA
+[cell] STANBIC
+[cell] TANZANIA COMMERCIAL BANK PLC
+[cell] TCB
+[cell] UCHUMI COMMERCIAL BANK
+[cell] UCHUMI
+[cell] UNITED BANK FOR AFRICA
+[cell] UBA
+Create VCN Sample
+POST /v1/vcn/create
+The above command returns JSON structured like this:
+[cell] 255781234567
+[cell] Customer mobile number in international format(must be a valid TZ mobile number)
+[cell] 013222244
+[cell] Wallet Account number or Bank account number
+[cell] first_name
+[cell] ROBERT
+[cell] First name of the customer
+[cell] last_name
+[cell] MUSHI
+[cell] Last name of the customer
+[cell] middle_name
+[cell] Middle name of the customer
+[cell] gender
+[cell] MALE
+[cell] Gender. Must be MALE or FEMALE
+[cell] dob
+[cell] 11071987
+[cell] Date of Birth (DDMMYYYY format)
+[cell] address
+[cell] Mktaba St, Upanga
+[cell] Street and Area
+[cell] city
+[cell] Dar es Salaam
+[cell] City of residence
+[cell] region
+[cell] Region
+[cell] nationality
+[cell] Tanzanian
+[cell] Nationality
+[cell] validity
+[cell] 12
+[cell] No fo months the VCN should be valid, after which it will expire. Must be 6 , 12 or 24, Default 24 months.
+[cell] email
+[cell] test@example.com
+[cell] Email address
+[cell] language
+[cell] sw
+[cell] Customer language preference (to personalize responses). en for english and sw for kswahili.
+[cell] marital_status
+[cell] SINGLE
+[cell] Marital status MARRIED, SINGLE, DIVORCED, WIDOW
+[cell] maiden_name
+[cell] EPHRAIM
+[cell] Mothers maiden name
+[cell] XTZBANK
+[cell] 4321
+[cell] Unique Transaction ID of the transaction (Required as the vendor will be shared the fee)
+[cell] product_code
+[cell] AAVCN001
+[cell] A static product code assigned for the VCN product specific to the issuer
+Sample
+GET /v1/vcn/create-status-enquiry?msisdn=25577XXXXXXXX&transid=T1000932222
+[cell] Customer mobile number using during VCN registration in international format(must be a valid TZ mobile number)
+Block/Unblock/Suspend Card (Change Status) Sample
+POST /v1/vcn/changestatus
+[cell] T1000932222
+[cell] status
+[cell] BLOCK
+[cell] New status of the card to be set. Must be BLOCK or UNBLOCK or SUSPEND. SUSPEND status ends the card's life cycle.
+[cell] LOST
+[cell] Reason for change status (from customer)
+[cell] card_id
+[cell] 0113322
+[cell] Unique card ID return on create API call. Required only One customer with multiple card scenario and when multiple product allocated for the same issuer
+[cell] requestid
+[cell] Unique Request ID for the request (this is not transid as its not a financial transaction on Selcom side)
+[cell] SW
+[cell] Language to use for SMS response to end customer (EN - English, SW - Swahili)
+Show Card Sample
+POST /v1/vcn/show
+[cell] Account number of the VCN returned on create api call
+[cell] Unique card ID return on create API call. Required only One customer with multiple card scenario and when multiple product allocation for the same issuer
+Get Card Status Sample
+GET /v1/vcn/status?msisdn=25577XXXXXXXX&account=T1000932222
+Set Transaction Limit Sample
+POST /v1/vcn/set-limit
+[cell] limit_amount
+[cell] 100000
+[cell] Limit amount.
+[cell] limit_type
+[cell] MONTHLY
+[cell] Transaction limit period/type (Supported types DAILY, MONTHLY, TRANSACTION)
+Create Order Sample
+POST /v1/checkout/create-order
+[cell] SHOP203
+[cell] Vendor/Merchant ID allocated by Selcom
+[cell] order_id
+[cell] 123
+[cell] Order id that uniquely identifies the order
+[cell] buyer_email
+[cell] customer@example.com
+[cell] Buyer email
+[cell] buyer_name
+[cell] Joe John
+[cell] Buyer's full name
+[cell] buyer_userid
+[cell] Option
+[cell] joejohn20
+[cell] Buyers unique user-id in the thridparty ecommerce website. Should be empty for guest check
+[cell] buyer_phone
+[cell] 255781234XXX
+[cell] Buyers msisdn
+[cell] gateway_buyer_uuid
+[cell] A1233232
+[cell] Used to display stored card in the payment process. The field is returned first time the user creates an order
+[cell] 5000
+[cell] Order amount
+[cell] currency
+[cell] TZS
+[cell] International currency code TZS, USD
+[cell] payment_methods
+[cell] ALL
+[cell] Has to be comma separated list of ALL, MASTERPASS, CARD, MOBILEMONEYPULL
+[cell] redirect_url
+[cell] aHR0cDovL3VybC5jb20=
+[cell] Base64 encoded thirdparty ecommerce page url that the customer should be redirected after payment process is complete
+[cell] cancel_url
+[cell] Base64 encoded thirdparty ecommerce page url that the customer should be redirected when payment process canceled by the buyer
+[cell] webhook
+[cell] Base64 encoded webhook callback url to recieve API call back of the payment status
+[cell] billing.firstname
+[cell] Joe
+[cell] First name - Payment Billing info
+[cell] billing.lastname
+[cell] John
+[cell] Last name - Payment Billing info
+[cell] billing.address_1
+[cell] 23, street X
+[cell] Address 1 - Payment Billing info
+[cell] billing.address_2
+[cell] Upanga Area
+[cell] Address 2 - Payment Billing info
+[cell] billing.city
+[cell] Dar es salaam
+[cell] City - Payment Billing info
+[cell] billing.state_or_region
+[cell] Region - Payment Billing info
+[cell] billing.postcode_or_pobox
+[cell] 43434
+[cell] PO Box- Payment Billing info
+[cell] billing.country
+[cell] TZ
+[cell] International Country code - Payment Billing info
+[cell] billing.phone
+[cell] 25578123XXXX
+[cell] Phone - Payment Billing info
+[cell] shipping.firstname
+[cell] shipping.lastname
+[cell] shipping.address_1
+[cell] shipping.address_2
+[cell] shipping.city
+[cell] shipping.state_or_region
+[cell] shipping.postcode_or_pobox
+[cell] shipping.country
+[cell] shipping.phone
+[cell] buyer_remarks
+[cell] Payer remark/decription for the order
+[cell] merchant_remarks
+[cell] Buyer remark/decription for the order
+[cell] no_of_items
+[cell] No of items in the order
+[cell] header_colour
+[cell] #FF0012
+[cell] Payment gateway page header colour
+[cell] link_colour
+[cell] Payment gateway page link text colour
+[cell] button_colour
+[cell] Payment gateway page button colour
+[cell] expiry
+[cell] 60
+[cell] Expiry in minutes
+Create Order - Minimal Sample
+POST /v1/checkout/create-order-minimal
+[cell] Base64 encoded webhook callback url to recieve API call back of the payment status.
+[cell] No of items in the order (No of product times no items)
+Cancel Order Sample
+DELETE /v1/checkout/cancel-order?order_id={order_id}
+Get Order Status Sample
+GET /v1/checkout/order-status?order_id={order_id}
+[cell] Unique Order ID of the order
+[cell] payment_status
+[cell] Payment Status (PENDING, COMPLETED, CANCELLED, USERCANCELLED, REJECTED,INPROGRESS)
+[cell] Order id
+[cell] creation_date
+[cell] Order creation date
+[cell] Unique transaction identifier from the payment channel. Available on COMPLETED payments only
+[cell] channel
+[cell] Channel name Eg AIRTELMONEY. Available on COMPLETED payments only
+[cell] PG unique payment identifier. Available on COMPLETED payments only
+[cell] Mobile number involved in the payment incase of a wallet / mastercard QR payment. Available on COMPLETED payments only
+List All Orders Sample
+GET /v1/checkout/list-orders?fromdate={YYYY-MM-DD}&todate={YYYY-MM-DD}
+Below sample response:
+[cell] Result of the order submitted (FAIL, SUCCESS, PENDING)
+Fetch Stored Card Tokens Sample
+GET /v1/checkout/stored-cards?gateway_buyer_uuid={gateway_buyer_uuid}&buyer_userid={buyer_userid}
+[cell] 23
+[cell] Buyers unique user-id in the thridparty ecommerce website. Same as create order request.
+[cell] 124343434
+[cell] Gateway Buyer UUID returned during order creation first time a buyer created an order
+[cell] masked_card
+[cell] Masked card number
+[cell] Card token creation date
+[cell] Full name of the hard holder
+[cell] card_type
+[cell] Card type (001 - Visa, 002 - Mastercard)
+[cell] card_token
+[cell] Card token
+[cell] id
+[cell] Unique Resouce id
+Delete Stored Card Sample
+DELETE /v1/checkout/delete-card?id={card-resource-id}&gateway_buyer_uuid={gateway_buyer_uuid}
+[cell] Stored card resource id
+Process Order - Card Payment Sample
+POST /v1/checkout/card-payment
+[cell] SHOW01
+[cell] Order ID
+[cell] ABC123423232
+[cell] Card token fetched using Fetch Stored Tokenised Cards for Specific User API
+Process Order - Wallet Pull Payment Sample
+POST /v1/checkout/wallet-payment
+[cell] 2556828XXXXX
+[cell] Billing wallet mobile from which the merchant want to pull funds from using Push USSD authorization
+Process Order - Selcom Pesa Push Payment Sample
+POST /v1/checkout/selcompesa-payment
+[cell] Order ID (Same as create-order-minimal request)
+[cell] Selcom Pesa Mobile Nmber
+[cell] PNR 123123
+[cell] Requestor Reference number
+Create Till Alias - Minimal Sample
+POST /v1/checkout/create-till-alias
+[cell] TEST CUSTOMER
+[cell] The name associated with the till alias
+[cell] memo
+[cell] TEST-CUSTOMER-1
+[cell] A memo or description for the till alias
+Webhook Callback Sample
+[cell] Thirdparty transaction id same as payment request
+[cell] 0289124234
+[cell] Selcom Gateway transaction reference
+[cell] Status of the transaction SUCCESS, FAIL
+[cell] Error code
+[cell] COMPLETE
+[cell] Status of the payment COMPLETED, CANCELLED, PENDING, USERCANCELED
+[cell] Invoice No or Merchant Unique reference for the payment
+[cell] Transaction amount (Incase of a fixed invoices. This will be zero and expected amount on the response. So customer dont have to enter the amount and the amount is returned from Merchants ERP)
+[cell] Payment amount associated with the utilityref. (optional)
+POST /v1/checkout/initiate-pos-payment
+[cell] Currency
+[cell] Amount
+[cell] payment_method
+[cell] CARD
+[cell] MOBILEMONEY, CARD
+[cell] 255XXXXXXXX
+[cell] Billing wallet mobile from which the merchant want to pull funds. MANDATORY when payment_method is MOBILEMONEY
+[cell] invoice_no
+[cell] BAD001
+[cell] Invoice for payment
+Payment Status Sample
+GET /v1/checkout/pos-payment-status?invoice_no={invoice_no}
+Pending Status Response:
+Completed/Paid Status Response:
+[cell] Payment Status (PENDING, SUCCESS, CANCELLED, USERCANCELLED, REJECTED,INPROGRESS)
+[cell] card_number
+[cell] last 4 digits of card number (only available for card payments)
+[cell] payer_mobile
+[cell] Mobile number involved in the payment incase of a wallet / QR payment. Available on COMPLETED payments only (only available for mobile payments)
+Wallet Name Lookup Sample
+Wallet Name Lookup Sample response:
+GET /v1/imt/wallet-namelookup?utilitycode=REMITIN&utilityref=XYZ123444&transid=1001
+[cell] REMITIN
+[cell] MPESA
+[cell] MPREMITIN
+[cell] MIXX BY YAS
+[cell] TPREMITIN
+[cell] HALOPESA
+[cell] HPREMITIN
+[cell] AMREMITIN
+[cell] TTCL Pesa
+[cell] TTREMITIN
+Bank Account Name Lookup SAmple
+GET /v1/imt/bank-namelookup/?bank=AKIBA&account=XYZ123444&transid=1001
+IMT Send Money Sample
+POST /v1/imt/send-money
+[cell] messageId
+[cell] M1234
+[cell] Unique transaction id for the refund request
+[cell] end2endId
+[cell] E1234
+[cell] Transaction id of the orginal payment request for which refund is required.
+[cell] sender.firstname
+[cell] First name of the sender
+[cell] sender.lastname
+[cell] Mushi
+[cell] Last name of the sender
+[cell] sender.country
+[cell] USA
+[cell] Alpha 3 country code of the sender in ISO 3166 international standard
+[cell] sender.mobile
+[cell] 15551234567
+[cell] Mobile number of the sender in international format without plus or 00 preix
+[cell] sender.idType
+[cell] PASSPORT
+[cell] KYC info. Identity document type of the sender. PASSWORD, DRIVERSLICENCE, NATIONALID etc
+[cell] sender.idNo
+[cell] GS1002223
+[cell] KYC info. Identity document number
+[cell] sender.idIssuedCountry
+[cell] Alpha 3 country code of the country that issued sender identity document in ISO 3166 international standard
+[cell] sender.dateOfBirth
+[cell] 2011-02-26
+[cell] Date of birth of sender in the format ( yyyy-mm-dd )
+[cell] sender.nationality
+[cell] Alpha 3 country code of the country Nationality of the sender
+[cell] sender.placeOfBirth
+[cell] Springfield
+[cell] Place of birth of the sender
+[cell] sender.occupation
+[cell] DOCTOR
+[cell] Occupation of sender
+[cell] sender.address
+[cell] 1234 Elm Street, Apt 567, Springfield, IL 62704, USA
+[cell] Address of the sender
+[cell] sender.city
+[cell] City of the sender
+[cell] sourceOfFunds
+[cell] SALARY
+[cell] Source of funds to be sent (SALARY, BUISSINESS)
+[cell] recipient.firstname
+[cell] Benjamin
+[cell] First name of the recipient
+[cell] recipient.lastname
+[cell] Sata
+[cell] Last name of the recipient
+[cell] recipient.country
+[cell] TZA
+[cell] Alpha 3 country code of the recipient in ISO 3166 international standard
+[cell] recipient.mobile
+[cell] 255700123456
+[cell] Mobile number of the receipient in international format without plus or 00 preix
+[cell] IMTHUB001
+[cell] Float account identifier. To be shared by selcom
+[cell] 1212
+[cell] Float account pin. To be shared by selcom
+[cell] Transaction currency (3 character Alphabetic code in ISO 4217 standard)
+[cell] 49200
+[cell] billingAmount
+[cell] 20
+[cell] Billing amount (sender)
+[cell] billingCurrency
+[cell] USD
+[cell] Billing currency (sender) (3 character Alphabetic code in ISO 4217 standard)
+[cell] BUSINESS
+[cell] Purpose of the IMT (GENERAL, BUSINESS, GIFT)
+[cell] personalMessage
+[cell] Happy birthday
+[cell] Personal message to be passed on to the recipient
+[cell] secretMessage
+[cell] MANGO
+[cell] Secret code or code number
+[cell] sourceFI.type
+[cell] BANK
+[cell] Source Financial institution type (AGENT,CARD,BANK,WALLET)
+[cell] sourceFI.name
+[cell] Citibank
+[cell] Name of the source Financial Institution
+[cell] sourceFI.country
+[cell] Source FI country (Alpha 3 country code of the sender in ISO 3166 international standard)
+[cell] sourceFI.code
+[cell] CITIBANKUSA
+[cell] Source FI code (to be shared by selcom)
+[cell] sourceFI.account
+[cell] 5000123
+[cell] Senders account number (to be used for refund transaction in case of a failure or refund request from Destination FI)
+[cell] destinationFI.type
+[cell] WALLET
+[cell] destinationFI.name
+[cell] Name of the destination FI
+[cell] destinationFI.country
+[cell] Destination FI country (Alpha 3 country code of the sender in ISO 3166 international standard)
+[cell] destinationFI.code
+[cell] VMTZ
+[cell] Destination FI code (to be shared by selcom)
+[cell] destinationFI.account
+[cell] Recipient account number
+Transaction Status Sample
+GET /v1/imt/query?messageId=20200721001
+[cell] Status of the transaction SUCCESS, FAIL, INPROGRESS,
+[cell] Error code,
+[cell] Success
+[cell] Description
+[cell] 111, 001, 002, 003
+[cell] Transaction in progress ( Async transaction wait for callback)
+[cell] Successful ( transaction completed synchronously)
+[cell] Ambiguous status
+[cell] Invalid mobile number or operator not supported.
+[cell] 029
+[cell] Customer account on suspended state
+[cell] 103
+[cell] Invalid recipient account/mobile number
+[cell] 013
+[cell] Amount higher than allowed limit
+[cell] 611
+[cell] Source FI not found
+[cell] 612, 012
+[cell] Destination FI not found.
+[cell] 202, 201
+[cell] Invalid account number or name validation failed
+[cell] 203
+[cell] Recipient Name mismatch
+[cell] 218, 889, 900 , 151
+[cell] Service unavailable
+[cell] 400
+[cell] Transaction failed. (general)
+[cell] 415
+[cell] KYC Validation failure.
+[cell] 404, 400
+[cell] Transaction failed to reach destination FI
+[cell] 500 , 501
+[cell] Transaction rejected by destination FI
+[cell] 701
+[cell] 702
+[cell] Destination FI Internal Errors or Unavailable
+[cell] 703
+[cell] Account currency mismatch
+[cell] 704
+[cell] Transfer aborted due to customer maximum limit
+[cell] 200
+[cell] Transaction Failed and reversed manually
+shell
+php
+java
+python
+csharp
+nodejs
+# With shell, you can just pass the correct header with each request
+curl
+"api_endpoint_here"
+-H
+"Content-type: application/json"
+"Authorization: SELCOM meowmeowmeow"
+"Digest-Method: HS256"
+"Digest: tW32A+O1FcpRj2o2mbWgF2r+vmILqqKwHqDryj+7lvI="
+"Timestamp: 2019-02-26T09:30:46+03:00"
+"Signed-Fields: utilityref,vendor,pin,transid,amount,msisdn"
+-d
+'{"vendor":"BANKX", "pin":"3333", "utilityref":"075XXXXXXX", "transid":"T001", "amount":"1234", "msisdn":"25568XXXXXXX"}'
+[columnheader] Header
+[columnheader] Description
+Authorization
+Base64-encoded API Key prefixed with SELCOM
+Timestamp
+Datetime in ISO 8601 date format (YYYY-MM-DDThh:mm:ssTZD). Example 2019-02-26T09:30:46+03:00
+Digest-Method
+Signature algorithm:
+(HMAC-SHA256) or
+(RSA-SHA256)
+Digest
+Base64-encoded signature of the request payload
+Signed-Fields
+Comma-separated list of request parameter keys used to generate the signature
+[columnheader] Rules
+SELCOM <Base64(API_KEY)>
+Must match exactly what is used in signature generation.
+Time drift may cause request rejection.
+Signature (Digest) Generation:
+Step 1:
+Build Signing String Construct a string in this exact format: timestamp=
+&field1=value1&field2=value2&...
+Fields must follow the order in Signed-Fields
+timestamp is always included first (even if not listed in Signed-Fields)
+No extra spaces
+Values must match request payload exactly
+Step 2:
+Generate Signature:
+Option A — HMAC (HS256):
+Digest = Base64( HMAC_SHA256(signing_string, API_SECRET) )
+Option B — RSA (RS256):
+Digest = Base64( RSA_SHA256(signing_string, PrivateKey) )
+Must match the exact order used in signing string.
+Case-sensitive.
+Only include request parameters (exclude timestamp).
+"transid"
+"F10001"
+"reference"
+"0289999288"
+"resultcode"
+"403"
+"result"
+"FAIL"
+"message"
+"No reponse from upstream system"
+"data"
+:[
+"F10002"
+"0270720833"
+"000"
+"SUCCESS"
+"Airtime recharge
+\n
+Reference 0270720833
+Phone 0773820XXX
+Amount TZS 10,000
+Vendor XYZVENDOR
+\n\n
+Powered by Selcom"
+[columnheader] Result
+[columnheader] Errorcode
+SUCCESS
+000
+Transaction successful
+111,927
+Transaction in progress please query to know the exact status of the transaction
+AMBIGOUS
+999
+Transactions status unknown wait for recon
+FAIL
+All others
+Transaction failed
+-X
+POST
+'http://example.com/v1/utilitypayment/process'
+"Accept: application/json"
+"Content-Type: application/json"
+"Authorization: SELCOM {authorization-token}"
+"Digest-Method: {digest-token}"
+"Digest: {digest}"
+"Timestamp: {timestamp in yyyy-dd-mm H:i:s format}"
+"Signed-Fields: transid,utilitycode,utilityref,amount,vendor,pin,msisdn"
+'{ "transid":"1218d5Qb", "utilitycode": "LUKU", "utilityref": "654944949", "amount":8000, "vendor": "66546846845", "pin":"48585", "msisdn":"255055555555", }'
+[columnheader] Parameter
+[columnheader] Type
+[columnheader] Example
+transid
+Mandatory
+XYZ123444
+Unique Transaction ID of the transaction
+LUKU
+Transaction type that Identifies the Utility you are paying for. Refer to
+section
+utilityref
+01234567891
+Payment reference for the Utility service
+amount
+1000
+Transaction amount
+vendor
+Float account identifier
+pin
+Float account PIN
+msisdn
+Optional
+End-user mobile number
+GET
+'http://example.com/v1/utilitypayment/lookup?utilitycode={utilitycode}&utilityref={utilityref}&transid={transid}'
+"Signed-Fields: utilitycode,utilityref,transid"
+Utility Type Identifier
+Payment reference for the utility
+Transaction ID to match request and response. Transid used for lookup can be used for transaction call. transid field cannot duplicate for multiple transaction calls.
+"6927759116"
+"10001"
+"LUKU Confirmation
+FIROZ
+Meter# 4300071XXXX
+"name"
+"FIROZ MOH"
+"6927768243"
+"DAWASA
+Name MNYANGA
+Control# 99104217XXXX
+TZS 5,000"
+"MNYANGA"
+"amount"
+"5000"
+"institution"
+"DAWASA"
+"type"
+"PART"
+"desc"
+"Bill Charges 2019-2"
+'http://example.com/v1/utilitypayment/query?transid={transid}'
+"Signed-Fields: transid"
+"messageId"
+"20200721001"
+"Transaction successful"
+[{
+"receipt"
+"12344"
+}]
+[columnheader] Utilitycode
+[columnheader] Ref Label
+[columnheader] Ref Type
+[columnheader] Ref Eg.
+[columnheader] LookUp Avail
+Meter No
+Numeric(11)
+Yes
+Prepaid Electricity
+TOP
+Mobile No
+Numeric(10,12)
+068XXXXXXX
+No
+Prepaid Airtime
+TUKUZA
+Numeric(11,16)
+NCARD
+Card No
+Numeric(16)
+8888111188881111
+N-Card Top up
+DSTV
+Smartcard No
+DSTV Subscriptions
+DSTVBO
+DSTV Box Office
+AZAMTV
+Numeric(12)
+012345678912
+AZAMTV Subscriptions
+STARTIMES
+Customer ID or Smartcard No
+Numeric(10,11)
+ZUKU
+Account No
+Numeric(6)
+012345
+ZUKU Subscriptions
+SMILE
+Numeric(10)
+SMILE 4G Internet
+ZUKUFIBER
+ZUKU Fiber Internet
+TTCL
+TTCL Prepaid and Broadband
+GEPG
+Control No
+991234567891
+Goverment Bill Payment (150 Gov Enties including DAWASA, NHC, etc)
+ZANMALIPO
+Goverment Bill Payment
+PW
+Booking Ref
+Numeric(5-10)
+Precision Air
+COASTAL
+Numeric(8)
+0123456
+COASTAL Aviation
+AURIC
+Auric Air
+ATCL
+AlphaNumeric(6-10)
+2QCD123
+Air Tanzania
+UTT
+Numeric(9)
+012345678
+UTT Amis
+SELCOMPAY
+AlphaNumeric(6-20)
+SelcomPay/Masterpass Merchant Payments
+'http://example.com/v1/walletcashin/process'
+'{ "transid":"1218d5Qb", "utilitycode": "VMCASHIN", "utilityref": "0149449499", "amount" : 8000, "vendor" : "64654949", "pin" : "3545846", "msisdn" : "01854595959" }'
+VMCASHIN
+Transaction type that Identifies the Wallet you are sending money to. Refer to
+075XXXXXXX
+Mobile number that identifies the wallet (receiver)
+06534567891
+End-user or initiator mobile number.(sender)
+'http://example.com/v1/walletcashin/namelookup?utilitycode={uitlitycode}&utilityref={utilityref}&transid={transid}'
+"Name fetch successful"
+25575XXXXXXXXX
+Mobile number associated with the wallet
+'http://example.com/v1/walletcashin/query?transid={transid}'
+[columnheader] Category
+Wallet
+076XXXXXXX
+Vodacom Mpesa cashin
+AMCASHIN
+AirtelMoney cashin
+TPCASHIN
+065XXXXXXX
+Mixx by Yas cashin
+EZCASHIN
+077XXXXXXX
+EzyPesa cashin
+HPCASHIN
+062XXXXXXX
+HaloPesa cashin
+TTCASHIN
+073XXXXXXX
+TTCLPesa cashin
+CASHIN
+All wallet cashin (selcom will automatically route the traffic based on MNP Lookup)
+'http://example.com/v1/selcompesa/cashin'
+"Signed-Fields: transid,utilityref,amount,vendor,pin,msisdn"
+'{ "transid":"1218d5Qb", "utilityref": "<selcom pesa account or mobile number>", "amount" : 8000, "vendor" : "64654949", "pin" : "3545846", "msisdn" : "01854595959" }'
+Unique Transaction ID of the transactionsending money to.
+Selcom Pesa account or mobile number
+Static
+SPSCASHIN
+Selcom Pesa cashin static utility code
+End-user or initiator mobile number.(Sender Mobile number)
+'http://example.com/v1/selcompesa/namelookup?utilityref={utilityref}&transid={transid}'
+"Signed-Fields: utilityref,transid"
+25575XXXXXXX
+'http://example.com/v1/selcompesa/query?transid={transid}'
+'http://example.com/v1/hudumacashin/process'
+"Signed-Fields: transid,utilitycode,utilityref,amount,vendor,pin,name"
+'{ "transid":"1218d5Qb", "utilitycode": "HUDUMACI", "utilityref": "0149449499", "amount" : 8000, "vendor" : "64654949", "pin" : "3545846", "name" : "John Jon" }'
+"0312332222 Confirmed. You have received TZS 1,000 from VENDORXYZ. Dial *150*50# choose Selcom Huduma Cashout to cashout at any Selcom Huduma agent."
+HUDUMACI
+Transaction type that Identifies the type of cashout. Use HUDUMACI for Agent cashout
+Mobile number of the customer whom the token/voucher will be send
+VENDORXYZ
+3122
+name
+John Mushi
+Name of the customer
+'http://example.com/v1/hudumacashin/query?transid={transid}'
+Agent
+POS/Agent cashout
+"http://example.com/v1/vendor/balance"
+"Signed-Fields:vendor,pin,transid"
+'{"vendor":"12186889","pin" : "123456","transid" :"001"}
+A1234
+Unique transaction ID
+"Balance successful"
+"balance"
+"1000000"
+operator
+Available
+AIRTELMONEY
+Name of the channel. Values passed for mobile wallet originating transactions (AIRTELMONEY, MPESA-TZ, TIGOPESATZ, HALOPESATZ, TTCLMOBILE and ZANTELEZPESA)
+reference
+033XX12211
+Unique transaction Identifier from Selcom Gateway
+AB12345
+Payment reference or account number from business who will recieve the funds
+End-user or initiator mobile number.
+[columnheader] Response Field
+Same value as in request
+resultcode
+Error codes. Refer to
+section for better guideness
+result
+Transaction status. SUCCESS ro FAILED. This value is not used.
+message
+Error description
+Name of the customer associated with the account or utilityref (Optional)
+Amount associated with the reference. If the amount is fixed for the payment requested (Optional)
+Unique Transaction ID from the channel
+[columnheader] Error Code
+[columnheader] Meaning
+Success.
+010
+Invalid account or payment reference (utilityref)
+012
+Invalid amount
+014
+Amount too high
+015
+Amount too low
+4XX
+for other failure cases from your system.
+Payment reference or account number from business who will recieve the funds or paid against
+… (page text cut at 45k chars by digest)
+
+== NETWORK (method status mime host/path) ==
+hosts: 
+
+== SCRIPTS (by host) ==
+developers.selcommobile.com(1)
+
+== STORAGE (values redacted by REA) ==
+localStorage: []
+sessionStorage: []
+indexedDB: []; caches: []
+
+== METADATA agent hints ==
+[]
+
+== LIMITATIONS ==
+- Artifact identity is unavailable for this observation.
+- Observation starts when REA attaches; prior network and console activity is unavailable.
+- Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.
+- Source maps are reported only as declarative URLs and are not fetched.
+- URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.
+- CDP discovery omitted the target attachment state; attached is reported as unknown.
+- Browser host platform and architecture were not observed.

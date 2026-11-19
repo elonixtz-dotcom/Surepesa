@@ -1,0 +1,57 @@
+EVIDENCE ev_5b5622c9d10e2fe85cf8e5b16cb42853edd3678dfc2076fb0b549687f972d27f
+TITLE M-Pesa Developer Portal
+URL https://openapiportal.m-pesa.com/login
+COMPLETENESS policy_filtered; conditions: attach_limited | policy_filtered
+DOM nodes 214; a11y nodes 148; scripts 5; requests 1
+
+== PAGE TEXT (accessibility tree, deduped) ==
+[heading] Log in to your account
+[button] LOGIN
+[link] Sign Up
+[link] Forum
+Log in to your account
+[tab] DEVELOPER
+[tab] ORGANISATION
+[link] Forgot your username or password?
+LOGIN
+Need an account?
+About
+Contact Support
+Language:
+DEVELOPER
+ORGANISATION
+Sign Up
+Forum
+[button] English
+Username *
+[textbox] Username *
+Password *
+[textbox] Password *
+Forgot your username or password?
+[checkbox] Remember me
+Remember me
+English
+
+== NETWORK (method status mime host/path) ==
+hosts: openapiportal.m-pesa.com(1)
+GET 200 image/png openapiportal.m-pesa.com/images/favicon.V1.png
+
+== SCRIPTS (by host) ==
+openapiportal.m-pesa.com(5)
+
+== STORAGE (values redacted by REA) ==
+localStorage: ["authToken","refreshToken","userType"]
+sessionStorage: []
+indexedDB: []; caches: []
+
+== METADATA agent hints ==
+[]
+
+== LIMITATIONS ==
+- Artifact identity is unavailable for this observation.
+- Observation starts when REA attaches; prior network and console activity is unavailable.
+- Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.
+- Source maps are reported only as declarative URLs and are not fetched.
+- URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.
+- CDP discovery omitted the target attachment state; attached is reported as unknown.
+- Browser host platform and architecture were not observed.

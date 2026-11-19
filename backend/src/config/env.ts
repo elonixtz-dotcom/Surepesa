@@ -30,6 +30,11 @@ const schema = z.object({
   //             deployment cannot be used to create balances just by signing up)
   //   off       nobody (real rails connected)
   SIMULATED_RAILS: z.enum(['open', 'verified', 'off']).optional(),
+  // Prototype convenience: route provider names with no configured adapter (MPESA_TZ,
+  // AIRTEL_TZ, ...) to SimulatedProvider. Blueprint §4.3 requires production to fail closed
+  // with PROVIDER_UNAVAILABLE instead, so the fallback is never applied in production,
+  // regardless of this setting. Default: on in development/test, off in production.
+  SIMULATE_UNCONFIGURED_PROVIDERS: z.enum(['true', 'false']).optional(),
 });
 
 const parsed = schema.safeParse(process.env);
@@ -45,4 +50,8 @@ if (parsed.data.NODE_ENV === 'production' && parsed.data.SIMULATED_WEBHOOK_SECRE
 export const env = {
   ...parsed.data,
   SIMULATED_RAILS: parsed.data.SIMULATED_RAILS ?? (parsed.data.NODE_ENV === 'production' ? 'verified' : 'open'),
+  // Fail closed in production no matter what the variable says (blueprint §4.3).
+  SIMULATE_UNCONFIGURED_PROVIDERS:
+    parsed.data.NODE_ENV !== 'production' &&
+    (parsed.data.SIMULATE_UNCONFIGURED_PROVIDERS ?? 'true') === 'true',
 } as const;

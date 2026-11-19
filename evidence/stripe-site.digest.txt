@@ -1,0 +1,499 @@
+EVIDENCE ev_940267f633808bb821d9b8e26770566115987c86fe0edfc6c7bfabc833e5d1e3
+TITLE Stripe | Financial Infrastructure to Grow Your Revenue
+URL https://stripe.com/
+COMPLETENESS policy_filtered; conditions: attach_limited | policy_filtered
+DOM nodes 2979; a11y nodes 2088; scripts 0; requests 0
+
+== PAGE TEXT (accessibility tree, deduped) ==
+[heading] Financial infrastructure to grow your revenue. Accept payments, handle business banking,1 and implement custom revenue models—from your first transaction to your billionth.
+Products and pricing
+[link] Pricing
+[link] Atlas
+[link] Authorization Boost
+[link] Billing
+[link] Capital
+[link] Capital for platforms
+[link] Checkout
+[link] Climate
+[link] Connect
+[link] Crypto
+[link] Crypto Onramp
+[link] Data Pipeline
+[link] Elements
+[link] Financial Connections
+[link] Global Payouts
+[link] Identity
+[link] Invoicing
+[link] Issuing
+[link] Link
+[link] Managed Payments
+[link] Payment links
+[link] Payment methods
+[link] Payments
+[link] Radar
+[link] Revenue Recognition
+[link] Stripe Sigma
+[link] Subscriptions
+[link] Tax
+[link] Terminal
+[link] Treasury
+[link] Treasury for platforms
+[link] Usage-based billing
+Solutions
+[link] Enterprises
+[link] Startups
+[link] Agentic commerce
+[link] Ecommerce
+[link] Embedded finance
+[link] Finance automation
+[link] Global businesses
+[link] In-app payments
+[link] Marketplaces
+[link] Money management
+[link] Platforms
+[link] SaaS
+[link] AI companies
+[link] Creator economy
+[link] Fintech
+[link] Gaming
+[link] Hospitality, travel, and leisure
+[link] Insurance
+[link] Media and entertainment
+[link] Nonprofits
+[link] Professional services
+[link] Public sector
+[link] Retail
+Developers
+[link] Documentation
+[link] API reference
+[link] API status
+[link] API changelog
+[link] Libraries and SDKs
+[link] Stripe Projects
+[link] Developer blog
+Integrations and custom solutions
+[link] Stripe App Marketplace
+[link] Stripe Partner ecosystem
+Resources
+[link] Product roadmap
+[link] Guides
+[link] Customer stories
+[link] Blog
+[link] Community
+[link] Sessions annual conference
+[link] Privacy and terms
+[link] Prohibited and restricted businesses
+[link] Licenses
+[link] Sitemap
+[link] Cookie settings
+[link] Your privacy choices
+[link] More resources
+Company
+[link] About
+[link] Careers
+[link] Newsroom
+[link] Stripe Press
+[link] Contact sales
+Support
+[link] Get support
+[link] Managed support plans
+[link] Sign in⁠⁠
+[combobox] United States. Choose your country
+[link] Stripe homepage
+Accept payments, handle business banking,
+and implement custom revenue models—from your first transaction to your billionth.
+[link] Get started ⁠
+[link] Sign up with Google
+Building the economic infrastructure for AI
+[link] Watch now ⁠
+[heading] The backbone of global commerce
+[heading] Book of the week
+Ready to get started?
+[heading] See what you’ll pay
+[heading] Start building
+Pricing
+Atlas
+Authorization Boost
+Billing
+Capital
+Capital for platforms
+Checkout
+Climate
+Connect
+Crypto
+Crypto Onramp
+Data Pipeline
+Elements
+Financial Connections
+Global Payouts
+Identity
+Invoicing
+Issuing
+Link
+Managed Payments
+Payment links
+Payment methods
+Payments
+Radar
+Revenue Recognition
+Stripe Sigma
+Subscriptions
+Tax
+Terminal
+Treasury
+Treasury for platforms
+Usage-based billing
+Enterprises
+Startups
+Agentic commerce
+Ecommerce
+Embedded finance
+Finance automation
+Global businesses
+In-app payments
+Marketplaces
+Money management
+Platforms
+SaaS
+AI companies
+Creator economy
+Fintech
+Gaming
+Hospitality, travel, and leisure
+Insurance
+Media and entertainment
+Nonprofits
+Professional services
+Public sector
+Retail
+Documentation
+API reference
+API status
+API changelog
+Libraries and SDKs
+Stripe Projects
+Developer blog
+Stripe App Marketplace
+Stripe Partner ecosystem
+Product roadmap
+Guides
+Customer stories
+Blog
+Community
+Sessions annual conference
+Privacy and terms
+Prohibited and restricted businesses
+Licenses
+Sitemap
+Cookie settings
+Your privacy choices
+More resources
+About
+Careers
+Newsroom
+Stripe Press
+Contact sales
+Get support
+Managed support plans
+CA residents: +1 888 926 2289
+Sign in
+United States
+English
+2026
+Stripe, LLC.
+Financial infrastructure to grow your revenue.
+Get started
+Sign up with Google
+[heading] Flexible solutions for every business model.
+Grow your business with a comprehensive set of payments and financial tools⁠—⁠designed to work individually or together.
+[button] Accept and optimize payments globally—online and in person
+[button] Enable any billing model
+[button] Monetize through agentic commerce
+[button] Create a card issuing program
+[button] Access borderless money movement with stablecoins and crypto
+[button] Embed payments in your platform
+Watch now
+The backbone of global commerce
+[button] 135+
+[button] $1.9T
+[button] 99.999%
+[button] 200M+
+[heading] Powering businesses of all sizes.
+Run your business on a reliable platform that adapts to your needs.
+Realize value faster with dedicated experts
+[link] Stripe Startups program. Access financial benefits, a focused community, and expert resources to help you grow your business. Apply now⁠⁠
+[link] Stripe Atlas. Incorporate and get everything you need to fundraise, bank, and accept payments in two business days. Start your company⁠⁠
+[button] Show testimonial from Mindbody
+[button] Show testimonial from Jobber
+[button] Show testimonial from Substack
+[button] Show testimonial from Lightspeed
+[heading] Reliable, extensible infrastructure for every stack.
+Adapt Stripe to your business needs with flexible integration options.
+[link] View developer docs ⁠
+[link] View Stripe’s GitHub
+[heading] Connect to existing systems.
+Orchestrate payments across multiple processors, build custom workflows, and connect to third parties using APIs, partner apps, or prebuilt integrations.
+[heading] Choose an integration path.
+With AI-powered support, rich documentation, and built-in debugging tools, you can quickly get started with the best option for your business.
+[heading] Don’t code?
+Set up billing, take in-person payments, or share a payment link—right from the Stripe Dashboard, no code required.
+[link] Explore no-code⁠⁠
+[heading] Use a pre-integrated platform.
+Browse our directory of platforms that integrate Stripe with website-building tools.
+[link] See directory⁠⁠
+[heading] Build your own integration.
+Use our SDKs, APIs, MCP server, and AI developer tools to build and maintain your own integration with Stripe.
+[link] Get started⁠⁠
+Book of the week
+Entrepreneurship starts with ideas.
+Create an account instantly, or contact us to design a custom package for your business.
+[link] Start now ⁠
+See what you’ll pay
+Integrated per-transaction pricing with no hidden fees.
+[link] Pricing details⁠⁠
+Start building
+Get up and running with Stripe in as little as 10 minutes.
+[link] Integration options⁠⁠
+Stripe Treasury includes various distinct Stripe products. See applicable
+[link] product terms
+. Stripe is not a bank. Checking accounts are provided exclusively by Fifth Third Bank, National Association, Member FDIC. Deposits are insured through Fifth Third Bank.
+[button] Products
+[button] Solutions
+[button] Developers
+[button] Resources
+[link] Sign in
+[link] Contact sales ⁠
+Flexible solutions for every business model.
+[link] historical uptime
+for Stripe services
+Powering businesses of all sizes.
+[heading] Transform your enterprise with agile financial infrastructure
+[heading] Professional services.
+Get tailored guidance from Stripe on implementation, complex integrations, or major migrations.
+[link] View services⁠⁠
+[heading] Stripe-certified experts.
+Work with a Stripe consulting partner that can integrate and deploy Stripe solutions on your behalf.
+[link] View partners⁠⁠
+[heading] Support plans.
+Receive ongoing assistance and day-to-day support for technical questions with tiered plans based on your needs.
+[link] View plans⁠⁠
+[heading] Build a foundation for your startup that enables faster growth
+[heading] Make your SaaS platform a complete financial operating system
+[heading] Get to market faster.
+Launch and scale payments products with lower operational overhead using embedded components and no-code tools.
+[link] Read the guide⁠⁠
+[heading] Grow new lines of revenue.
+Monetize platform transactions—including payments, card interchange, and financing fees.
+[heading] Manage platform risk.
+Stay ahead of global regulations with tools for compliance, credit risk, fraud prevention, and account security.
+[link] Read the story⁠⁠
+Reliable, extensible infrastructure for every stack.
+View developer docs
+View Stripe’s GitHub
+Connect to existing systems.
+[heading] Scale with confidence.
+Handle thousands of transactions per second with consistent speed and reliability, even during peak traffic periods.
+[heading] 500M+
+[heading] 10K+
+[heading] 150K+
+Choose an integration path.
+Don’t code?
+Explore no-code
+Use a pre-integrated platform.
+See directory
+Build your own integration.
+[heading] What’s happening
+[link] Read the letter ⁠
+Item 1 of 8: Businesses on Stripe generated $1.9T in 2025.
+For more ideas on economic progress and technological advancement, see our in-house publications:
+[link] Works in Progress
+Start now
+Pricing details
+Integration options
+product terms
+Products
+[heading] Accept and optimize payments globally—online and in person
+[heading] Enable any billing model
+[heading] Monetize through agentic commerce
+[heading] Create a card issuing program
+[heading] Access borderless money movement with stablecoins and crypto
+[heading] Embed payments in your platform
+135+
+$1.9T
+99.999%
+historical uptime
+200M+
+Transform your enterprise with agile financial infrastructure
+[link] Stripe for enterprises ⁠
+50% of Fortune 100 companies have used Stripe to grow their businesses—from expanding internationally to reimagining the customer experience.
+[button] Hertz unifies commerce with Stripe.
+[button] URBN consolidates $5 billion in online and in-store revenue onto Stripe.
+[button] Instacart powers online grocery delivery with Stripe.
+[button] Le Monde improves local and international payments with Stripe.
+Professional services.
+View services
+Stripe-certified experts.
+View partners
+Support plans.
+View plans
+Build a foundation for your startup that enables faster growth
+[link] Stripe for startups ⁠
+From stablecoin pioneers to 88% of the Forbes AI 50, Stripe helps startups build what’s next on easy-to-integrate financial infrastructure.
+[button] Previous customer story
+[button] Next customer story
+Make your SaaS platform a complete financial operating system
+[link] Stripe for platforms ⁠
+From the Fortune 100 to the Forbes Cloud 100, vertical SaaS platforms use Stripe to expand their product offerings with embedded payments and financial services.
+Get to market faster.
+Read the guide
+Grow new lines of revenue.
+Manage platform risk.
+With Stripe, we have a global technology partner to help our customers—from Canadian yoga studios to British boxing classes—keep growing and evolving in a new wellness world.
+Kurtis Moyer,
+Lead Product Manager of Payments, Mindbody
+Read the story
+Without Stripe, it would have taken significant time and engineering effort to offer these resources to our customers. The financial infrastructure Stripe offers is incredibly valuable to Jobber, and we look forward to seeing what comes next.
+Laura Collinson,
+Director of Fintech, Jobber
+Stripe makes the subscriptions and payment piece really easy for everyone involved. And that helps us make it easy for writers and other creators to do the work they want to do on Substack and get paid for it.
+Seth McMillan,
+Engineering Manager, Substack
+Stripe offers an enterprise-grade infrastructure that puts our customers on the cutting edge of modern payments technology. The combination of Terminal and Connect is a powerful integrated solution.
+Dax Dasilva,
+Founder and CEO, Lightspeed
+Scale with confidence.
+500M+
+API requests per day
+10K+
+API requests per second
+150K+
+transactions per minute
+What’s happening
+See the latest from Stripe.
+[button] Previous slide
+[button] Next slide
+[heading] Businesses on Stripe generated $1.9T in 2025.
+Our annual letter explores the trends defining the internet economy—including steeper growth for newer businesses, faster international expansion, stablecoin progress, agentic commerce, and more.
+Read the letter
+Works in Progress
+[link] OpenAI
+[link] Amazon
+[link] Nvidia
+[link] Ford
+[link] Google
+[link] Shopify
+[link] Mindbody
+[link] Ramp
+[link] Figma
+[link] WooCommerce
+[link] Vercel
+[link] Uber
+[link] Anthropic
+[link] Brightwheel
+[link] Cursor
+Accept and optimize payments globally—online and in person
+Enable any billing model
+Monetize through agentic commerce
+Create a card issuing program
+Access borderless money movement with stablecoins and crypto
+Embed payments in your platform
+Stripe for enterprises
+[heading] Hertz unifies commerce with Stripe.
+[link] Read Hertz's story
+160
+countries
+11K+
+locations globally
+Products used
+Payments, Terminal, Connect, Radar, and Stripe Sigma
+[heading] URBN consolidates $5 billion in online and in-store revenue onto Stripe.
+[link] Read URBN's story
+5+
+consumer brands in retailer portfolio
+700+
+store locations
+Payments, Terminal, Connect, Stripe Sigma, Radar, and Link
+[heading] Instacart powers online grocery delivery with Stripe.
+[link] Read Instacart's story
+600K+
+shoppers
+1.8K
+retail partners across nearly 100K stores
+Payments, Connect, Data Pipeline, and Issuing
+[heading] Le Monde improves local and international payments with Stripe.
+[link] Read LeMonde's story
+100%
+of digital and print payments powered by Stripe
+Less than 3 months
+to implement and go live
+Payments, Stripe Sigma, and Radar
+Stripe for startups
+[link] Lovable logo Lovable grows into a vibe-coding juggernaut with Stripe. Read Lovable’s story⁠⁠
+[link] Gamma logo Gamma expands to $100M ARR and 70 million users with Stripe. Read Gamma’s story⁠⁠
+[link] Runway logo Runway protects developer time with no-code solutions from Stripe. Read Runway’s story⁠⁠
+[link] Supabase logo Supabase delivers its backend-as-a-service to 150 countries with Stripe. Read Supabase’s story⁠⁠
+[link] Linear logo Linear partners with Stripe to handle billing and payments. Read Linear’s story⁠⁠
+[link] ElevenLabs logo ElevenLabs grows into a $3B AI audio leader with Stripe. Watch the video⁠⁠
+[link] Browserbase logo Browserbase offers usage-based billing for an AI agent browser with Stripe. Read Browserbase’s story⁠⁠
+[link] Decagon logo Decagon decreases support costs by 65% with Stripe-integrated agents. Read Decagon’s story⁠⁠
+[heading] Stripe Startups program.
+Access financial benefits, a focused community, and expert resources to help you grow your business.
+Apply now
+[heading] Stripe Atlas.
+Incorporate and get everything you need to fundraise, bank, and accept payments in two business days.
+Start your company
+Stripe for platforms
+Businesses on Stripe generated $1.9T in 2025.
+Hertz unifies commerce with Stripe.
+URBN consolidates $5 billion in online and in-store revenue onto Stripe.
+Instacart powers online grocery delivery with Stripe.
+Le Monde improves local and international payments with Stripe.
+[heading] Lovable grows into a vibe-coding juggernaut with Stripe.
+[heading] Gamma expands to $100M ARR and 70 million users with Stripe.
+[heading] Runway protects developer time with no-code solutions from Stripe.
+[heading] Supabase delivers its backend-as-a-service to 150 countries with Stripe.
+[heading] Linear partners with Stripe to handle billing and payments.
+[heading] ElevenLabs grows into a $3B AI audio leader with Stripe.
+[heading] Browserbase offers usage-based billing for an AI agent browser with Stripe.
+[heading] Decagon decreases support costs by 65% with Stripe-integrated agents.
+Stripe Startups program.
+Stripe Atlas.
+Lovable grows into a vibe-coding juggernaut with Stripe.
+Read Lovable’s story
+Gamma expands to $100M ARR and 70 million users with Stripe.
+Read Gamma’s story
+Runway protects developer time with no-code solutions from Stripe.
+Read Runway’s story
+Supabase delivers its backend-as-a-service to 150 countries with Stripe.
+Read Supabase’s story
+Linear partners with Stripe to handle billing and payments.
+Read Linear’s story
+ElevenLabs grows into a $3B AI audio leader with Stripe.
+Watch the video
+Browserbase offers usage-based billing for an AI agent browser with Stripe.
+Read Browserbase’s story
+Decagon decreases support costs by 65% with Stripe-integrated agents.
+Read Decagon’s story
+
+== NETWORK (method status mime host/path) ==
+hosts: 
+
+== SCRIPTS (by host) ==
+
+
+== STORAGE (values redacted by REA) ==
+localStorage: ["lsid"]
+sessionStorage: []
+indexedDB: []; caches: []
+
+== METADATA agent hints ==
+[]
+
+== LIMITATIONS ==
+- Artifact identity is unavailable for this observation.
+- Observation starts when REA attaches; prior network and console activity is unavailable.
+- Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.
+- Source maps are reported only as declarative URLs and are not fetched.
+- URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.
+- CDP discovery omitted the target attachment state; attached is reported as unknown.
+- Browser host platform and architecture were not observed.

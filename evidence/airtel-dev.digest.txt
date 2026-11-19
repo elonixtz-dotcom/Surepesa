@@ -1,0 +1,48 @@
+EVIDENCE ev_85527f2ffef298559432e186900ce2d5b8407b724d12e3cee5c948e0c1e3f81b
+TITLE Developer Portal
+URL https://developers.airtel.africa/login-country
+COMPLETENESS policy_filtered; conditions: attach_limited | policy_filtered
+DOM nodes 159; a11y nodes 104; scripts 12; requests 0
+
+== PAGE TEXT (accessibility tree, deduped) ==
+[heading] Developer Portal
+[heading] Select Country
+New! Now applications are managed per Op-Co select country first to Proceed
+Developer Portal
+Select Country
+Uganda
+Kenya
+Tanzania
+Rwanda
+Madagascar
+DRC
+Gabon
+Zambia
+Chad
+Niger
+Malawi
+CONGOB
+Seychellas
+
+== NETWORK (method status mime host/path) ==
+hosts: 
+
+== SCRIPTS (by host) ==
+developers.airtel.africa(12)
+
+== STORAGE (values redacted by REA) ==
+localStorage: ["reese84"]
+sessionStorage: ["XCountry","UG","language","UG_id","fingerprint"]
+indexedDB: []; caches: []
+
+== METADATA agent hints ==
+[]
+
+== LIMITATIONS ==
+- Artifact identity is unavailable for this observation.
+- Observation starts when REA attaches; prior network and console activity is unavailable.
+- Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.
+- Source maps are reported only as declarative URLs and are not fetched.
+- URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.
+- CDP discovery omitted the target attachment state; attached is reported as unknown.
+- Browser host platform and architecture were not observed.

@@ -1,0 +1,171 @@
+EVIDENCE ev_2143503477aeabd61cd470ad71b49b400a910c47e9a694a87e675de1f337e2af
+TITLE Mixx by Yas Tanzania – Mobile Financial Services &amp; Digital Payments
+URL https://mixx.co.tz/
+COMPLETENESS policy_filtered; conditions: attach_limited | policy_filtered
+DOM nodes 3045; a11y nodes 660; scripts 26; requests 0
+
+== PAGE TEXT (accessibility tree, deduped) ==
+[link] Skip to content
+Skip to content
+[link] Bustisha
+[link] Nivushe Plus
+[link] Lipa Kwa simu
+[link] Government Payments
+desktop
+[heading] Welcome To Mixx
+[heading] Find Your Mixx
+[heading] We're Here To Help
+Welcome To
+Mixx
+Where innovation meets convenience in mobile money solutions. We are committed to empowering individuals, merchants, corporations, and agents with secure, accessible, and tailored financial services. Discover our services and join us in shaping the future of finance!
+Find Your
+[heading] Bustisha
+[heading] Nivushe Plus
+[heading] Lipa Kwa simu
+[heading] Government Payments
+[button] Previous slide
+[button] Next slide
+We're Here
+To Help
+Reach out for assistance, inquiries, or troubleshooting. Our support team is ready to assist you.
+Bustisha
+Nivushe Plus
+Lipa Kwa simu
+Government Payments
+[heading] Business 360 Portal Your All-In-One Solution For Seamless Financial Management
+[heading] Our Spotlights
+[heading] call
+[heading] whatsapp
+[heading] email
+[heading] faq
+[heading] FOLLOW US ON
+[heading] Certifications
+[heading] Download Mixx Super App
+Business 360 Portal
+Your All-In-One Solution For Seamless Financial Management
+Experience a smarter way to manage finances with our integrated platform, designed to streamline how businesses and institutions collect and disburse payments. Simplify transactions, increase efficiency, and stay in control, all from one powerful hub.
+[link] Visit Portal
+Our
+Spotlights
+[link] call
+100
+[link] whatsapp
+Chat On Whatsapp
+[link] email
+customercare@yas.co.tz
+[link] faq
+Have a question?
+FOLLOW US ON
+Certifications
+Download Mixx Super App
+© Mixx. All Rights Reserved 2026
+[link] Terms & Conditions
+[link] Privacy policy
+Visit Portal
+Call us
+WhatsApp us
+Email
+FAQs
+[link] Facebook
+[link] Instagram
+[link] LinkedIn
+[link] Youtube
+[link] TikTok
+[link] Twitter
+Terms & Conditions
+Privacy policy
+[heading] Super App Features
+[link] Mixx Kilimo | Mixx 3:30 mins
+[link] Jihudumie mwenyewe upendavyo ... 0:31 secs
+[link] Safari Ya Manyara! Mshindi Wa Gari La 0km ... 1:21 mins
+[link] Hutumiii Mixx App? Unapitwa sana ... 0:50 secs
+Facebook
+Instagram
+LinkedIn
+Youtube
+TikTok
+Twitter
+[link] Mixx By Yas
+Super App
+Features
+[heading] Master your money effortlessly
+[heading] Mixx Empowering Your Financial Freedom
+[heading] Mixx Kilimo | Mixx
+[heading] 3:30 mins
+[heading] Jihudumie mwenyewe upendavyo ...
+[heading] 0:31 secs
+[heading] Safari Ya Manyara! Mshindi Wa Gari La 0km ...
+[heading] 1:21 mins
+[heading] Hutumiii Mixx App? Unapitwa sana ...
+[heading] 0:50 secs
+[heading] Send Money Service
+[link] Consumers
+[link] Corporate
+[link] Merchant Business
+[link] Agents
+[link] Support
+[link] Promotions
+Master your
+money effortlessly
+Empowering Your Financial Freedom
+Discover a world of mobile money services designed for you.
+Mixx Kilimo | Mixx
+3:30 mins
+Jihudumie mwenyewe upendavyo ...
+0:31 secs
+Safari Ya Manyara! Mshindi Wa Gari La 0km ...
+1:21 mins
+Hutumiii Mixx App? Unapitwa sana ...
+0:50 secs
+Send Money
+Service
+[link] Learn More
+Consumers
+Corporate
+Merchant Business
+Agents
+Support
+Promotions
+Learn More
+[link] Google Play
+[heading] Link Multiple Mixx Accounts
+[heading] Send Money to Multiple Mixx Accounts
+[heading] Send Money with a Personal Touch
+[heading] Agents & Shops Locator
+[heading] Corporate Solutions
+[heading] Mini Apps
+Link Multiple Mixx Accounts
+No need for multiple devices. Add all your accounts to one app and switch profiles with ease
+Send Money to Multiple Mixx Accounts
+Easily send money to multiple people. Fast, simple, hassle-free
+Send Money with a Personal Touch
+Add a birthday wish, anniversary note, or seasonal greeting to make every transaction more meaningful with personalized messages
+Agents & Shops Locator
+Use the app to find the nearest Yas Store or agent wherever you are.
+Corporate Solutions
+Corporate Mixx partners can now use the Mixx Super App to send salary advances and manage expenses.
+Mini Apps
+Access essential mini apps like the DStv App, TRC App, and more, conveniently embedded within the Mixx Super App.
+
+== NETWORK (method status mime host/path) ==
+hosts: 
+
+== SCRIPTS (by host) ==
+mixx.co.tz(26)
+
+== STORAGE (values redacted by REA) ==
+localStorage: []
+sessionStorage: ["wpEmojiSettingsSupports"]
+indexedDB: []; caches: []
+
+== METADATA agent hints ==
+[]
+
+== LIMITATIONS ==
+- Artifact identity is unavailable for this observation.
+- Observation starts when REA attaches; prior network and console activity is unavailable.
+- Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.
+- Source maps are reported only as declarative URLs and are not fetched.
+- URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.
+- CDP discovery omitted the target attachment state; attached is reported as unknown.
+- Browser host platform and architecture were not observed.
