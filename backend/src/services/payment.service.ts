@@ -217,9 +217,30 @@ async function settle(
   try {
     return await prisma.$transaction(async (tx) => {
       await postLedgerLines(tx, txn.id, await buildLines(tx));
-      return finalStatus === txn.status
-        ? tx.transaction.update({ where: { id: txn.id }, data: extra })
-        : transition(tx, txn, finalStatus, actor, extra);
+      const updated = finalStatus === txn.status
+        ? await tx.transaction.update({ where: { id: txn.id }, data: extra })
+        : await transition(tx, txn, finalStatus, actor, extra);
+      await tx.auditLog.create({
+        data: {
+          actorType: actor.type,
+          actorId: actor.id,
+          action: 'TRANSACTION_STATUS_CHANGED',
+          entityType: 'Transaction',
+          entityId: txn.id,
+          before: { status: txn.status },
+          after: { status: updated.status, reference: updated.reference },
+        },
+      });
+      await tx.outboxEvent.create({
+        data: {
+          eventType: 'TRANSACTION_STATUS_CHANGED',
+          aggregateType: 'Transaction',
+          aggregateId: txn.id,
+          idempotencyKey: `transaction-status:${txn.id}:${updated.status}`,
+          payload: { transactionId: txn.id, reference: txn.reference, status: updated.status },
+        },
+      });
+      return updated;
     }, TX_OPTIONS);
   } catch (err) {
     if (err instanceof PaymentRejectedError) {
@@ -363,8 +384,8 @@ async function loadPaymentMethod(userId: string, paymentMethodId: string) {
   if (!method || method.userId !== userId) {
     throw new AppError('PAYMENT_METHOD_NOT_FOUND', 'Payment method not found', 404);
   }
-  if (method.status === 'DISABLED') {
-    throw new PaymentRejectedError('PAYMENT_METHOD_DISABLED', 'This payment method is disabled');
+  if (method.status !== 'VERIFIED') {
+    throw new PaymentRejectedError('PAYMENT_METHOD_NOT_VERIFIED', 'Verify this payment method before using it');
   }
   return method;
 }

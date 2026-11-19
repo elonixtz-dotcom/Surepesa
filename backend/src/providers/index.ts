@@ -5,11 +5,11 @@ import { SimulatedProvider } from './simulated.provider';
 const providers = new Map<string, PaymentProvider>([['SIMULATED', new SimulatedProvider()]]);
 
 /**
- * Resolves the adapter for a payment method's provider. During the prototype every
- * provider (MPESA_TZ, AIRTEL_TZ, NMB ...) is routed to the simulator.
+ * Resolves only explicitly registered adapters. Unknown providers fail closed;
+ * real telco/bank names must never silently execute against the simulator.
  */
 export function getProvider(name: string): PaymentProvider {
-  const provider = providers.get(name) ?? providers.get('SIMULATED');
+  const provider = providers.get(name);
   if (!provider) throw new AppError('PROVIDER_UNAVAILABLE', `No provider for ${name}`, 503);
   return provider;
 }

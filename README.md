@@ -53,3 +53,23 @@ All `/v1` routes require `Authorization: Bearer <Neon Auth JWT>` (client: `authC
 | GET | `/v1/kyc/submissions/:id` | Submission and 5-minute presigned document links |
 
 The payment flows (`sendMoney`, `payMerchant`, `deposit`, `withdraw`, `reverseTransaction`) are implemented and tested in `src/services/payment.service.ts`. They get HTTP routes, with PIN checks, in milestones 4–5.
+
+
+## First six-core implementation increment (November 2026)
+
+Branch: `feature/surepesa-six-core-implementation`.
+
+This increment adds:
+- Authenticated local P2P and SurePesa merchant payment endpoints.
+- Transaction history list/detail endpoints scoped to the signed-in user.
+- Transaction PIN status/set endpoints; PIN setup requires verified phone status.
+- Salted scrypt PIN hashes, constant-time verification, row-locked failed-attempt counters and a 15-minute lock after five incorrect attempts.
+- Audit log and transactional outbox records written in the same PostgreSQL transaction as ledger settlement.
+- Explicit provider fail-closed behaviour: only `SIMULATED` maps to the simulator.
+- Initial schema for PushBill requests/voice state, reusable Circles and contribution monitoring, dedicated per-agreement Escrow ledger wallets and disputes.
+
+Money amounts in payment request bodies are integer minor-unit strings. For example TZS 50,000.00 is `5000000`. The existing double-entry ledger remains the sole writer of wallet balances.
+
+**Not delivered in this increment:** live GSM call bridging, USSD, telco/bank adapters, PushBill external payment execution, Circle invitation/contribution APIs, Escrow funding/release/refund services, virtual-card issuing, cross-border payout integrations or an outbox worker. Escrow's dedicated wallet is an internal accounting sub-ledger, not by itself a licensed custody or safeguarding arrangement. Circle contribution records are monitoring records and do not pool members' money.
+
+No unconfigured provider is ever silently sent to the simulator. External rails must be explicitly integrated and tested before real-money use.

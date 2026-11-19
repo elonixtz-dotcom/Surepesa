@@ -69,6 +69,7 @@ enum WalletKind {
   SYSTEM_FLOAT // mirror of money held at an external rail (simulated for now); may go negative
   SYSTEM_FEES // fee revenue
   SYSTEM_FX // FX position for currency conversion
+  ESCROW // dedicated non-spendable ledger wallet for one escrow agreement
 }
 
 enum WalletStatus {
@@ -85,6 +86,9 @@ enum TransactionType {
   REVERSAL // compensating transaction for a previous one
   FX_CONVERSION // wallet(currency A) -> wallet(currency B)
   ADJUSTMENT // manual finance correction (admin, audited)
+  ESCROW_FUNDING
+  ESCROW_RELEASE
+  ESCROW_REFUND
 }
 
 enum TransactionStatus {
@@ -162,6 +166,15 @@ model User {
   initiatedTransactions Transaction[] @relation("TransactionInitiator")
   notifications    Notification[]
   refreshTokens    RefreshToken[]
+  pushBillsRequested PushBillRequest[] @relation("PushBillRequester")
+  pushBillsToPay PushBillRequest[] @relation("PushBillPayer")
+  ownedCircles Circle[] @relation("CircleOwner")
+  circleMemberships CircleMember[]
+  circleInvitationsSent CircleMember[] @relation("CircleInviter")
+  circleContributions CircleContribution[]
+  escrowsAsBuyer EscrowAgreement[] @relation("EscrowBuyer")
+  escrowsAsSeller EscrowAgreement[] @relation("EscrowSeller")
+  escrowDisputesOpened EscrowDispute[]
 
   @@map("users")
 }
@@ -209,6 +222,7 @@ model Business {
   wallets        Wallet[]
   qrCodes        QrCode[]
   kycSubmissions KycSubmission[]
+  escrowSales EscrowAgreement[] @relation("EscrowBusinessSeller")
 
   @@index([ownerId])
   @@map("businesses")
@@ -341,6 +355,7 @@ model Wallet {
   ledgerEntries       LedgerEntry[]
   outgoingTransactions Transaction[] @relation("SourceWallet")
   incomingTransactions Transaction[] @relation("DestinationWallet")
+  escrowAgreement EscrowAgreement?
 
   // One wallet per owner per currency.
   @@unique([userId, currencyCode])
@@ -546,4 +561,268 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([actorType, actorId, createdAt])
   @@map("audit_logs")
+}
+
+
+// ─────────────────── SurePesa product-domain foundations ───────────────────
+enum PushBillDestinationType {
+  MERCHANT_QR
+  LIPA_NAMBA
+  AGENT_NUMBER
+}
+enum PushBillStatus {
+  CREATED
+  NOTIFIED
+  CALL_PENDING
+  CALL_CONNECTED
+  AWAITING_PAYER_CONFIRMATION
+  AWAITING_PAYMENT
+  PAYMENT_PENDING
+  PAID
+  DECLINED
+  EXPIRED
+  CANCELLED
+  FAILED
+}
+enum VoiceCallStatus {
+  NOT_REQUESTED
+  QUEUED
+  RINGING
+  CONNECTED
+  NO_ANSWER
+  FAILED
+  COMPLETED
+}
+enum CircleType {
+  FAMILY
+  STUDENT
+  VIKOBA
+  FRIENDS
+  CUSTOM
+}
+enum CircleStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+enum CircleMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+enum CircleMemberStatus {
+  INVITED
+  ACTIVE
+  LEFT
+  REMOVED
+}
+enum CircleContributionStatus {
+  SELF_REPORTED
+  PENDING_VERIFICATION
+  VERIFIED
+  REJECTED
+}
+enum EscrowStatus {
+  DRAFT
+  AWAITING_FUNDING
+  FUNDED
+  IN_PROGRESS
+  DELIVERED
+  RELEASED
+  DISPUTED
+  REFUND_PENDING
+  REFUNDED
+  CANCELLED
+  EXPIRED
+}
+enum EscrowReleasePolicy {
+  BUYER_CONFIRMATION
+  MILESTONE
+  ADMIN_RESOLUTION
+}
+enum EscrowDisputeStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED_BUYER
+  RESOLVED_SELLER
+  CLOSED
+}
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  DELIVERED
+  FAILED
+}
+
+// PushBill records a request to another SurePesa user. Creating a request does not
+// debit money; external destination data is encrypted by the API before persistence.
+model PushBillRequest {
+  id String @id @default(uuid()) @db.Uuid
+  reference String @unique
+  requesterUserId String @map("requester_user_id") @db.Uuid
+  payerUserId String @map("payer_user_id") @db.Uuid
+  destinationType PushBillDestinationType @map("destination_type")
+  providerName String? @map("provider_name")
+  destinationLabel String @map("destination_label")
+  destinationCiphertext String @map("destination_ciphertext")
+  destinationNonce String @map("destination_nonce")
+  destinationAuthTag String @map("destination_auth_tag")
+  destinationLastFour String? @map("destination_last_four")
+  amount BigInt
+  currencyCode String @map("currency_code")
+  shareTokenHash String @unique @map("share_token_hash")
+  status PushBillStatus @default(CREATED)
+  voiceCallStatus VoiceCallStatus @default(NOT_REQUESTED) @map("voice_call_status")
+  voiceCallProviderReference String? @map("voice_call_provider_reference")
+  expiresAt DateTime @map("expires_at")
+  payerConfirmedAt DateTime? @map("payer_confirmed_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  requester User @relation("PushBillRequester", fields: [requesterUserId], references: [id])
+  payer User @relation("PushBillPayer", fields: [payerUserId], references: [id])
+
+  @@index([requesterUserId, createdAt])
+  @@index([payerUserId, status, expiresAt])
+  @@map("pushbill_requests")
+}
+
+// Circles are goal/contribution monitors, not pooled wallets or lending products.
+model Circle {
+  id String @id @default(uuid()) @db.Uuid
+  ownerUserId String @map("owner_user_id") @db.Uuid
+  name String
+  description String?
+  type CircleType
+  status CircleStatus @default(ACTIVE)
+  currencyCode String @default("TZS") @map("currency_code")
+  targetAmount BigInt? @map("target_amount")
+  targetDate DateTime? @map("target_date") @db.Date
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  owner User @relation("CircleOwner", fields: [ownerUserId], references: [id])
+  members CircleMember[]
+  contributions CircleContribution[]
+
+  @@index([ownerUserId, createdAt])
+  @@index([type, status])
+  @@map("circles")
+}
+model CircleMember {
+  id String @id @default(uuid()) @db.Uuid
+  circleId String @map("circle_id") @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  invitedByUserId String? @map("invited_by_user_id") @db.Uuid
+  role CircleMemberRole @default(MEMBER)
+  status CircleMemberStatus @default(INVITED)
+  joinedAt DateTime? @map("joined_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  circle Circle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+  invitedBy User? @relation("CircleInviter", fields: [invitedByUserId], references: [id])
+
+  @@unique([circleId, userId])
+  @@index([userId, status])
+  @@map("circle_members")
+}
+model CircleContribution {
+  id String @id @default(uuid()) @db.Uuid
+  circleId String @map("circle_id") @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  amount BigInt
+  currencyCode String @map("currency_code")
+  contributionDate DateTime @default(now()) @map("contribution_date")
+  status CircleContributionStatus @default(SELF_REPORTED)
+  sourceType String @default("MANUAL") @map("source_type")
+  externalReference String? @map("external_reference")
+  evidenceStorageKey String? @map("evidence_storage_key")
+  note String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  circle Circle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([circleId, contributionDate])
+  @@index([userId, status])
+  @@map("circle_contributions")
+}
+
+// One dedicated ledger wallet is assigned to each agreement. It is not, by itself,
+// proof of licensed custody; real funds require an approved safeguarding arrangement.
+model EscrowAgreement {
+  id String @id @default(uuid()) @db.Uuid
+  reference String @unique
+  buyerUserId String @map("buyer_user_id") @db.Uuid
+  sellerUserId String? @map("seller_user_id") @db.Uuid
+  sellerBusinessId String? @map("seller_business_id") @db.Uuid
+  escrowWalletId String @unique @map("escrow_wallet_id") @db.Uuid
+  amount BigInt
+  fundedAmount BigInt @default(0) @map("funded_amount")
+  currencyCode String @map("currency_code")
+  status EscrowStatus @default(DRAFT)
+  releasePolicy EscrowReleasePolicy @default(BUYER_CONFIRMATION) @map("release_policy")
+  terms String
+  expiresAt DateTime? @map("expires_at")
+  fundedAt DateTime? @map("funded_at")
+  deliveredAt DateTime? @map("delivered_at")
+  buyerAcceptedAt DateTime? @map("buyer_accepted_at")
+  releasedAt DateTime? @map("released_at")
+  refundedAt DateTime? @map("refunded_at")
+  fundingTransactionId String? @map("funding_transaction_id") @db.Uuid
+  releaseTransactionId String? @map("release_transaction_id") @db.Uuid
+  refundTransactionId String? @map("refund_transaction_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  buyer User @relation("EscrowBuyer", fields: [buyerUserId], references: [id])
+  sellerUser User? @relation("EscrowSeller", fields: [sellerUserId], references: [id])
+  sellerBusiness Business? @relation("EscrowBusinessSeller", fields: [sellerBusinessId], references: [id])
+  escrowWallet Wallet @relation(fields: [escrowWalletId], references: [id])
+  disputes EscrowDispute[]
+
+  @@index([buyerUserId, status, createdAt])
+  @@index([sellerUserId, status, createdAt])
+  @@index([sellerBusinessId, status, createdAt])
+  @@map("escrow_agreements")
+}
+model EscrowDispute {
+  id String @id @default(uuid()) @db.Uuid
+  escrowId String @map("escrow_id") @db.Uuid
+  openedByUserId String @map("opened_by_user_id") @db.Uuid
+  reason String
+  evidence Json?
+  status EscrowDisputeStatus @default(OPEN)
+  resolutionNote String? @map("resolution_note")
+  resolvedAt DateTime? @map("resolved_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  escrow EscrowAgreement @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  openedBy User @relation(fields: [openedByUserId], references: [id])
+
+  @@index([escrowId, status])
+  @@map("escrow_disputes")
+}
+
+// Transactional outbox: events are persisted with the ledger commit; a worker is added
+// separately to deliver notifications/provider jobs with retries and idempotency.
+model OutboxEvent {
+  id String @id @default(uuid()) @db.Uuid
+  eventType String @map("event_type")
+  aggregateType String @map("aggregate_type")
+  aggregateId String @map("aggregate_id")
+  idempotencyKey String @unique @map("idempotency_key")
+  payload Json
+  status OutboxStatus @default(PENDING)
+  attempts Int @default(0)
+  availableAt DateTime @default(now()) @map("available_at")
+  processedAt DateTime? @map("processed_at")
+  lastError String? @map("last_error")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([status, availableAt])
+  @@index([aggregateType, aggregateId])
+  @@map("outbox_events")
 }
