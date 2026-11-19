@@ -9,6 +9,7 @@ import { meRouter } from './routes/me.routes';
 import { kycRouter } from './routes/kyc.routes';
 import { securityRouter } from './routes/security.routes';
 import { paymentsRouter } from './routes/payments.routes';
+import { circlesRouter } from './routes/circles.routes';
 
 export function createApp() {
   const app = express();
@@ -26,6 +27,7 @@ export function createApp() {
   app.use('/v1/kyc', kycRouter);
   app.use('/v1/me/security', securityRouter);
   app.use('/v1/payments', paymentsRouter);
+  app.use('/v1/circles', circlesRouter);
 
   app.use(notFound);
   app.use(errorHandler);
