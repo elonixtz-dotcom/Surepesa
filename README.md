@@ -48,6 +48,21 @@ npm run reconcile             # verify ledger invariants
 npm run rail-sync             # one pass of the rail status poller (the API also runs it every minute)
 ```
 
+## Deployments
+
+| App | URL | Notes |
+| --- | --- | --- |
+| Customer app (Flutter web) | https://surepesa-app.vercel.app/ | `/v1` and `/auth` rewrite same-origin to the API (see `mobile/web/vercel.json`) |
+| Back-office console | https://surepesa-admin.vercel.app/ | `/admin` rewrites to the API (see `admin/vercel.json`) |
+| API | https://surepesa-api.vercel.app/ | Express on Vercel functions; `/health` reports database/auth/storage |
+
+Because the web apps reach the API through same-origin rewrites, no CORS entry is needed
+for them; `CORS_ORIGINS` only covers non-proxied browser clients (e.g. local dev).
+
+Deploy note: Vercel builds production from `main`. After merging a branch that adds
+Prisma models, run `npm run db:deploy` (in `backend/`, with the production `DATABASE_URL`)
+before the new API code serves traffic.
+
 ## Money rules
 
 - Amounts are integers in minor units (`BigInt`). The API sends them as strings.
