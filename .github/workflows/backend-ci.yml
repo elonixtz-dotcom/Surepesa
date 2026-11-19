@@ -20,6 +20,20 @@ jobs:
   backend:
     name: Backend validation
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: surepesa
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d surepesa"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     defaults:
       run:
         working-directory: backend
@@ -42,6 +56,10 @@ jobs:
         run: npx prisma generate
       - name: Validate Prisma schema
         run: npx prisma validate
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+      - name: Seed test database
+        run: npx prisma db seed
       - name: TypeScript typecheck
         run: npm run typecheck
       - name: Unit and integration tests
