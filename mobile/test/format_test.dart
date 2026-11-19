@@ -9,8 +9,20 @@ void main() {
   });
 
   test('greets by time of day', () {
-    expect(greetingFor(DateTime(2026, 1, 1, 8)), 'Good Morning');
-    expect(greetingFor(DateTime(2026, 1, 1, 13)), 'Good Afternoon');
-    expect(greetingFor(DateTime(2026, 1, 1, 20)), 'Good Evening');
+    expect(greetingFor(DateTime(2026, 1, 1, 8)), 'Good morning');
+    expect(greetingFor(DateTime(2026, 1, 1, 13)), 'Good afternoon');
+    expect(greetingFor(DateTime(2026, 1, 1, 20)), 'Good evening');
+  });
+
+  test('groups activity by day', () {
+    final now = DateTime(2026, 10, 17, 9);
+    expect(dayHeading(DateTime(2026, 10, 17, 0, 5), now: now), 'Today');
+    expect(dayHeading(DateTime(2026, 10, 16, 23, 59), now: now), 'Yesterday');
+    expect(dayHeading(DateTime(2026, 10, 14, 12), now: now), 'Wednesday 14 October');
+  });
+
+  test('masks phone numbers', () {
+    expect(maskPhone('+255712345678'), isNot(contains('2345')));
+    expect(maskPhone(null), isNull);
   });
 }

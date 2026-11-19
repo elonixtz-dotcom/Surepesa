@@ -1,0 +1,284 @@
+EVIDENCE ev_0cccf8a8046733a214533c94ae7764445fe42e105f6cc76240054d9fdfb5b869
+TITLE Consumer - Yas Tanzania
+URL https://yas.co.tz/
+COMPLETENESS policy_filtered; conditions: attach_limited | policy_filtered
+DOM nodes 5530; a11y nodes 1193; scripts 34; requests 0
+
+== PAGE TEXT (accessibility tree, deduped) ==
+[link] Skip to content
+Skip to content
+[heading] YOUR PRIVACY MATTERS TO US
+[button] Accept
+[button] Decline
+[button] Preferences
+YOUR PRIVACY
+MATTERS TO US
+We use cookies and similar technologies to help personalize content, tailor and measure ads, and provide a better experience. By clicking "Accept", you consent to our use of cookies and to our Privacy Policy.
+Accept
+Decline
+Preferences
+[heading] Lightning-fast internet speeds!
+[link] learn more about internet
+[heading] Upgrade to the Latest Devices
+[link] See All
+[heading] We're Here to Help
+[heading] Our Customers, Our Priority
+[heading] The latest about us in your inbox
+Lightning-fast
+internet speeds!
+Reliable, lightning-fast internet tailored just for you!
+Learn More About Internet
+[link] Upgrade to the Latest Devices
+Discover top smartphones and accessories to keep you connected.
+See All
+We're Here
+to Help
+Reach out for assistance, inquiries, or troubleshooting. Our support team is ready to assist you.
+Our Customers,
+Our Priority
+Delivering exceptional service and support to help you stay connected and satisfied.
+The latest about us
+in your inbox
+Be the first to hear our news
+[heading] Certifications
+[link] LOGO
+[button] Previous slide
+[button] Next slide
+Upgrade to the
+Latest Devices
+[heading] Yas services truly brighten my day and make life easier for all of us. I can trust the Yas network because of how reliable and effective it is.
+- Ally Shukuru
+[heading] I am Mixx by Yas Agent, and I rely on the Yas network to keep my business running, I can depend on.
+- Mohamed Abeid
+[heading] I believe I can count on Yas, they were quick and helpful in solving a challenge I faced today, they arrived on time and had everything fixed in 15 minutes, so I could get back to running my business.
+- Msafiri Mohamed
+[textbox] Email
+[button] Subscribe
+Certifications
+[link] Assistance
+Yas services truly brighten my day and make life easier for all of us. I can trust the Yas network because of how reliable and effective it is.
+I am Mixx by Yas Agent, and I rely on the Yas network to keep my business running, I can depend on.
+I believe I can count on Yas, they were quick and helpful in solving a challenge I faced today, they arrived on time and had everything fixed in 15 minutes, so I could get back to running my business.
+Email
+Subscribe
+[link] Consumer
+[link] Business
+[link] Mixx by Yas
+[link] Fiber
+[link] About Us
+Assistance
+[heading] Find the Perfect Plan for You
+[heading] learn more
+[heading] learn more about fiber
+[heading] Mixx by Yas
+[heading] Best Mobile data Plans
+[link] ITEL Y60
+[link] ITEL Y60 TZS 230,000
+[link] tag Financing From 1,000 TZS / day
+[link] Learn more about ITEL Y60 
+[link] ZTE A35e
+[link] ZTE A35e TZS 290,000
+[link] tag Financing From 1,200 TZS / day
+[link] Learn more about ZTE A35e 
+[link] ZTE A36
+[link] ZTE A36 TZS 230,000
+[link] tag Financing From 950 TZS / day
+[link] Learn more about ZTE A36 
+[link] ZTE A76 4G
+[link] ZTE A76 4G TZS 260,000
+[link] tag Financing From 1000 TZS / day
+[link] Learn more about ZTE A76 4G 
+[link] Tecno POP 9
+[link] Tecno POP 9 TZS 320,000
+[link] tag Financing From 1300 TZS / day
+[link] Learn more about Tecno POP 9 
+[link] ZTE A35 Core
+[link] ZTE A35 Core TZS 130,000
+[link] tag Financing From 650 TZS / day
+[link] Learn more about ZTE A35 Core 
+[link] ZTE A76 5G
+[link] ZTE A76 5G TZS 470,000
+[link] tag Financing From 1,800 TZS / day
+[link] Learn more about ZTE A76 5G 
+[heading] call
+[heading] whatsapp
+[heading] email
+[heading] faq
+[heading] Frequently Asked Questions
+[heading] Follow Us...
+[heading] Yas Tanzania
+[heading] Services
+[heading] Useful Information
+[heading] Download Yas App
+[heading] © Yas Tanzania 2026
+Consumer
+Business
+Mixx by Yas
+Fiber
+About Us
+[searchbox] Search …
+[button] Search
+Find the Perfect
+Plan for You
+Explore a range of data, voice, and bundle options designed to fit your needs.
+[link] learn more
+Pay simply, securely, and swiftly-anytime, anywhere
+[link] learn more about fiber
+Enjoy lightning-fast internet for seamless digital experience
+Pay, transfer, receive money with our application
+[link] Best Mobile data Plans
+To stay connected on the Best network in Tanzania
+[heading] ITEL Y60
+[heading] TZS 230,000
+Learn more
+about ITEL Y60
+[heading] ZTE A35e
+[heading] TZS 290,000
+about ZTE A35e
+[heading] ZTE A36
+about ZTE A36
+[heading] ZTE A76 4G
+[heading] TZS 260,000
+about ZTE A76 4G
+[heading] Tecno POP 9
+[heading] TZS 320,000
+about Tecno POP 9
+[heading] ZTE A35 Core
+[heading] TZS 130,000
+about ZTE A35 Core
+[heading] ZTE A76 5G
+[heading] TZS 470,000
+about ZTE A76 5G
+[link] call
+100
+[link] whatsapp
+Quick Support
+[link] email
+24/7
+[link] faq
+Have a question?
+Frequently Asked
+Questions
+Need some answers? We got you covered. Here are some frequently asked questions.
+[heading] Find a Store Near You
+[link] Find a YAS Store Near You
+Follow Us...
+Yas Tanzania
+Services
+Useful Information
+Download Yas App
+© Yas Tanzania 2026
+Lipa kwa Simu
+Best Mobile data Plans
+ITEL Y60
+TZS 230,000
+Financing
+From
+1,000 TZS
+/ day
+ZTE A35e
+TZS 290,000
+1,200 TZS
+ZTE A36
+950 TZS
+ZTE A76 4G
+TZS 260,000
+1000 TZS
+Tecno POP 9
+TZS 320,000
+1300 TZS
+ZTE A35 Core
+TZS 130,000
+650 TZS
+ZTE A76 5G
+TZS 470,000
+1,800 TZS
+Call us
+WhatsApp us
+FAQs
+What is Data Transfer?
+What is Mixx by Yas MasterCard?
+What are the tariffs for Yas Packages?
+What if I send money to the wrong person?
+Am I eligible to use Yas Fiber?
+Can I reverse the wrong airtime amount purchased?
+Find a Store
+Near You
+Visit our locations for personalized service, product demos, and exclusive offers.
+Find a YAS Store Near You
+[link] Instagram
+[link] Facebook
+[link] Twitter
+[link] Youtube
+Instagram
+Facebook
+Twitter
+Youtube
+[link] Mobile Services
+[link] Home Plans
+[link] Devices
+[link] About Yas Faqs
+[link] Find a store
+[link] Terms & Conditions
+[link] Terms and conditions Mixx by Yas
+[link] Nivushe Plus Terms and Conditions
+[link] Device Financing Terms and Conditions
+[link] Privacy Policy
+[link] QHSES Policy statement
+[link] Procurement Terms & Conditions
+Mobile Services
+Home Plans
+Devices
+About Yas Faqs
+Find a store
+Terms & Conditions
+Terms and conditions Mixx by Yas
+Nivushe Plus Terms and Conditions
+Device Financing Terms and Conditions
+Privacy Policy
+QHSES Policy statement
+Procurement Terms & Conditions
+[heading] Say Yas!
+[heading] Experience Mtandao wa Viwango
+[link] Learn More
+[heading] Anzia Ulipo Ufikie ndoto zako!
+[link] Discover Anzia Ulipo
+[heading] We're the best network in Tanzania again
+[link] Discover our bundles
+Say
+Yas!
+Experience
+Mtandao wa Viwango
+Widest 4G. Fastest 5G. 4,900 Towers. Choose quality today.
+Learn More
+Anzia Ulipo
+Ufikie ndoto zako!
+Yas inawezesha safari yako ya mafanikio. Anza sasa!
+Discover Anzia Ulipo
+We're the best network
+in Tanzania again
+Ni wakati wetu
+Discover our bundles
+
+== NETWORK (method status mime host/path) ==
+hosts: 
+
+== SCRIPTS (by host) ==
+yas.co.tz(34)
+
+== STORAGE (values redacted by REA) ==
+localStorage: []
+sessionStorage: []
+indexedDB: []; caches: []
+
+== METADATA agent hints ==
+[]
+
+== LIMITATIONS ==
+- Artifact identity is unavailable for this observation.
+- Observation starts when REA attaches; prior network and console activity is unavailable.
+- Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.
+- Source maps are reported only as declarative URLs and are not fetched.
+- URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.
+- CDP discovery omitted the target attachment state; attached is reported as unknown.
+- Browser host platform and architecture were not observed.

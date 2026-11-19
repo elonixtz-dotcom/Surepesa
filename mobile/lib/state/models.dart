@@ -28,6 +28,7 @@ class Me {
     required this.phoneNumber,
     required this.status,
     required this.kycStatus,
+    required this.hasPin,
     required this.firstName,
     required this.lastName,
     required this.wallets,
@@ -41,6 +42,7 @@ class Me {
       phoneNumber: j['phoneNumber'] as String?,
       status: j['status'] as String,
       kycStatus: j['kycStatus'] as String,
+      hasPin: j['hasPin'] as bool? ?? false,
       firstName: profile?['firstName'] as String?,
       lastName: profile?['lastName'] as String?,
       wallets: (j['wallets'] as List<dynamic>)
@@ -54,6 +56,9 @@ class Me {
   final String? phoneNumber;
   final String status;
   final String kycStatus;
+
+  /// Whether a transaction PIN is set. Payments out of the wallet need one.
+  final bool hasPin;
   final String? firstName;
   final String? lastName;
   final List<WalletSummary> wallets;

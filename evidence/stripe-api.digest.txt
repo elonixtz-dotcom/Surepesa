@@ -1,0 +1,829 @@
+EVIDENCE ev_fbbd5630221b19ba1760239d27743b85f95da4dcbe4ac68b84350ba6b6c524b4
+TITLE Stripe API Reference
+URL https://docs.stripe.com/api
+COMPLETENESS policy_filtered; conditions: attach_limited | policy_filtered
+DOM nodes 7793; a11y nodes 4602; scripts 0; requests 0
+
+== PAGE TEXT (accessibility tree, deduped) ==
+[button] ​ Find anything
+[button] ​ Ask AI
+[link] ​ Core Resources Dropdown open
+[link] ​ Payment Methods Dropdown open
+[link] ​ Products Dropdown open
+[link] ​ Product Catalog Dropdown open
+[link] ​ Commerce Dropdown closed
+[link] ​ Agentic Commerce Dropdown open
+[link] ​ Checkout Dropdown open
+[link] ​ Payment Links Dropdown open
+[link] ​ Billing Dropdown open
+[link] ​ Capital Dropdown open
+[link] ​ Connect Dropdown open
+[link] ​ Reserves Dropdown closed
+[link] ​ Fraud Dropdown closed
+[link] ​ Issuing Dropdown closed
+[link] ​ Terminal Dropdown closed
+[link] ​ Treasury for Platforms Dropdown closed
+[link] ​ Payment Records Dropdown closed
+[link] ​ Account Evaluation Dropdown closed
+[link] ​ Entitlements Dropdown closed
+[link] ​ Sigma Dropdown closed
+[link] ​ Reporting Dropdown closed
+[link] ​ Financial Connections Dropdown closed
+[link] ​ Tax Dropdown closed
+[link] ​ Identity Dropdown closed
+[link] ​ Crypto Dropdown closed
+[link] ​ Climate Dropdown closed
+[link] ​ Forwarding Dropdown closed
+[link] ​ Privacy Dropdown closed
+[link] ​ Webhooks Dropdown closed
+[heading] ​ API Reference
+[heading] ​ Authentication
+[heading] ​ Errors
+[heading] Attributes
+[heading] More Expand all
+[heading] ​ Handling errors
+[heading] ​ Expanding Responses
+[heading] ​ Idempotent requests
+[heading] ​ Include-dependent response values (API v2)
+[heading] ​ Metadata
+[heading] Sample metadata use cases
+[heading] ​ Pagination
+[heading] Parameters
+[heading] List Response Format
+[heading] ​ Search
+[heading] Search request format
+[heading] Search response format
+[heading] ​ Auto-pagination
+[heading] ​ Request IDs
+[heading] ​ Connected Accounts
+[heading] ​ Versioning
+[heading] ​ Enums
+[heading] Handling open enums in responses
+[heading] Sending enum values in requests
+Find anything
+Ask AI
+[link] ​ Introduction
+[link] ​ Authentication
+[link] ​ Errors
+[link] ​ Expanding Responses
+[link] ​ Idempotent requests
+[link] ​ Include-dependent response values (API v2)
+[link] ​ Metadata
+[link] ​ Pagination
+[link] ​ Request IDs
+[link] ​ Connected Accounts
+[link] ​ Versioning
+[link] ​ Enums
+Core Resources
+[link] ​ Accountsv2
+[link] ​ Account Linksv2
+[link] ​ Account Tokensv2
+[link] ​ Balances
+[link] ​ Balance Transactions
+[link] ​ Charges
+[link] ​ Customers
+[link] ​ Customer Sessions
+[link] ​ Disputes
+[link] ​ Events
+[link] ​ Eventsv2
+[link] ​ Event Destinationsv2
+[link] ​ Files
+[link] ​ File Links
+[link] ​ Mandates
+[link] ​ Payment Intents
+[link] ​ Personsv2
+[link] ​ Person Tokensv2
+[link] ​ Setup Intents
+[link] ​ Setup Attempts
+[link] ​ Stripe Balance Debit Agreements
+[link] ​ 3DS Authentications
+[link] ​ Payouts
+[link] ​ Refunds
+[link] ​ Confirmation Tokens
+[link] ​ Tokens
+[link] ​ Ephemeral Keys
+Payment Methods
+[link] ​ Payment Methods
+[link] ​ Payment Method Configurations
+[link] ​ Payment Method Domains
+[link] ​ Bank Accounts
+[link] ​ Cash Balances
+[link] ​ Cash Balance Transactions
+[link] ​ Cards
+[link] ​ Sources
+Products
+[link] ​ Products
+[link] ​ Prices
+[link] ​ Coupons
+[link] ​ Promotion Codes
+[link] ​ Discounts
+[link] ​ Tax Codes
+[link] ​ Tax Rates
+[link] ​ Shipping Rates
+Product Catalog
+[link] ​ Trial Offers
+Commerce
+Agentic Commerce
+[link] ​ Shared Payment Issued Tokens
+[link] ​ Shared Payment Granted Tokens
+Checkout
+[link] ​ Checkout Sessions
+Payment Links
+[link] ​ Payment Links
+Billing
+[link] ​ Alerts
+[link] ​ Credit Balance Summaries
+[link] ​ Credit Balance Transactions
+[link] ​ Credit Grants
+[link] ​ Credit Notes
+[link] ​ Customer Balance Transactions
+[link] ​ Customer Portal Configurations
+[link] ​ Customer Portal Sessions
+[link] ​ Feedback Options
+[link] ​ Invoices
+[link] ​ Invoice Items
+[link] ​ Invoice Line Items
+[link] ​ Invoice Payments
+[link] ​ Invoice Rendering Templates
+[link] ​ Meters
+[link] ​ Meter Events
+[link] ​ Meter Event Adjustment
+[link] ​ Meter Event Adjustmentsv2
+[link] ​ Meter Event Streamsv2
+[link] ​ Meter Event Summary
+[link] ​ Meter Eventsv2
+[link] ​ Plans
+[link] ​ Quotes
+[link] ​ Subscriptions
+[link] ​ Subscription Items
+[link] ​ Subscription Schedules
+[link] ​ Tax IDs
+[link] ​ Test Clocks
+Capital
+[link] ​ Financing Offers
+[link] ​ Financing Summaries
+Connect
+[link] ​ Accounts
+[link] ​ Login Links
+[link] ​ Account Links
+[link] ​ Account Sessions
+[link] ​ Application Fees
+[link] ​ Application Fee Refunds
+[link] ​ Capabilities
+[link] ​ Country Specs
+[link] ​ Balance Settings
+[link] ​ External Bank Accounts
+[link] ​ External Account Cards
+[link] ​ Persons
+[link] ​ Top-ups
+[link] ​ Transfers
+[link] ​ Transfer Reversals
+[link] ​ Secrets
+[link] ​ App Installs
+Reserves
+Fraud
+Issuing
+Terminal
+Treasury for Platforms
+Payment Records
+Account Evaluation
+Entitlements
+Sigma
+Reporting
+Financial Connections
+Tax
+Identity
+Crypto
+Climate
+Forwarding
+Privacy
+Webhooks
+[button] ​ 2026-09-30.endive
+[button] ​ API Reference
+[link] Docs
+[link] Support
+[link] Sign in →
+[link] API Reference
+[button] Ask about this section
+[button] Copy for LLM
+[button] ​ View as Markdown
+The Stripe API is organized around
+[link] REST
+. Our API has predictable resource-oriented URLs, accepts
+[link] form-encoded
+request bodies, returns
+[link] JSON-encoded
+responses, and uses standard HTTP response codes, authentication, and verbs.
+You can use the Stripe API in
+[link] sandboxes
+without affecting your live data or interacting with banking networks. The API key that you use to
+[link] authenticate
+the request determines whether the request runs in live mode or in a sandbox. Sandboxes support all v2 APIs. Test mode sandboxes support some
+[link] v2 APIs
+The Stripe API doesn’t support bulk updates. You can work on only one object per request.
+The Stripe API differs for every account as we release new
+[link] versions
+and tailor functionality.
+[link] Log in
+to see docs with your test key and data.
+Was this section helpful?
+[button] Yes
+[button] No
+[link] Authentication
+The Stripe API uses
+[link] API keys
+to authenticate requests. You can view and manage your API keys in
+[link] the Stripe Dashboard
+Test mode secret keys start with
+and have unrestricted access to their sandboxes. In live mode, you configure a
+[link] restricted API key
+(starts with
+) with specific API permissions. Using a restricted API key with only a subset of API permissions limits the damage a bad actor could cause if they obtained the key. In both test mode and live mode, you can create as many restricted API keys as you need for different use cases or components of your 
+) that grants access to all Stripe API resources. To protect your business, use restricted API keys instead.
+Your API keys carry many privileges. Follow
+[link] best practices
+to keep your keys safe. Don’t embed secret or restricted API keys in source code or client-side applications. Instead, use your server platform’s secrets vault to provide keys to your server-side applications. If your platform doesn’t offer a secrets vault, set your keys in environment variables.
+The Stripe API authenticates requests using
+[link] HTTP Basic Auth
+. Provide your API key as the basic auth username value. You don’t need to provide a password.
+If you need to authenticate using bearer auth (for example, for a cross-origin request), use
+instead of
+Make all API requests over
+[link] HTTPS
+. Calls made over plain HTTP fail. API requests without authentication also fail.
+[link] Errors
+Stripe uses conventional HTTP response codes to indicate the success or failure of an API request. In general:
+Attributes
+More
+[link] Handling errors
+Our client libraries raise exceptions for many reasons, such as a failed charge, invalid parameters, authentication errors, and network unavailability. We recommend writing code that gracefully handles all possible API exceptions.
+[link] Expanding Responses
+Many objects allow you to request additional information as an expanded response by using the
+request parameter. This parameter is available on all API requests, and applies to the response of that request only. You can expand responses in two ways: by expanding the ID of a related object that appears in the response, or by requesting a field that isn’t included by default. For example, a
+might have an associated
+ID that you can expand in line using the
+request parameter—the
+label in this documentation indicates which ID fields you can expand into objects. Some fields, such as the
+and
+fields for the
+object, aren’t included in the response by default, but you can request them the same way.
+You can expand recursively by specifying nested fields after a dot (
+). For example, requesting
+on a charge expands the
+property into a full
+object, then expands the
+property on that payment intent into a full
+object. You can expand multiple objects at the same time by including multiple items in the
+array, up to a maximum depth of four levels—for example, the deepest expansion allowed when listing charges is
+You can use the
+parameter on any endpoint that returns expandable fields, including list, create, and update endpoints. Expansions on list requests start with the
+property—for example, you can expand
+on a request to list charges and associated customers. Performing deep expansions on numerous list requests might result in slower processing times.
+[link] Idempotent requests
+The API supports
+[link] idempotency
+for safely retrying requests without accidentally performing the same operation twice. When creating or updating an object, use an idempotency key. Then, if a connection error occurs, you can safely repeat the request without risk of creating a second object or performing the update twice.
+To perform an idempotent request, provide an additional
+element to the request options.
+For API v1, Stripe saves the status code and body of the first request made with a given idempotency key after endpoint execution begins. Retries with the same key return the saved response, including
+errors. With
+[link] API v2
+, retries don’t repeat successful operations. Stripe retries failed or partially failed work to completion when possible and returns an updated response. If a retry can’t succeed, Stripe returns an error explaining why.
+A client generates an idempotency key, which is a unique key that the server uses to recognize subsequent retries of the same request. How you create unique keys is up to you, but we suggest using V4 UUIDs, or another random string with enough entropy to avoid collisions. Idempotency keys are up to 
+For API v1, you can remove keys from the system automatically after they’re at least 24 hours old. We generate a new request if a key is reused after the original is pruned. The idempotency layer compares incoming parameters to those of the original request and errors if they’re not the same to prev
+For API v1, we save results only after the execution of an endpoint begins. If incoming parameters fail validation, or the request conflicts with another request that’s executing concurrently, we don’t save the idempotent result because no API endpoint initiates the execution. You can retry these re
+[link] retry idempotent requests
+For API v1, all
+requests accept idempotency keys. Don’t send idempotency keys in
+requests because it has no effect. These requests are idempotent by definition.
+[link] Include-dependent response values (API v2)
+Some API v2 responses contain null values for certain properties by default, regardless of their actual values. That reduces the size of response payloads while maintaining the basic response structure. To retrieve the actual values for those properties, specify them in the
+array request parameter.
+To determine whether you need to use the
+parameter in a given request, look at the request description. The
+parameter’s enum values represent the response properties that depend on the
+parameter.
+NOTE
+Whether a response property defaults to null depends on the request endpoint, not the object that the endpoint references. If multiple endpoints return data from the same object, a particular property can depend on
+in one endpoint and return its actual value by default for a different endpoint.
+A hash
+property can depend on a single
+value, or on multiple
+values associated with its child properties. For example, when updating an Account, to return actual values for the entire
+hash
+, specify
+in the
+parameter. Otherwise, the
+is null in the response. However, to return actual values for the
+, you must specify individual configurations in the request. If you specify at least one configuration, but not all of them, specified configurations return actual values and unspecified configurations return null. If you don’t specify any configurations, the
+is null in the response.
+[link] Metadata
+Updateable Stripe objects—including
+[link] Account
+[link] Charge
+[link] Customer
+[link] PaymentIntent
+[link] Refund
+[link] Subscription
+, and
+[link] Transfer
+have a
+parameter. You can use this parameter to attach key-value data to these Stripe objects.
+You can specify up to 50 keys, with key names up to 40 characters long and values up to 500 characters long. Keys and values are stored as strings and can contain any characters with one exception: you can’t use square brackets ([ and ]) in keys.
+You can use metadata to store additional, structured information on an object. For example, you could store your user’s full name and corresponding unique identifier from your system on a Stripe
+object. Stripe doesn’t use metadata—for example, we don’t use it to authorize or decline a charge and it won’t be seen by your users unless you choose to show it to them.
+Some of the objects listed above also support a
+parameter. You can use the
+parameter to annotate a charge-for example, a human-readable description such as
+. Unlike
+is a single string, which your users might see (for example, in email receipts Stripe sends on your behalf).
+Don’t store any sensitive information (bank account numbers, card details, and so on) as metadata or in the
+Sample metadata use cases
+[link] Pagination
+All top-level API resources have support for bulk fetches through “list” API methods. For example, you can
+[link] list charges
+[link] list customers
+[link] list invoices
+. These list API methods share a common structure and accept, at a minimum, the following three parameters:
+Stripe’s list API methods use cursor-based
+[link] pagination
+through the
+parameters. Both parameters accept an existing object ID value (see below) and return objects in reverse chronological order. The
+parameter returns objects listed before the named object. The
+parameter returns objects listed after the named object. These parameters are mutually exclusive. You can use either the
+or
+parameter, but not both simultaneously.
+Our client libraries offer
+[link] auto-pagination helpers
+to traverse all pages of a list.
+Parameters
+List Response Format
+V2 API PAGINATION
+APIs within the
+namespace contain a different
+interface than the
+namespace.
+[link] Search
+Some top-level API resource have support for retrieval via “search” API methods. For example, you can
+[link] search charges
+[link] search customers
+[link] search subscriptions
+Stripe’s search API methods utilize cursor-based pagination via the
+request parameter and
+response parameter. For example, if you make a search request and receive
+in the response, your subsequent call can include
+to fetch the next page of results.
+[link] auto-pagination
+helpers to easily traverse all pages of a search result.
+Search request format
+Search response format
+[link] Auto-pagination
+Our libraries support auto-pagination. This feature allows you to easily iterate through large lists of resources without having to manually perform the requests to fetch subsequent pages.
+Since curl simply emits raw HTTP requests, it doesn’t support auto-pagination.
+[link] Request IDs
+Each API request has an associated request identifier. You can find this value in the response headers, under
+. You can also find request identifiers in the URLs of individual request logs in your
+[link] Dashboard
+To expedite the resolution process, provide the request identifier when you contact us about a specific request.
+[link] Connected Accounts
+If you use Stripe
+[link] Connect
+, you can issue requests on behalf of your
+[link] connected accounts
+. To act as a connected account, include a
+header containing the connected account ID, which typically starts with the
+prefix.
+The connected account ID is set per-request. Methods on the returned object reuse the same account ID.
+[link] Versioning
+Starting with the 2024-09-30.acacia release, Stripe follows a
+[link] new API release process
+where we release new API versions monthly with no breaking changes. Twice a year, we issue a new major release (for example,
+[link] Basil
+) that starts with an API version containing breaking changes. You can safely upgrade to any monthly release without updating your code. Upgrading to a new major release can require changes to your existing integration.
+The current version is
+2026-09-30.endive
+. For information on all API updates, view our
+[link] API changelog
+. To upgrade your API version, see
+[link] API upgrades
+Requests made with curl use your Stripe account’s default API version (controlled in
+[link] Workbench
+) unless you override it by setting the
+header.
+Webhook events also use your account’s default API version unless you set an API version during
+[link] endpoint creation
+You can upgrade your API version in
+. As a precaution, use API versioning to test a new API version before committing to an upgrade.
+[link] Enums
+Some properties on API resources use a fixed set of possible string values, which are known as enums. Enums can be
+Handling open enums in responses
+Don’t assume that the values documented for an open enum are exhaustive. When you read an open enum from an API response, your code should include a safe fallback—such as a default branch in a switch statement—to gracefully handle values your integration doesn’t yet recognize.
+Sending enum values in requests
+When sending an enum value in a request, use only the values documented for the parameter you’re setting. Even if an enum is open, Stripe validates request values against the set of values that are currently supported.
+Introduction
+Authentication
+Errors
+Expanding Responses
+Idempotent requests
+Include-dependent response values (API v2)
+Metadata
+Pagination
+Request IDs
+Connected Accounts
+Versioning
+Enums
+Accounts
+v2
+Account Links
+Account Tokens
+Balances
+Balance Transactions
+Charges
+Customers
+Customer Sessions
+Disputes
+Events
+Event Destinations
+Files
+File Links
+Mandates
+Payment Intents
+Persons
+Person Tokens
+Setup Intents
+Setup Attempts
+Stripe Balance Debit Agreements
+3DS Authentications
+Payouts
+Refunds
+Confirmation Tokens
+Tokens
+Ephemeral Keys
+Payment Method Configurations
+Payment Method Domains
+Bank Accounts
+Cash Balances
+Cash Balance Transactions
+Cards
+Sources
+Prices
+Coupons
+Promotion Codes
+Discounts
+Tax Codes
+Tax Rates
+Shipping Rates
+Trial Offers
+Shared Payment Issued Tokens
+Shared Payment Granted Tokens
+Checkout Sessions
+Alerts
+Credit Balance Summaries
+Credit Balance Transactions
+Credit Grants
+Credit Notes
+Customer Balance Transactions
+Customer Portal Configurations
+Customer Portal Sessions
+Feedback Options
+Invoices
+Invoice Items
+Invoice Line Items
+Invoice Payments
+Invoice Rendering Templates
+Meters
+Meter Events
+Meter Event Adjustment
+Meter Event Adjustments
+Meter Event Streams
+Meter Event Summary
+Plans
+Quotes
+Subscriptions
+Subscription Items
+Subscription Schedules
+Tax IDs
+Test Clocks
+Financing Offers
+Financing Summaries
+Login Links
+Account Sessions
+Application Fees
+Application Fee Refunds
+Capabilities
+Country Specs
+Balance Settings
+External Bank Accounts
+External Account Cards
+Top-ups
+Transfers
+Transfer Reversals
+Secrets
+App Installs
+2026-09-30
+endive
+API Reference
+Docs
+Support
+Sign in
+Ask about this section
+View as Markdown
+REST
+form-encoded
+JSON-encoded
+sandboxes
+authenticate
+v2 APIs
+versions
+Log in
+Yes
+No
+API keys
+the Stripe Dashboard
+sk
+test
+restricted API key
+rk
+live
+best practices
+HTTP Basic Auth
+-H "Authorization: Bearer
+[button] sk_test_... sk_test_...
+-u
+HTTPS
+Codes in the
+range indicate success.
+range indicate an error that failed given the information provided. For example, an omitted required parameter, a failed charge, or a
+[link] declined
+card.
+range indicate an error with the Stripe servers (these are rare).
+[heading] ​ ​ code nullable string
+[heading] ​ ​ decline_ code nullable string
+[heading] ​ ​ message nullable string
+[heading] ​ ​ param nullable string
+[heading] ​ ​ payment_ intent nullable object
+[heading] ​ ​ type enum
+[button] Expand all
+[heading] ​ ​ advice_ code nullable string
+[heading] ​ ​ charge nullable string
+[heading] ​ ​ doc_ url nullable string
+[heading] ​ ​ network_ advice_ code nullable string
+[heading] ​ ​ network_ decline_ code nullable string
+[heading] ​ ​ payment_ method nullable object
+[heading] ​ ​ payment_ method_ type nullable string
+[heading] ​ ​ request_ log_ url nullable string
+[heading] ​ ​ setup_ intent nullable object
+[heading] ​ ​ source nullable object
+Handling errors
+Related
+guide
+[link] Error Handling
+expand
+Charge
+Customer
+expandable
+number
+cvc
+Issuing Card
+payment
+intent
+customer
+PaymentIntent
+data
+default
+source
+customers
+[link] Expanding responses
+video
+[link] Expand
+idempotency
+IdempotencyKey
+500
+API v2
+retry idempotent requests
+POST
+GET
+DELETE
+include
+identity
+configuration
+[link] Include-dependent response values
+Account
+Refund
+Subscription
+Transfer
+metadata
+description
+2 shirts for test@example
+com
+: Attach your system’s unique IDs to a Stripe object to simplify lookups. For example, add your order number to a charge, your user ID to a customer or recipient, or a unique receipt number to a transfer.
+: Store information about the reason for a refund and the individual responsible for its creation.
+: Annotate a customer by storing an internal ID for your future use.
+list charges
+list customers
+list invoices
+limit
+starting
+after
+ending
+before
+pagination
+auto-pagination helpers
+[heading] ​ ​ limit optional, default is 10
+[heading] ​ ​ starting_ after optional object ID
+[heading] ​ ​ ending_ before optional object ID
+[heading] ​ ​ object string, value is "list"
+[heading] ​ ​ data array
+[heading] ​ ​ has_ more boolean
+[heading] ​ ​ url url
+/v2
+v1
+Search
+search charges
+search customers
+search subscriptions
+page
+next
+"next
+page": "pagination
+key"
+page=pagination
+key
+auto-pagination
+[heading] ​ ​ query required
+[heading] ​ ​ limit optional
+[heading] ​ ​ page optional
+[heading] ​ ​ object string, value is "search_result"
+[heading] ​ ​ url string
+[heading] ​ ​ next_ page string
+[heading] ​ ​ total_ count optional positive integer or zero
+Auto-pagination
+Request-Id
+Dashboard
+connected accounts
+Stripe-Account
+acct
+[link] Making API calls for connected accounts
+new API release process
+Basil
+API changelog
+API upgrades
+Workbench
+Stripe-Version
+endpoint creation
+closed
+open
+: The set of values for the enum is fixed and won’t grow or change over time.
+: The set of values for the enum can grow or change over time. Stripe can add new values as a backward-compatible change without requiring an
+[link] API version
+upgrade. Each enum’s reference entry indicates whether it is open.
+Need help?
+[link] Contact Support
+Chat with Stripe developers on
+[link] Discord
+Check out our
+[link] changelog
+Questions?
+[link] Contact Sales
+LLM?
+[link] Read llms.txt
+Powered by
+[link] Markdoc
+Copy for LLM
+sk_test_...
+2xx
+4xx
+declined
+5xx
+For some errors that could be handled programmatically, a short string indicating the
+[link] error code
+reported.
+For card errors resulting from a card issuer decline, a short string indicating the
+[link] card issuer’s reason for the decline
+if they provide one.
+A human-readable message providing more details about the error. For card errors, these messages can be shown to your users.
+If the error is parameter-specific, the parameter related to the error. For example, you can use this to display a message near the correct form field.
+The
+[link] PaymentIntent object
+for errors returned on a request involving a PaymentIntent.
+The type of error returned. One of
+, or
+Possible enum values
+Expand all
+Error Handling
+Expanding responses
+Expand
+Include-dependent response values
+Link IDs
+Refund papertrails
+Customer details
+This specifies a limit on the number of objects to return, ranging between 1 and 100.
+A cursor to use in pagination.
+is an object ID that defines your place in the list. For example, if you make a list request and receive 100 objects, ending with
+, your subsequent call can include
+to fetch the next page of the list.
+is an object ID that defines your place in the list. For example, if you make a list request and receive 100 objects, starting with
+to fetch the previous page of the list.
+A string that provides a description of the object type that returns.
+An array containing the actual response elements, paginated by any request parameters.
+Whether or not there are more elements available after this set. If
+, this set comprises the end of the list.
+The URL for accessing this list.
+The search query string. See
+[link] search query language
+A limit on the number of objects returned. Limit can range between 1 and 100, and the default is 10.
+A cursor for pagination across multiple pages of results. Don’t include this parameter on the first call. Use the
+value returned in a previous response to request subsequent results.
+A string describing the object type returned.
+A cursor for use in pagination. If
+is true, you can pass the value of
+to a subsequent call to fetch the next page of results.
+The total number of objects that match the query, only accurate up to 10,000. This field isn’t included by default. To include it in the response,
+[link] expand
+the
+field.
+Making API calls for connected accounts
+Closed
+Open
+API version
+Contact Support
+Discord
+changelog
+Contact Sales
+Read llms.txt
+Markdoc
+Many of these include an
+that briefly explains the error reported.
+See
+[link] Error handling
+for guidance.
+code
+nullable
+string
+error code
+decline
+card issuer’s reason for the decline
+message
+param
+object
+PaymentIntent object
+type
+enum
+api
+error
+card
+invalid
+request
+advice
+charge
+doc
+url
+network
+method
+log
+setup
+optional, default is 10
+optional object ID
+obj
+foo
+after=obj
+bar
+before=obj
+string, value is "list"
+array
+has
+more
+boolean
+false
+query
+required
+search query language
+optional
+string, value is "search_result"
+total
+count
+optional positive integer or zero
+Error handling
+
+== NETWORK (method status mime host/path) ==
+hosts: 
+
+== SCRIPTS (by host) ==
+
+
+== STORAGE (values redacted by REA) ==
+localStorage: []
+sessionStorage: []
+indexedDB: ["docs"]; caches: []
+
+== METADATA agent hints ==
+[]
+
+== LIMITATIONS ==
+- Artifact identity is unavailable for this observation.
+- Observation starts when REA attaches; prior network and console activity is unavailable.
+- Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.
+- Source maps are reported only as declarative URLs and are not fetched.
+- URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.
+- CDP discovery omitted the target attachment state; attached is reported as unknown.
+- Browser host platform and architecture were not observed.

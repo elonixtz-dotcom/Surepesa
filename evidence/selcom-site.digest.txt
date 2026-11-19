@@ -1,0 +1,422 @@
+EVIDENCE ev_0037f87523a6feb740f4cc35ac75ab00085dccd19a0494fbe82c15b410ad72c8
+TITLE Selcom
+URL https://www.selcom.net/
+COMPLETENESS policy_filtered; conditions: attach_limited | policy_filtered
+DOM nodes 3971; a11y nodes 1274; scripts 12; requests 0
+
+== PAGE TEXT (accessibility tree, deduped) ==
+[link] SKIP TO CONTENT
+SKIP TO CONTENT
+[link] Selcom Paytech
+[link] Selcom Group
+[link] Selcom Bank
+[link] Selcom Pesa
+[link] Selcom Business
+[link] SW
+[link] EN
+Selcom Group
+Selcom Bank
+Selcom Pesa
+Selcom Business
+SW
+EN
+[link] Instagram
+[link] Selcom Tanzania on Facebook
+[link] Twitter
+[link] LinkedIn
+[link] TikTok
+[link] Contact us
+[link] Selcom Kazi Privacy Policy
+[link] Selcom Huduma Privacy Policy
+[link] Puma Elite Cards
+[link] Privacy Policy
+Careers
+News
+Selcom Paytech is regulated by Bank of Tanzania
+[heading] Kadi kama Huduma
+[heading] Malipo ya Kuvuka Mipaka
+[heading] Upokeaji wa Malipo ya Kadi
+[heading] Maswali Yanayoulizwa Mara kwa Mara
+[heading] Kuwa Wakala, Mfanyabiashara au Mshirika wa Selcom
+Contact us
+Selcom Paytech
+Selcom Kazi Privacy Policy
+Selcom Huduma Privacy Policy
+Puma Elite Cards
+Privacy Policy
+[heading] Kwa ajili ya Africa
+[heading] #SelcomInatosha
+inatoa suluhisho mbalimbali yanayohusisha upokeaji wa malipo, huduma za benki kupitia simu, huduma za kibenki kupitia mawakala, utoaji wa kadi, huduma za kutuma na kupokea fedha, ukusanyaji wa mapato na biashara mtandaoni. Kwa kuzingatia kwa dhati
+, Selcom inasaidia kuziba mapengo katika huduma za malipo na kuchochea ukuaji wa uchumi barani Afrika.
+Mtandao wa mawakala ndio unaofanya fedha za kidijitali ziweze kutumika kwa urahisi katika uchumi unaotegemea fedha taslimu.
+wanapatikana karibu nawe katika maduka, vibanda, maduka makubwa na vituo vya mafuta kote Tanzania wakitoa huduma ambazo kwa kawaida zingetolewa na tawi la benki.
+[button] Uwezo wa Kuzalisha Kipato
+[button] 35+ Washirika wa Uwakala wa Kibenki
+[button] Floti moja
+[button] Usuluhishaji wa Miamala Kiotomatiki wa T+1
+[button] Muunganisho wa POS na ERP
+ni suluhisho la malipo linalotolewa na Selcom, mtoa huduma wa uchakataji wa malipo na teknolojia ya kifedha nchini Tanzania. Huziwezesha biashara kupokea malipo ya kidijitali kutoka kwa wateja, bila kujali mteja anatumia benki gani, mtandao gani ya simu au kadi gani ya malipo.
+[button] Kituo Kimoja cha Upokeaji wa Malipo
+[button] Ulinzi wa Kadi na Biashara Mtandaoni
+[button] Muingiliano Kamili wa Mitandao
+[button] Malipo ya Mbali Kupitia Link
+[button] Mauzo kwenda Benki au Mtandao wa Simu
+[button] Ulinganifu na Mifumo ya ERP na POS
+Kama
+, Selcom ina idhini ya moja kwa moja kutoka Mastercard ya kuzalisha
+, kuchakata miamala ya mfumo wa Mastercard na kutoa kadi za malipo na za kidijitali duniani kote, bila kutegemea benki ya kati ya mtu wa tatu.
+[button] Kadi kama Huduma (CaaS)
+[button] Tayari Kutumika na Linaloendeshwa na API
+[button] Programu za Matumizi Maalum (Closed-Loop)
+[button] Matumizi ya Kadi Duniani Kote
+[button] Utekelezaji wa Haraka na Wenye Gharama Nafuu
+[button] Usalama wa Juu na Malipo ya Bila Kugusa
+Selcom inaendesha
+, ikiwezeshwa na hadhi yake kama
+na
+Badala ya kutegemea mitandao ya kawaida na yenye mchakato mrefu ya benki za wakala kama
+kwa uhamishaji wa fedha wa kila siku, Selcom hutumia njia za moja kwa moja za mifumo ya malipo (scheme rails) pamoja na mitandao ya waunganishaji (aggregator rails) kuwezesha
+Selcom Card Acquiring huziwezesha biashara kupokea malipo ya kadi kupitia njia mbalimbali, katika mazingira ya halisi na ya kidijitali.
+[button] Link ya Malipo
+[button] Bila kuwepo kadi
+[button] Malipo ya Biashara Mtandaoni
+[button] Malipo ya Kadi Kupitia POS
+[button] Ni biashara gani zinaweza kutumia Selcom Lipa?
+[button] Ni njia gani za malipo ninazoweza kupokea kupitia Selcom Lipa?
+[button] Ninawezaje kuanza kutumia Selcom Lipa?
+[button] Selcom Huduma inaweza kufanya nini?
+[button] Kama Selcom Huduma Wakala, ninapataje mapato?
+[button] Jinsi ya kuwa Selcom Huduma Wakala
+#SelcomInatosha
+ubunifu, muunganisho na ujumuishi wa kifedha
+Mawakala wa Selcom Huduma
+Uwezo wa Kuzalisha Kipato
+35+ Washirika wa Uwakala wa Kibenki
+Floti moja
+Usuluhishaji wa Miamala Kiotomatiki wa T+1
+Muunganisho wa POS na ERP
+Selcom Lipa
+Kituo Kimoja cha Upokeaji wa Malipo
+Ulinzi wa Kadi na Biashara Mtandaoni
+Muingiliano Kamili wa Mitandao
+Malipo ya Mbali Kupitia Link
+Mauzo kwenda Benki au Mtandao wa Simu
+Ulinganifu na Mifumo ya ERP na POS
+Principal Mastercard Member
+BINs (Bank Identification Numbers)
+Kadi kama Huduma
+Kadi kama Huduma (CaaS)
+Tayari Kutumika na Linaloendeshwa na API
+Programu za Matumizi Maalum (Closed-Loop)
+Matumizi ya Kadi Duniani Kote
+Utekelezaji wa Haraka na Wenye Gharama Nafuu
+Usalama wa Juu na Malipo ya Bila Kugusa
+Malipo ya Kuvuka Mipaka
+miundombinu ya malipo ya kimataifa
+IMT Hub iliyoidhinishwa
+Principal Member wa Mastercard na Visa
+SWIFT
+malipo ya kuvuka mipaka kwa haraka na gharama nafuu.
+Upokeaji wa Malipo ya Kadi
+Pokea malipo ya kadi popote walipo wateja wako.
+Link ya Malipo
+Bila kuwepo kadi
+Malipo ya Biashara Mtandaoni
+Malipo ya Kadi Kupitia POS
+Maswali Yanayoulizwa Mara kwa Mara
+Ni biashara gani zinaweza kutumia Selcom Lipa?
+Ni njia gani za malipo ninazoweza kupokea kupitia Selcom Lipa?
+Ninawezaje kuanza kutumia Selcom Lipa?
+Selcom Huduma inaweza kufanya nini?
+Kama Selcom Huduma Wakala, ninapataje mapato?
+Jinsi ya kuwa Selcom Huduma Wakala
+CONTACT US
+Kuwa Wakala, Mfanyabiashara au Mshirika wa Selcom
+[textbox] Barua pepe (required)
+[textbox] Mada (required)
+[textbox] Ujumbe (required)
+[button] Submit →
+Kwa ajili ya Africa
+Jina
+[textbox] First Name (required)
+[textbox] Last Name (required)
+Simu
+(required)
+[textbox] Number
++255
+Barua pepe
+Mada
+Ujumbe
+First Name
+Last Name
+Country
+[combobox] Country
+Number
+[option] Afghanistan
+[option] Åland Islands
+[option] Albania
+[option] Algeria
+[option] American Samoa
+[option] Andorra
+[option] Angola
+[option] Anguilla
+[option] Antigua & Barbuda
+[option] Argentina
+[option] Armenia
+[option] Aruba
+[option] Ascension Island
+[option] Australia
+[option] Austria
+[option] Azerbaijan
+[option] Bahamas
+[option] Bahrain
+[option] Bangladesh
+[option] Barbados
+[option] Belarus
+[option] Belgium
+[option] Belize
+[option] Benin
+[option] Bermuda
+[option] Bhutan
+[option] Bolivia
+[option] Bosnia & Herzegovina
+[option] Botswana
+[option] Brazil
+[option] British Indian Ocean Territory
+[option] British Virgin Islands
+[option] Brunei
+[option] Bulgaria
+[option] Burkina Faso
+[option] Burundi
+[option] Cambodia
+[option] Cameroon
+[option] Canada
+[option] Cape Verde
+[option] Caribbean Netherlands
+[option] Cayman Islands
+[option] Central African Republic
+[option] Chad
+[option] Chile
+[option] China
+[option] Christmas Island
+[option] Cocos (Keeling) Islands
+[option] Colombia
+[option] Comoros
+[option] Congo - Brazzaville
+[option] Congo - Kinshasa
+[option] Cook Islands
+[option] Costa Rica
+[option] Côte d’Ivoire
+[option] Croatia
+[option] Cuba
+[option] Curaçao
+[option] Cyprus
+[option] Czechia
+[option] Denmark
+[option] Djibouti
+[option] Dominica
+[option] Dominican Republic
+[option] Ecuador
+[option] Egypt
+[option] El Salvador
+[option] Equatorial Guinea
+[option] Eritrea
+[option] Estonia
+[option] Eswatini
+[option] Ethiopia
+[option] Falkland Islands
+[option] Faroe Islands
+[option] Fiji
+[option] Finland
+[option] France
+[option] French Guiana
+[option] French Polynesia
+[option] Gabon
+[option] Gambia
+[option] Georgia
+[option] Germany
+[option] Ghana
+[option] Gibraltar
+[option] Greece
+[option] Greenland
+[option] Grenada
+[option] Guadeloupe
+[option] Guam
+[option] Guatemala
+[option] Guernsey
+[option] Guinea
+[option] Guinea-Bissau
+[option] Guyana
+[option] Haiti
+[option] Honduras
+[option] Hong Kong SAR China
+[option] Hungary
+[option] Iceland
+[option] India
+[option] Indonesia
+[option] Iran
+[option] Iraq
+[option] Ireland
+[option] Isle of Man
+[option] Israel
+[option] Italy
+[option] Jamaica
+[option] Japan
+[option] Jersey
+[option] Jordan
+[option] Kazakhstan
+[option] Kenya
+[option] Kiribati
+[option] Kosovo
+[option] Kuwait
+[option] Kyrgyzstan
+[option] Laos
+[option] Latvia
+[option] Lebanon
+[option] Lesotho
+[option] Liberia
+[option] Libya
+[option] Liechtenstein
+[option] Lithuania
+[option] Luxembourg
+[option] Macao SAR China
+[option] Madagascar
+[option] Malawi
+[option] Malaysia
+[option] Maldives
+[option] Mali
+[option] Malta
+[option] Marshall Islands
+[option] Martinique
+[option] Mauritania
+[option] Mauritius
+[option] Mayotte
+[option] Mexico
+[option] Micronesia
+[option] Moldova
+[option] Monaco
+[option] Mongolia
+[option] Montenegro
+[option] Montserrat
+[option] Morocco
+[option] Mozambique
+[option] Myanmar (Burma)
+[option] Namibia
+[option] Nauru
+[option] Nepal
+[option] Netherlands
+[option] New Caledonia
+[option] New Zealand
+[option] Nicaragua
+[option] Niger
+[option] Nigeria
+[option] Niue
+[option] Norfolk Island
+[option] North Korea
+[option] North Macedonia
+[option] Northern Mariana Islands
+[option] Norway
+[option] Oman
+[option] Pakistan
+[option] Palau
+[option] Palestinian Territories
+[option] Panama
+[option] Papua New Guinea
+[option] Paraguay
+[option] Peru
+[option] Philippines
+[option] Poland
+[option] Portugal
+[option] Puerto Rico
+[option] Qatar
+[option] Réunion
+[option] Romania
+[option] Russia
+[option] Rwanda
+[option] Samoa
+[option] San Marino
+[option] São Tomé & Príncipe
+[option] Saudi Arabia
+[option] Senegal
+[option] Serbia
+[option] Seychelles
+[option] Sierra Leone
+[option] Singapore
+[option] Sint Maarten
+[option] Slovakia
+[option] Slovenia
+[option] Solomon Islands
+[option] Somalia
+[option] South Africa
+[option] South Korea
+[option] South Sudan
+[option] Spain
+[option] Sri Lanka
+[option] St. Barthélemy
+[option] St. Helena
+[option] St. Kitts & Nevis
+[option] St. Lucia
+[option] St. Martin
+[option] St. Pierre & Miquelon
+[option] St. Vincent & Grenadines
+[option] Sudan
+[option] Suriname
+[option] Svalbard & Jan Mayen
+[option] Sweden
+[option] Switzerland
+[option] Syria
+[option] Taiwan
+[option] Tajikistan
+[option] Tanzania
+[option] Thailand
+[option] Timor-Leste
+[option] Togo
+[option] Tokelau
+[option] Tonga
+[option] Trinidad & Tobago
+[option] Tristan da Cunha
+[option] Tunisia
+[option] Türkiye
+[option] Turkmenistan
+[option] Turks & Caicos Islands
+[option] Tuvalu
+[option] U.S. Virgin Islands
+[option] Uganda
+[option] Ukraine
+[option] United Arab Emirates
+[option] United Kingdom
+[option] United States
+[option] Uruguay
+[option] Uzbekistan
+[option] Vanuatu
+[option] Vatican City
+[option] Venezuela
+[option] Vietnam
+[option] Wallis & Futuna
+[option] Western Sahara
+[option] Yemen
+[option] Zambia
+[option] Zimbabwe
+
+== NETWORK (method status mime host/path) ==
+hosts: 
+
+== SCRIPTS (by host) ==
+www.selcom.net(12)
+
+== STORAGE (values redacted by REA) ==
+localStorage: ["test","lastExternalReferrer","lastExternalReferrerTime"]
+sessionStorage: []
+indexedDB: []; caches: []
+
+== METADATA agent hints ==
+[]
+
+== LIMITATIONS ==
+- Artifact identity is unavailable for this observation.
+- Observation starts when REA attaches; prior network and console activity is unavailable.
+- Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.
+- Source maps are reported only as declarative URLs and are not fetched.
+- URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.
+- CDP discovery omitted the target attachment state; attached is reported as unknown.
+- Browser host platform and architecture were not observed.

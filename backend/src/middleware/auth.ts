@@ -1,9 +1,10 @@
 import { RequestHandler } from 'express';
-import { createRemoteJWKSet, jwtVerify, JWTPayload } from 'jose';
+import type { JWTPayload } from 'jose';
 import { User } from '@prisma/client';
 import { env } from '../config/env';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/errors';
+import { loadJose } from '../lib/jose';
 
 /**
  * Neon Auth (Managed Better Auth) issues short-lived EdDSA JWTs. The Flutter app signs in
@@ -11,7 +12,7 @@ import { AppError } from '../lib/errors';
  * We verify signature, issuer and audience against the branch's JWKS — nothing else from
  * the client is trusted.
  */
-const jwks = createRemoteJWKSet(new URL(env.NEON_AUTH_JWKS_URL));
+let jwks: ReturnType<Awaited<ReturnType<typeof loadJose>>['createRemoteJWKSet']> | undefined;
 const issuer = new URL(env.NEON_AUTH_BASE_URL).origin;
 
 export interface AuthClaims extends JWTPayload {
@@ -33,6 +34,8 @@ declare global {
 }
 
 export async function verifyAccessToken(token: string): Promise<AuthClaims> {
+  const { createRemoteJWKSet, jwtVerify } = await loadJose();
+  jwks ??= createRemoteJWKSet(new URL(env.NEON_AUTH_JWKS_URL));
   const { payload } = await jwtVerify(token, jwks, { issuer, audience: issuer });
   if (!payload.sub) throw new Error('Token has no subject');
   return payload as AuthClaims;

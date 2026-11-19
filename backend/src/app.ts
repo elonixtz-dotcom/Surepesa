@@ -7,6 +7,16 @@ import { errorHandler, notFound } from './middleware/error-handler';
 import { healthRouter } from './routes/health.routes';
 import { meRouter } from './routes/me.routes';
 import { kycRouter } from './routes/kyc.routes';
+import { adminRouter } from './admin/router';
+import { providerCallbacksRouter } from './routes/provider-callbacks.routes';
+import { paymentsRouter } from './routes/payments.routes';
+import { qrRouter } from './routes/qr.routes';
+import { merchantRouter } from './routes/merchant.routes';
+import { cardsRouter } from './routes/cards.routes';
+import { cronRouter } from './routes/cron.routes';
+import { authProxyRouter } from './routes/auth-proxy.routes';
+import { voiceWebhooksRouter } from './routes/voice-webhooks.routes';
+import { pushBillRouter } from './modules/pushbill/pushbill.routes';
 
 export function createApp() {
   const app = express();
@@ -17,11 +27,24 @@ export function createApp() {
 
   app.use(helmet());
   app.use(cors({ origin: env.CORS_ORIGINS.length ? env.CORS_ORIGINS : false }));
+  // Provider callbacks need the raw body for signature checks: mount before the JSON parser.
+  app.use('/v1/providers', providerCallbacksRouter);
+  // Voice-carrier events likewise need the raw body (PushBill call state).
+  app.use('/v1/webhooks/voice', voiceWebhooksRouter);
+  // Neon Auth for the web portals, before the JSON parser so bodies pass through untouched.
+  app.use('/auth', authProxyRouter);
   app.use(express.json({ limit: '100kb' }));
 
   app.use('/health', healthRouter);
+  app.use('/api/cron', cronRouter);
   app.use('/v1/me', meRouter);
   app.use('/v1/kyc', kycRouter);
+  app.use('/v1/merchants', qrRouter); // static QR is public: must come before paymentsRouter's auth
+  app.use('/v1/merchant', merchantRouter);
+  app.use('/v1/cards', cardsRouter);
+  app.use('/v1/pushbills', pushBillRouter);
+  app.use('/v1', paymentsRouter);
+  app.use('/admin/v1', adminRouter);
 
   app.use(notFound);
   app.use(errorHandler);

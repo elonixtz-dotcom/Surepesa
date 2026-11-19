@@ -1,0 +1,62 @@
+EVIDENCE ev_158c07bc50ab588d10cba93049106e65fd7494523a71aad96f5aeb3c89ef5717
+TITLE Welcome to Vodacom Tanzania
+URL https://vodacom.co.tz/m-pesa
+COMPLETENESS policy_filtered; conditions: attach_limited | policy_filtered
+DOM nodes 274; a11y nodes 121; scripts 12; requests 0
+
+== PAGE TEXT (accessibility tree, deduped) ==
+© 2026 Vodacom Tanzania.
+[link] Privacy Policy
+[link] Help & Support
+[heading] 404
+[link] Go Home
+[heading] Welcome To Vodacom Tanzania!
+[button] Accept all
+[button] Reject all
+[button] Manage Individual preferences
+Privacy Policy
+Help & Support
+404
+Something's missing.
+Sorry, we can't find that page. You'll find lots to explore on the home page.
+Go Home
+Welcome To Vodacom Tanzania!
+We use cookies to ensure the proper functioning of our site, to personalize content and advertisements, to offer social media functions and to analyze our site visits. Absolutely necessary cookies are essential for the website to function and cannot be disabled from our system. We also share informa
+[button] Manage Preferences
+Accept all
+Reject all
+Manage Individual preferences
+[link] Personal
+[link] M-Pesa
+[link] Vodacom Business
+[link] Investor Relations
+[link] Our Purpose & ESG
+Manage Preferences
+Personal
+M-Pesa
+Vodacom Business
+Investor Relations
+Our Purpose & ESG
+
+== NETWORK (method status mime host/path) ==
+hosts: 
+
+== SCRIPTS (by host) ==
+vodacom.co.tz(12)
+
+== STORAGE (values redacted by REA) ==
+localStorage: []
+sessionStorage: []
+indexedDB: []; caches: ["workbox-precache-v2-https://vodacom.co.tz/"]
+
+== METADATA agent hints ==
+[]
+
+== LIMITATIONS ==
+- Artifact identity is unavailable for this observation.
+- Observation starts when REA attaches; prior network and console activity is unavailable.
+- Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.
+- Source maps are reported only as declarative URLs and are not fetched.
+- URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.
+- CDP discovery omitted the target attachment state; attached is reported as unknown.
+- Browser host platform and architecture were not observed.

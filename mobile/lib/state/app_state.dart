@@ -2,24 +2,42 @@ import 'package:flutter/widgets.dart';
 
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
+import '../services/cards_api.dart';
+import '../services/payments_api.dart';
+import '../services/pushbill_api.dart';
 import 'models.dart';
 
-enum AppStage { starting, signedOut, onboarding, ready }
+enum AppStage { starting, signedOut, onboarding, setPin, locked, ready }
 
 /// App-wide session state: who is signed in and their SurePesa account.
 class AppState extends ChangeNotifier {
   AppState({AuthService? auth}) : auth = auth ?? AuthService() {
     api = ApiClient(this.auth);
+    payments = PaymentsApi(api);
+    cards = CardsApi(api);
+    pushBills = PushBillApi(api);
   }
 
   final AuthService auth;
   late final ApiClient api;
+  late final PaymentsApi payments;
+  late final CardsApi cards;
+  late final PushBillApi pushBills;
 
   AppStage stage = AppStage.starting;
   Me? me;
 
+  /// A restored session opens locked; so does returning after [relockAfter] in the background.
+  static const relockAfter = Duration(minutes: 2);
+  bool _locked = false;
+  DateTime? _backgroundedAt;
+
+  /// Bumped whenever money moves, so lists of receipts know to reload.
+  int activityVersion = 0;
+
   Future<void> start() async {
     if (await auth.restore()) {
+      _locked = true;
       try {
         await refresh();
         return;
@@ -65,15 +83,57 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Sets (or, with [currentPin], changes) the transaction PIN.
+  Future<void> setPin(String pin, {String? currentPin}) async {
+    await payments.setPin(pin, currentPin: currentPin);
+    await refresh();
+  }
+
+  /// Call after a payment: reloads the balance and tells history lists to refresh.
+  Future<void> paymentMade() async {
+    activityVersion++;
+    try {
+      await refresh();
+    } catch (_) {
+      notifyListeners();
+    }
+  }
+
+  /// Unlocks with the transaction PIN; throws the server's WRONG_PIN / PIN_LOCKED.
+  Future<void> unlock(String pin) async {
+    await payments.verifyPin(pin);
+    _locked = false;
+    if (me != null) _applyMe(me!);
+  }
+
+  /// Called from the app lifecycle: lock again after a while in the background.
+  void backgrounded() => _backgroundedAt = DateTime.now();
+
+  void resumed() {
+    final since = _backgroundedAt;
+    _backgroundedAt = null;
+    if (since == null || stage != AppStage.ready) return;
+    if (DateTime.now().difference(since) >= relockAfter) {
+      _locked = true;
+      _setStage(AppStage.locked);
+    }
+  }
+
   Future<void> signOut() async {
     await auth.signOut();
+    _locked = false;
     me = null;
     _setStage(AppStage.signedOut);
   }
 
   void _applyMe(Me value) {
     me = value;
-    _setStage(value.needsOnboarding ? AppStage.onboarding : AppStage.ready);
+    _setStage(switch (value) {
+      Me(needsOnboarding: true) => AppStage.onboarding,
+      Me(hasPin: false) => AppStage.setPin,
+      _ when _locked => AppStage.locked,
+      _ => AppStage.ready,
+    });
   }
 
   void _setStage(AppStage value) {

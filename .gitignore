@@ -22,3 +22,15 @@ build/
 Thumbs.db
 .vscode/*
 !.vscode/extensions.json
+
+# Local-only notes (e.g. dev staff passwords)
+*.local.md
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# Vercel CLI project links
+.vercel
+
+# Vendored tools (cloned external repos)
+tools/unslop/

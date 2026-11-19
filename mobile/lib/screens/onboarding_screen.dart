@@ -58,7 +58,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         actions: [
           TextButton(
             onPressed: _busy ? null : () => AppScope.read(context).signOut(),
-            child: const Text('Sign out', style: TextStyle(color: SpColors.inkMuted)),
+            child: const Text('Sign out', style: TextStyle(color: SpColors.ink2)),
           ),
         ],
       ),
@@ -72,11 +72,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Set up your wallet', style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+                  const Text('STEP 1 OF 2', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.2, color: SpColors.teal)),
+                  const SizedBox(height: 8),
+                  Text('Set up your wallet', style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.4)),
                   const SizedBox(height: 6),
                   Text(
-                    'Your phone number is how friends find you on SurePesa.',
-                    style: text.bodyMedium?.copyWith(color: SpColors.inkMuted),
+                    'Use your legal name as it appears on your National ID. Your phone number is how people send you money.',
+                    style: text.bodyMedium?.copyWith(color: SpColors.ink2, height: 1.5),
                   ),
                   const SizedBox(height: 28),
                   Row(
@@ -85,7 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: TextFormField(
                           controller: _first,
                           textCapitalization: TextCapitalization.words,
-                          decoration: const InputDecoration(hintText: 'First name'),
+                          decoration: const InputDecoration(labelText: 'First name'),
                           validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                         ),
                       ),
@@ -94,7 +96,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: TextFormField(
                           controller: _last,
                           textCapitalization: TextCapitalization.words,
-                          decoration: const InputDecoration(hintText: 'Last name'),
+                          decoration: const InputDecoration(labelText: 'Last name'),
                           validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                         ),
                       ),
@@ -106,12 +108,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     keyboardType: TextInputType.phone,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
                     decoration: const InputDecoration(
+                      labelText: 'Mobile number',
                       hintText: '712 345 678',
+                      helperText: 'Vodacom, Yas, Airtel or Halotel',
                       prefixIcon: Padding(
                         padding: EdgeInsets.only(left: 16, right: 8),
                         child: Center(
                           widthFactor: 1,
-                          child: Text('🇹🇿 +255', style: TextStyle(fontWeight: FontWeight.w600)),
+                          child: Text('+255', style: TextStyle(fontWeight: FontWeight.w700, color: SpColors.ink2)),
                         ),
                       ),
                     ),
@@ -128,6 +132,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
                         : const Text('Continue'),
                   ),
+                  const SizedBox(height: 16),
+                  const SecurityNote(),
                 ],
               ),
             ),

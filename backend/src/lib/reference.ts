@@ -17,3 +17,6 @@ export const newMerchantCode = () => `SPM${randomCode(6)}`;
 
 /** Opaque token encoded in QR codes. */
 export const newQrToken = () => randomCode(20);
+
+/** Customer-facing PushBill session id, e.g. PB-7K2M9QX4 (32^8 ≈ 1.1e12 combinations). */
+export const newPushBillReference = () => `PB-${randomCode(8)}`;

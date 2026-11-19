@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
@@ -18,12 +19,16 @@ class AuthException implements Exception {
 /// Sign-in returns a long-lived session cookie, which is kept in the device's secure
 /// storage. API calls use a short-lived (15 min) JWT minted from that session via
 /// `/token`. The JWT is cached in memory and refreshed shortly before it expires.
+///
+/// In a browser the session cookie is HttpOnly and managed by the browser itself (same-origin
+/// through the /auth proxy), so only a marker that a session exists is stored.
 class AuthService {
   AuthService({FlutterSecureStorage? storage, http.Client? client})
       : _storage = storage ?? const FlutterSecureStorage(),
         _http = client ?? http.Client();
 
   static const _cookieKey = 'neon_auth_session_cookie';
+  static const _browserSession = 'browser';
   static final _sessionCookie = RegExp(r'(__Secure-neon-auth\.[A-Za-z0-9_.\-]+)=([^;,\s]+)');
 
   final FlutterSecureStorage _storage;
@@ -51,6 +56,15 @@ class AuthService {
         .post(_uri(path), headers: {'Content-Type': 'application/json'}, body: jsonEncode(body))
         .timeout(const Duration(seconds: 30));
     if (res.statusCode != 200) throw AuthException(_errorMessage(res));
+    // The SurePesa /auth proxy hands back the API JWT with the sign-in, saving a /token call.
+    final jwt = res.headers['set-auth-jwt'];
+    _jwt = jwt;
+    _jwtExpiresAt = jwt == null ? null : _expiryOf(jwt);
+    if (kIsWeb) {
+      _cookie = _browserSession;
+      await _storage.write(key: _cookieKey, value: _cookie);
+      return;
+    }
 
     // package:http joins repeated Set-Cookie headers with commas; pick out Neon Auth cookies.
     final matches = _sessionCookie.allMatches(res.headers['set-cookie'] ?? '');
@@ -58,7 +72,6 @@ class AuthService {
       throw AuthException('Signed in, but no session was returned. Please try again.');
     }
     _cookie = matches.map((m) => '${m.group(1)}=${m.group(2)}').join('; ');
-    _jwt = null;
     await _storage.write(key: _cookieKey, value: _cookie);
   }
 
@@ -69,7 +82,7 @@ class AuthService {
     if (_cookie == null) throw AuthException('Please sign in', sessionExpired: true);
 
     final res = await _http
-        .get(_uri('token'), headers: {'Cookie': _cookie!})
+        .get(_uri('token'), headers: kIsWeb ? const {} : {'Cookie': _cookie!})
         .timeout(const Duration(seconds: 30));
     final token = res.statusCode == 200
         ? (jsonDecode(res.body) as Map<String, dynamic>)['token'] as String?
@@ -92,11 +105,10 @@ class AuthService {
       await _http
           .post(
             _uri('sign-out'),
-            headers: {
-              'Cookie': cookie,
-              'Origin': 'http://localhost',
-              'Content-Type': 'application/json',
-            },
+            // Browsers send the cookie and Origin themselves and refuse to let code set them.
+            headers: kIsWeb
+                ? const {'Content-Type': 'application/json'}
+                : {'Cookie': cookie, 'Origin': 'http://localhost', 'Content-Type': 'application/json'},
             body: '{}',
           )
           .timeout(const Duration(seconds: 10));

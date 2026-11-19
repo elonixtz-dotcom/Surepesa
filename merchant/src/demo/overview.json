@@ -1,0 +1,284 @@
+{
+  "owner": {
+    "name": "JUMA HAMISI",
+    "phone": "+255 69* *** 008"
+  },
+  "businesses": [
+    {
+      "id": "12443ee8-f6a3-4b8d-9954-a5ef7e9cb3c4",
+      "tradingName": "Mama Ntilie Restaurant",
+      "merchantCode": "SPM100001"
+    }
+  ],
+  "business": {
+    "id": "12443ee8-f6a3-4b8d-9954-a5ef7e9cb3c4",
+    "tradingName": "Mama Ntilie Restaurant",
+    "legalName": "Mama Ntilie Foods Ltd",
+    "merchantCode": "SPM100001",
+    "kycStatus": "NOT_STARTED",
+    "balance": {
+      "value": "45500.00",
+      "formatted": "TZS 45,500.00"
+    }
+  },
+  "onboarding": {
+    "steps": [
+      {
+        "key": "details",
+        "label": "Business details",
+        "done": false,
+        "detail": "Add BRELA number or TIN"
+      },
+      {
+        "key": "verification",
+        "label": "Business verification",
+        "done": false,
+        "detail": "Upload your registration documents",
+        "state": "NOT_STARTED"
+      },
+      {
+        "key": "payout",
+        "label": "Payout account",
+        "done": true,
+        "detail": "Linked"
+      },
+      {
+        "key": "first_payment",
+        "label": "First payment",
+        "done": true,
+        "detail": "Received"
+      }
+    ],
+    "done": 2,
+    "total": 4
+  },
+  "stats": {
+    "volume30d": {
+      "value": "56500.00",
+      "formatted": "TZS 56,500.00"
+    },
+    "volumePrev30d": {
+      "value": "0.00",
+      "formatted": "TZS 0.00"
+    },
+    "payments30d": 3,
+    "customers": 3,
+    "successRate30d": 1
+  },
+  "daily": [
+    {
+      "day": "2026-10-04",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-05",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-06",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-07",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-08",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-09",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-10",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-11",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-12",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-13",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-14",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-15",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-16",
+      "count": 0,
+      "volume": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      }
+    },
+    {
+      "day": "2026-10-17",
+      "count": 3,
+      "volume": {
+        "value": "56500.00",
+        "formatted": "TZS 56,500.00"
+      }
+    }
+  ],
+  "recent": [
+    {
+      "reference": "SPX-4NQ1F5AXHK",
+      "type": "MERCHANT_PAYMENT",
+      "status": "SUCCESS",
+      "statusText": "Completed",
+      "final": true,
+      "direction": "IN",
+      "amount": {
+        "value": "32000.00",
+        "formatted": "TZS 32,000.00"
+      },
+      "fee": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      },
+      "total": {
+        "value": "32000.00",
+        "formatted": "TZS 32,000.00"
+      },
+      "currency": "TZS",
+      "counterparty": {
+        "name": "ZAVAN MOLLEL",
+        "account": "+255 69* *** 004"
+      },
+      "description": "Office catering",
+      "rail": null,
+      "relatedTo": null,
+      "refunded": {
+        "value": "5000.00",
+        "formatted": "TZS 5,000.00"
+      },
+      "createdAt": "2026-10-17T08:41:29.818Z",
+      "completedAt": "2026-10-17T08:41:32.731Z"
+    },
+    {
+      "reference": "SPX-BARHKRDQE2",
+      "type": "MERCHANT_PAYMENT",
+      "status": "SUCCESS",
+      "statusText": "Completed",
+      "final": true,
+      "direction": "IN",
+      "amount": {
+        "value": "6500.00",
+        "formatted": "TZS 6,500.00"
+      },
+      "fee": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      },
+      "total": {
+        "value": "6500.00",
+        "formatted": "TZS 6,500.00"
+      },
+      "currency": "TZS",
+      "counterparty": {
+        "name": "STACY KIMARO",
+        "account": "+255 69* *** 003"
+      },
+      "description": "Chai na maandazi",
+      "rail": null,
+      "relatedTo": null,
+      "refunded": null,
+      "createdAt": "2026-10-17T08:41:20.575Z",
+      "completedAt": "2026-10-17T08:41:25.941Z"
+    },
+    {
+      "reference": "SPX-HEF6CTVKD1",
+      "type": "MERCHANT_PAYMENT",
+      "status": "SUCCESS",
+      "statusText": "Completed",
+      "final": true,
+      "direction": "IN",
+      "amount": {
+        "value": "18000.00",
+        "formatted": "TZS 18,000.00"
+      },
+      "fee": {
+        "value": "0.00",
+        "formatted": "TZS 0.00"
+      },
+      "total": {
+        "value": "18000.00",
+        "formatted": "TZS 18,000.00"
+      },
+      "currency": "TZS",
+      "counterparty": {
+        "name": "HALCA ALANE",
+        "account": "+255 69* *** 001"
+      },
+      "description": "Lunch for 3",
+      "rail": null,
+      "relatedTo": null,
+      "refunded": {
+        "value": "6000.00",
+        "formatted": "TZS 6,000.00"
+      },
+      "createdAt": "2026-10-17T08:41:08.682Z",
+      "completedAt": "2026-10-17T08:41:14.711Z"
+    }
+  ],
+  "openPaymentRequests": 0
+}
