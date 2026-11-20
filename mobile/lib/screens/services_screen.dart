@@ -4,6 +4,9 @@ import '../core/theme.dart';
 import '../state/payment_models.dart';
 import '../widgets/common.dart';
 import 'cards/cards_screen.dart';
+import 'borderless/borderless_screen.dart';
+import 'circles/circles_screen.dart';
+import 'escrow/escrow_screen.dart';
 import 'linked_accounts_screen.dart';
 import 'pay/pay_form_screen.dart';
 import 'pushbill/pushbill_list_screen.dart';
@@ -20,6 +23,8 @@ class ServicesScreen extends StatelessWidget {
     (Icons.account_balance_rounded, 'Withdraw'),
     (Icons.storefront_rounded, 'Pay Merchant'),
     (Icons.phone_android_rounded, 'Mobile Money'),
+    (Icons.groups_rounded, 'Circles'),
+    (Icons.verified_user_rounded, 'Escrow'),
     (Icons.currency_exchange_rounded, 'Exchange'),
     (Icons.public_rounded, 'Cross-border'),
   ];
@@ -40,6 +45,12 @@ class ServicesScreen extends StatelessWidget {
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CardsScreen()));
     } else if (label == 'Mobile Money') {
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const LinkedAccountsScreen()));
+    } else if (label == 'Circles') {
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CirclesScreen()));
+    } else if (label == 'Escrow') {
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const EscrowScreen()));
+    } else if (label == 'Cross-border' || label == 'Exchange') {
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const BorderlessScreen()));
     } else {
       showComingSoon(context, label);
     }

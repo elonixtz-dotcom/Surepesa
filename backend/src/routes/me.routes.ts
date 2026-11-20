@@ -90,3 +90,32 @@ meRouter.post('/pin/verify', async (req, res) => {
   await verifyPin(req.user!.id, pin);
   res.status(204).end();
 });
+
+/** Latest in-app notifications for the bell, newest first. */
+meRouter.get('/notifications', async (req, res) => {
+  const notifications = await prisma.notification.findMany({
+    where: { userId: req.user!.id },
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+  });
+  res.json({
+    notifications: notifications.map((n) => ({
+      id: n.id,
+      title: n.title,
+      body: n.body,
+      data: n.data,
+      read: n.readAt != null,
+      createdAt: n.createdAt.toISOString(),
+    })),
+    unread: notifications.filter((n) => n.readAt == null).length,
+  });
+});
+
+/** Mark every notification as read (the bell screen calls this on open). */
+meRouter.post('/notifications/read-all', async (req, res) => {
+  await prisma.notification.updateMany({
+    where: { userId: req.user!.id, readAt: null },
+    data: { readAt: new Date() },
+  });
+  res.status(204).end();
+});

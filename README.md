@@ -14,11 +14,11 @@ Flutter app ──REST──▶ Node.js/Express API ──Prisma──▶ Neon P
 SurePesa is organised around six product capabilities (see `docs/blueprint/SUREPESA_IMPLEMENTATION_BLUEPRINT.md`):
 
 1. **Local Payments & Wallet Management** — send/receive, merchant QR and Lipa Namba payments, deposits and withdrawals. *In progress: prototype wallet, ledger and payment engine are running.*
-2. **PushBill ★** — a customer asks another SurePesa user to pay a merchant/agent directly, confirmed over an ordinary cellular voice call before authorisation. *Planned.*
-3. **Borderless Payments** — cross-border send/receive and FX quotes over supported corridors. *Planned.*
-4. **Circles ★** — open group goal/contribution tracking (Family, Student, Vikoba, Friends, Custom). Monitoring and coordination only: Circles never hold or control members' money. *Planned.*
-5. **Virtual Cards & Online Payments** — issuer-backed virtual cards with freeze/limits and online payments. *In progress: prepaid virtual cards run against a simulated issuer.*
-6. **Escrow ★** — protected buyer/seller deals with a dedicated per-deal escrow holding ledger, evidence, disputes, release and refund. *Planned.*
+2. **PushBill ★** — a customer asks another SurePesa user to pay a merchant/agent directly, confirmed over an ordinary cellular voice call before authorisation. *Implemented (voice confirmation simulated).*
+3. **Borderless Payments** — cross-border send/receive and FX quotes over supported corridors. *Implemented: corridors, 5-minute FX quotes and transfers over the simulated provider.*
+4. **Circles ★** — open group goal/contribution tracking (Family, Student, Vikoba, Friends, Custom). Monitoring and coordination only: Circles never hold or control members' money. *Implemented: a contribution only counts as confirmed when backed by the member's own completed payment.*
+5. **Virtual Cards & Online Payments** — issuer-backed virtual cards with freeze/limits and online payments. *Implemented: prepaid virtual cards run against a simulated issuer, with issuer webhooks and an online-services catalogue.*
+6. **Escrow ★** — protected buyer/seller deals with a dedicated per-deal escrow holding ledger, evidence, disputes, release and refund. *Implemented: per-deal escrow wallets on the double-entry ledger, fees on release only, full-principal refunds, admin dispute resolution.*
 
 Two product rules apply everywhere:
 
@@ -61,7 +61,8 @@ for them; `CORS_ORIGINS` only covers non-proxied browser clients (e.g. local dev
 
 Deploy note: Vercel builds production from `main`. After merging a branch that adds
 Prisma models, run `npm run db:deploy` (in `backend/`, with the production `DATABASE_URL`)
-before the new API code serves traffic.
+before the new API code serves traffic. Merging the Circles/Escrow/Borderless modules also
+needs `npx prisma db seed` once, so the TZ→KE corridor and the TZS→KES rate exist.
 
 ## Money rules
 
@@ -127,6 +128,19 @@ All `/v1` routes require `Authorization: Bearer <Neon Auth JWT>` (client: `authC
 | POST | `/v1/cards/:id/test-purchase` | Development only: the simulated issuer charges the card through the real decision path |
 | POST | `/v1/providers/:issuer/card-events` | Issuer webhook: authorisations (answered with approve/decline), reversals, refunds |
 | POST | `/v1/providers/:provider/callbacks` | Rail webhooks. Not user-authenticated: the provider's signature is the authentication. |
+| GET/POST | `/v1/circles` | Circles ★: list mine, create. A circle tracks goals and contributions; it never holds money. |
+| GET | `/v1/circles/invitations` | My pending invitations; `/invitations/:token/accept` / `/decline` act on them |
+| GET | `/v1/circles/:id` · `/progress` | Members, goals, events and confirmed-vs-declared totals |
+| POST | `/v1/circles/:id/invitations` · `/goals` · `/contributions` · `/leave` | Invite by phone, add goals, record a contribution (PROVIDER_CONFIRMED only when backed by the member's own completed payment) |
+| GET/POST | `/v1/escrow/cases` | Escrow ★: create and list deals (buyer or seller) |
+| POST | `/v1/escrow/cases/:id/funding-intents` | Buyer funds the deal's holding wallet. Needs `pin`. |
+| POST | `/v1/escrow/cases/:id/confirm-receipt` · `/refund` · `/disputes` | Release to the seller (fee on release only), refund the buyer in full, or open a dispute |
+| GET | `/v1/borderless/corridors` | Active cross-border corridors with limits |
+| POST | `/v1/borderless/quotes` | 5-minute FX quote: rate, fee, recipient amount. Sending consumes the quote exactly once. |
+| POST | `/v1/borderless/transfers` | Send a quoted transfer (needs `pin`, KYC approved, corridor limits). |
+| GET | `/v1/online-services` | Online-services catalogue; `/:id/payment-intents` charges a virtual card through the issuer decision path |
+| GET | `/v1/me/notifications` | In-app notifications; `/notifications/read-all` marks them read |
+| GET | `/api/cron/sweep-expiry` | Vercel cron: sweeps expired PushBill sessions, escrow funding deadlines and FX quotes |
 
 Amounts go in as decimal strings (`"25000"` or `"25000.50"`). Every response carries `{ value, formatted }`.
 

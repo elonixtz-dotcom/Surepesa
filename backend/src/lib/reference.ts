@@ -20,3 +20,15 @@ export const newQrToken = () => randomCode(20);
 
 /** Customer-facing PushBill session id, e.g. PB-7K2M9QX4 (32^8 ≈ 1.1e12 combinations). */
 export const newPushBillReference = () => `PB-${randomCode(8)}`;
+
+/** Customer-facing Circle id, e.g. CIR-7K2M9QX4. */
+export const newCircleReference = () => `CIR-${randomCode(8)}`;
+
+/** Opaque Circle invitation accept token. */
+export const newCircleInviteToken = () => randomCode(16);
+
+/** Customer-facing Escrow case id, e.g. ESC-7K2M9QX4. */
+export const newEscrowReference = () => `ESC-${randomCode(8)}`;
+
+/** Customer-facing cross-border transfer id, e.g. XBT-7K2M9QX4. */
+export const newCrossBorderReference = () => `XBT-${randomCode(8)}`;

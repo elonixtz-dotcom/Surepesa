@@ -51,6 +51,16 @@ class AuthService {
   Future<void> signIn({required String email, required String password}) =>
       _authenticate('sign-in/email', {'email': email, 'password': password});
 
+  /// Sends the password-reset email through Neon Auth. Succeeds silently for unknown
+  /// addresses so the screen can always show the same confirmation.
+  Future<void> requestPasswordReset(String email) async {
+    final res = await _http
+        .post(_uri('request-password-reset'),
+            headers: {'Content-Type': 'application/json'}, body: jsonEncode({'email': email}))
+        .timeout(const Duration(seconds: 30));
+    if (res.statusCode != 200) throw AuthException(_errorMessage(res));
+  }
+
   Future<void> _authenticate(String path, Map<String, String> body) async {
     final res = await _http
         .post(_uri(path), headers: {'Content-Type': 'application/json'}, body: jsonEncode(body))

@@ -108,6 +108,7 @@ enum WalletKind {
   SYSTEM_FEES // fee revenue
   SYSTEM_FX // FX position for currency conversion
   CARD // prepaid balance of one virtual card
+  ESCROW_HOLDING // dedicated per-deal escrow holding wallet; only the Escrow service may post to it
 }
 
 enum WalletStatus {
@@ -128,6 +129,9 @@ enum TransactionType {
   CARD_PURCHASE // card spend authorised by the issuer (card -> issuer float)
   CARD_REFUND // merchant refund to a card (issuer float -> card)
   FX_CONVERSION // wallet(currency A) -> wallet(currency B)
+  ESCROW_HOLD // buyer wallet -> per-deal escrow holding wallet
+  ESCROW_RELEASE // escrow holding wallet -> seller settlement
+  ESCROW_REFUND // escrow holding wallet -> buyer refund
   ADJUSTMENT // manual finance correction (admin, audited)
 }
 
@@ -146,6 +150,10 @@ enum LedgerEntryType {
   FX
   REVERSAL
   ADJUSTMENT
+  ESCROW_HOLD
+  ESCROW_RELEASE
+  ESCROW_REFUND
+  ESCROW_ADJUSTMENT
 }
 
 enum PaymentMethodType {
@@ -211,6 +219,17 @@ model User {
   pushBillRequests      PushBillSession[]     @relation("PushBillRequester")
   pushBillPayments      PushBillSession[]     @relation("PushBillPayer")
   pushBillConfirmations PushBillConfirmation[]
+  circlesOwned          Circle[]              @relation("CircleOwner")
+  circleMemberships     CircleMember[]
+  circleInvitesSent     CircleInvitation[]    @relation("CircleInviter")
+  circleInvitesReceived CircleInvitation[]    @relation("CircleInvitee")
+  escrowBuying          EscrowCase[]          @relation("EscrowBuyer")
+  escrowSelling         EscrowCase[]          @relation("EscrowSeller")
+  escrowEvidence        EscrowEvidence[]
+  escrowDisputesOpened  EscrowDispute[]       @relation("EscrowDisputeOpener")
+  fxQuotes              FxQuote[]
+  crossBorderSent       CrossBorderTransfer[] @relation("CrossBorderSender")
+  crossBorderReceived   CrossBorderTransfer[] @relation("CrossBorderRecipient")
 
   @@map("users")
 }
@@ -466,6 +485,7 @@ model Wallet {
   business Business?    @relation(fields: [businessId], references: [id])
   card     VirtualCard? @relation(fields: [cardId], references: [id])
   currency Currency     @relation(fields: [currencyCode], references: [code])
+  escrowCase EscrowCase?
 
   ledgerEntries        LedgerEntry[]
   outgoingTransactions Transaction[] @relation("SourceWallet")
@@ -541,6 +561,10 @@ model Transaction {
   supportCases  SupportCase[]
   approvals     ApprovalRequest[]
   pushBillSession PushBillSession?
+  contributionRecords ContributionRecord[]
+  escrowFundingCases EscrowCase[]
+  escrowPayouts EscrowPayout[]
+  crossBorderTransfer CrossBorderTransfer?
 
   // Same client retry => same transaction.
   @@unique([initiatorUserId, idempotencyKey])
@@ -690,6 +714,7 @@ model ExchangeRate {
   createdAt     DateTime  @default(now()) @map("created_at")
 
   transactions Transaction[]
+  fxQuotes     FxQuote[]
 
   @@index([baseCurrency, quoteCurrency, effectiveFrom])
   @@map("exchange_rates")
@@ -966,4 +991,552 @@ model PushBillEvent {
 
   @@index([sessionId, id])
   @@map("pushbill_events")
+}
+
+// ──────────────────────────── Circles ★ ────────────────────────────
+//
+// Open group goal/contribution tracking (blueprint §8). Circles are monitoring and
+// coordination tools ONLY: they never hold, move or control members' money. A
+// contribution is PROVIDER_CONFIRMED only when it is backed by a completed SurePesa
+// transaction; everything else is UNVERIFIED (self-reported).
+
+enum CircleType {
+  FAMILY
+  STUDENT
+  VIKOBA
+  FRIENDS
+  CUSTOM
+}
+
+enum CircleStatus {
+  ACTIVE
+  ARCHIVED // read-only; kept for history/reports
+}
+
+enum CircleRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum CircleMemberStatus {
+  ACTIVE
+  LEFT
+  REMOVED
+}
+
+enum CircleInvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  REVOKED
+}
+
+enum CircleGoalStatus {
+  ACTIVE
+  ACHIEVED
+  CANCELLED
+}
+
+enum ContributionFrequency {
+  ONCE
+  WEEKLY
+  MONTHLY
+}
+
+enum ContributionSource {
+  SELF_REPORT // the member typed it in; unverified by definition
+  PAYMENT_TRANSACTION // backed by a completed SurePesa transaction
+}
+
+enum ContributionVerification {
+  UNVERIFIED // self-reported; never shown as confirmed money
+  PROVIDER_CONFIRMED // tied to a SUCCESS transaction executed by the member
+}
+
+// One group around a shared purpose. Family/Student/Vikoba/Friends are templates on
+// this single engine — the type only changes defaults and labels.
+model Circle {
+  id           String       @id @default(uuid()) @db.Uuid
+  reference    String       @unique // customer-facing id, e.g. CIR-7K2M9QX4TB
+  ownerId      String       @map("owner_id") @db.Uuid
+  name         String
+  purpose      String?
+  type         CircleType
+  status       CircleStatus @default(ACTIVE)
+  currencyCode String       @default("TZS") @map("currency_code")
+  targetAmount BigInt?      @map("target_amount") // minor units; optional overall target
+  targetDate   DateTime?    @map("target_date") @db.Date
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  owner        User                @relation("CircleOwner", fields: [ownerId], references: [id])
+  members      CircleMember[]
+  invitations  CircleInvitation[]
+  goals        CircleGoal[]
+  contributions ContributionRecord[]
+  events       CircleEvent[]
+
+  @@index([ownerId, createdAt])
+  @@index([status])
+  @@map("circles")
+}
+
+model CircleMember {
+  id        String             @id @default(uuid()) @db.Uuid
+  circleId  String             @map("circle_id") @db.Uuid
+  userId    String             @map("user_id") @db.Uuid
+  role      CircleRole         @default(MEMBER)
+  status    CircleMemberStatus @default(ACTIVE)
+  // Reminder preference (CircleNotificationPreference, blueprint §8): the member can
+  // switch contribution reminders off without leaving the Circle.
+  reminders Boolean            @default(true)
+  joinedAt  DateTime           @default(now()) @map("joined_at")
+  leftAt    DateTime?          @map("left_at")
+
+  circle        Circle                @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  user          User                  @relation(fields: [userId], references: [id])
+  contributions ContributionRecord[]
+
+  @@unique([circleId, userId])
+  @@index([userId, status])
+  @@map("circle_members")
+}
+
+// An invite to join a Circle, addressed to a SurePesa user (by phone or user id).
+// The token is the accept link; invites expire and can be revoked.
+model CircleInvitation {
+  id            String                 @id @default(uuid()) @db.Uuid
+  circleId      String                 @map("circle_id") @db.Uuid
+  inviterId     String                 @map("inviter_id") @db.Uuid
+  inviteeId     String?                @map("invitee_id") @db.Uuid
+  inviteePhone  String?                @map("invitee_phone") // E.164 snapshot, shown to the invitee
+  token         String                 @unique // opaque accept token
+  status        CircleInvitationStatus @default(PENDING)
+  expiresAt     DateTime               @map("expires_at")
+  respondedAt   DateTime?              @map("responded_at")
+  createdAt     DateTime               @default(now()) @map("created_at")
+
+  circle   Circle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  inviter  User   @relation("CircleInviter", fields: [inviterId], references: [id])
+  invitee  User?  @relation("CircleInvitee", fields: [inviteeId], references: [id])
+
+  @@index([circleId, status])
+  @@index([inviteeId, status])
+  @@map("circle_invitations")
+}
+
+// A defined goal inside a Circle, optionally with a contribution plan
+// (expected amount/frequency — a plan, never proof of money held).
+model CircleGoal {
+  id                 String                 @id @default(uuid()) @db.Uuid
+  circleId           String                 @map("circle_id") @db.Uuid
+  title              String
+  targetAmount       BigInt                 @map("target_amount") // minor units
+  dueDate            DateTime?              @map("due_date") @db.Date
+  status             CircleGoalStatus       @default(ACTIVE)
+  expectedPerMember  BigInt?                @map("expected_per_member") // plan: minor units each
+  frequency          ContributionFrequency? // plan cadence
+  createdAt          DateTime               @default(now()) @map("created_at")
+
+  circle        Circle                @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  contributions ContributionRecord[]
+
+  @@index([circleId, status])
+  @@map("circle_goals")
+}
+
+// One recorded contribution. PROVIDER_CONFIRMED requires transactionId pointing at a
+// SUCCESS transaction initiated by that member; otherwise the record stays UNVERIFIED.
+model ContributionRecord {
+  id             String                   @id @default(uuid()) @db.Uuid
+  circleId       String                   @map("circle_id") @db.Uuid
+  goalId         String?                  @map("goal_id") @db.Uuid
+  memberId       String                   @map("member_id") @db.Uuid
+  amount         BigInt // minor units
+  currencyCode   String                   @map("currency_code")
+  source         ContributionSource
+  verification   ContributionVerification
+  transactionId  String?                  @map("transaction_id") @db.Uuid
+  externalRef    String?                  @map("external_ref") // receipt/reference for self-reports
+  note           String?
+  recordedAt     DateTime                 @default(now()) @map("recorded_at")
+
+  circle      Circle       @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  goal        CircleGoal?  @relation(fields: [goalId], references: [id])
+  member      CircleMember @relation(fields: [memberId], references: [id])
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@unique([transactionId]) // one payment can back at most one contribution record
+  @@index([circleId, recordedAt])
+  @@index([memberId, recordedAt])
+  @@map("contribution_records")
+}
+
+// Append-only activity/audit log of a Circle.
+model CircleEvent {
+  id        BigInt    @id @default(autoincrement())
+  circleId  String    @map("circle_id") @db.Uuid
+  actorType ActorType @default(SYSTEM) @map("actor_type")
+  actorId   String?   @map("actor_id")
+  action    String // CREATED, MEMBER_JOINED, GOAL_CREATED, CONTRIBUTION_RECORDED ...
+  data      Json?
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  circle Circle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+
+  @@index([circleId, id])
+  @@map("circle_events")
+}
+
+// ──────────────────────────── Escrow ★ ────────────────────────────
+//
+// Protected buyer/seller deals (blueprint §10). Every funded deal has a dedicated
+// ESCROW_HOLDING wallet in the central ledger — not a parallel ledger — that no
+// ordinary wallet endpoint can debit. Only this module posts ESCROW_HOLD / RELEASE /
+// REFUND lines, after the deal state and an authorised decision check out.
+
+enum EscrowStatus {
+  DRAFT
+  AWAITING_COUNTERPARTY
+  TERMS_ACCEPTED
+  AWAITING_FUNDING
+  FUNDING_PROCESSING
+  FUNDED
+  FULFILMENT_IN_PROGRESS
+  AWAITING_BUYER_CONFIRMATION
+  RELEASE_PENDING
+  RELEASED // terminal: paid out to the seller
+  DECLINED // seller declined the terms
+  EXPIRED // funding deadline passed
+  CANCELLED
+  FUNDING_FAILED
+  DISPUTED
+  REFUND_PENDING
+  REFUNDED // terminal: returned to the buyer
+  REVIEW_REQUIRED
+}
+
+enum EscrowEvidenceType {
+  PHOTO
+  DOCUMENT
+  TRACKING
+  NOTE
+  OTHER
+}
+
+enum EscrowDisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+}
+
+enum EscrowDisputeOutcome {
+  RELEASE_TO_SELLER
+  REFUND_BUYER
+}
+
+enum EscrowPayoutKind {
+  RELEASE
+  REFUND
+}
+
+enum EscrowPayoutStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// One protected deal. The exact terms both parties accepted are pinned by termsHash.
+// No automatic release: the release/inspection deadline is explicit in the terms.
+model EscrowCase {
+  id          String       @id @default(uuid()) @db.Uuid
+  reference   String       @unique // customer-facing id, e.g. ESC-7K2M9QX4TB
+  buyerId     String       @map("buyer_id") @db.Uuid
+  sellerId    String       @map("seller_id") @db.Uuid
+  status      EscrowStatus @default(DRAFT)
+
+  itemDescription String @map("item_description")
+  amount          BigInt // minor units; the held principal
+  currencyCode    String @default("TZS") @map("currency_code")
+  feeAmount       BigInt @default(0) @map("fee_amount") // disclosed service fee, charged on release
+  termsHash       String @map("terms_hash") // sha256 over the exact accepted terms
+
+  fundingDeadline DateTime @map("funding_deadline")
+  deliveryDeadline DateTime? @map("delivery_deadline")
+  inspectionDays   Int       @default(3) @map("inspection_days") // buyer's acceptance window after delivery
+
+  escrowWalletId String?  @unique @map("escrow_wallet_id") @db.Uuid // the dedicated holding wallet
+  fundingTransactionId String? @unique @map("funding_transaction_id") @db.Uuid
+  idempotencyKey String?  @map("idempotency_key")
+
+  fundedAt    DateTime? @map("funded_at")
+  deliveredAt DateTime? @map("delivered_at")
+  releasedAt  DateTime? @map("released_at")
+  refundedAt  DateTime? @map("refunded_at")
+  closedAt    DateTime? @map("closed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  buyer        User             @relation("EscrowBuyer", fields: [buyerId], references: [id])
+  seller       User             @relation("EscrowSeller", fields: [sellerId], references: [id])
+  escrowWallet Wallet?          @relation(fields: [escrowWalletId], references: [id])
+  fundingTransaction Transaction? @relation(fields: [fundingTransactionId], references: [id])
+  evidence     EscrowEvidence[]
+  disputes     EscrowDispute[]
+  payouts      EscrowPayout[]
+  events       EscrowEvent[]
+
+  @@unique([buyerId, idempotencyKey])
+  @@index([buyerId, createdAt])
+  @@index([sellerId, createdAt])
+  @@index([status, fundingDeadline])
+  @@map("escrow_cases")
+}
+
+// Delivery/fulfilment evidence. The file itself lives in private object storage;
+// only its key + checksum are stored here.
+model EscrowEvidence {
+  id         String             @id @default(uuid()) @db.Uuid
+  caseId     String             @map("case_id") @db.Uuid
+  submittedBy String            @map("submitted_by") @db.Uuid
+  type       EscrowEvidenceType
+  storageKey String?            @map("storage_key") // private object key, never a public URL
+  checksum   String? // sha256 of the file, when a file was uploaded
+  note       String?
+  createdAt  DateTime           @default(now()) @map("created_at")
+
+  case       EscrowCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  submittedByUser User @relation(fields: [submittedBy], references: [id])
+
+  @@index([caseId, createdAt])
+  @@map("escrow_evidence")
+}
+
+model EscrowDispute {
+  id               String               @id @default(uuid()) @db.Uuid
+  caseId           String               @map("case_id") @db.Uuid
+  openedById       String               @map("opened_by_id") @db.Uuid
+  reason           String
+  requestedOutcome EscrowDisputeOutcome @map("requested_outcome")
+  status           EscrowDisputeStatus  @default(OPEN)
+  resolution       EscrowDisputeOutcome?
+  resolvedById     String?              @map("resolved_by_id") @db.Uuid // admin
+  resolutionNote   String?              @map("resolution_note")
+  resolvedAt       DateTime?            @map("resolved_at")
+  createdAt        DateTime             @default(now()) @map("created_at")
+
+  case      EscrowCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  openedBy  User       @relation("EscrowDisputeOpener", fields: [openedById], references: [id])
+
+  @@index([caseId, status])
+  @@index([status, createdAt])
+  @@map("escrow_disputes")
+}
+
+// A release/refund payout instruction out of the escrow wallet. Exactly one SUCCESS
+// payout per case; the idempotency key makes retries safe.
+model EscrowPayout {
+  id             String            @id @default(uuid()) @db.Uuid
+  caseId         String            @map("case_id") @db.Uuid
+  kind           EscrowPayoutKind
+  amount         BigInt // minor units credited to the destination
+  feeAmount      BigInt            @default(0) @map("fee_amount")
+  destinationUserId String         @map("destination_user_id") @db.Uuid
+  transactionId  String?           @unique @map("transaction_id") @db.Uuid
+  idempotencyKey String            @map("idempotency_key")
+  status         EscrowPayoutStatus @default(PENDING)
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  case        EscrowCase   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@unique([caseId, kind])
+  @@index([caseId])
+  @@map("escrow_payouts")
+}
+
+// Append-only event history of an escrow case.
+model EscrowEvent {
+  id        BigInt       @id @default(autoincrement())
+  caseId    String       @map("case_id") @db.Uuid
+  fromStatus EscrowStatus? @map("from_status")
+  toStatus  EscrowStatus? @map("to_status")
+  actorType ActorType    @default(SYSTEM) @map("actor_type")
+  actorId   String?      @map("actor_id")
+  action    String
+  note      String?
+  data      Json?
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  case EscrowCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, id])
+  @@map("escrow_events")
+}
+
+// The licensed custody/safeguarding account backing escrow balances (token/mask only —
+// never unencrypted bank credentials). Prototype: declared by Finance for reconciliation.
+model EscrowCustodyAccount {
+  id               String   @id @default(uuid()) @db.Uuid
+  partnerName      String   @map("partner_name")
+  currencyCode     String   @map("currency_code")
+  accountRefMasked String   @map("account_ref_masked")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  reconciliations EscrowReconciliation[]
+
+  @@map("escrow_custody_accounts")
+}
+
+// Periodic reconciliation of internal escrow liabilities against custody statements.
+model EscrowReconciliation {
+  id                String   @id @default(uuid()) @db.Uuid
+  custodyAccountId  String   @map("custody_account_id") @db.Uuid
+  statementTotal    BigInt   @map("statement_total") // per the custody statement, minor units
+  internalHeldTotal BigInt   @map("internal_held_total") // SUM of escrow wallet balances
+  difference        BigInt // statementTotal - internalHeldTotal; must be 0
+  reviewedById      String?  @map("reviewed_by_id") @db.Uuid
+  reviewedAt        DateTime? @map("reviewed_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  custodyAccount EscrowCustodyAccount @relation(fields: [custodyAccountId], references: [id])
+
+  @@index([custodyAccountId, createdAt])
+  @@map("escrow_reconciliations")
+}
+
+// ──────────────────────── Borderless Payments ────────────────────────
+//
+// Cross-border send/receive with FX quotes (blueprint §7). Corridor and currency
+// availability are data: unsupported countries/currencies are clearly unavailable,
+// never simulated as live. The corridor's provider is chosen by the customer and
+// never silently switched.
+
+enum CorridorStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum FxQuoteStatus {
+  OPEN
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
+
+enum CrossBorderStatus {
+  CREATED
+  PROCESSING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum SettlementStatus {
+  PENDING
+  RECONCILED
+  FAILED
+}
+
+// A legally/operationally supported route between two countries and currencies.
+model PaymentCorridor {
+  id                  String         @id @default(uuid()) @db.Uuid
+  originCountry       String         @map("origin_country") // ISO 3166-1 alpha-2
+  destinationCountry  String         @map("destination_country")
+  sourceCurrency      String         @map("source_currency")
+  destinationCurrency String         @map("destination_currency")
+  allowedTypes        String[]       @default(["SEND"]) @map("allowed_types") // SEND, RECEIVE, PAY, EXCHANGE
+  providerName        String         @map("provider_name") // the partner executing payouts on this corridor
+  minAmount           BigInt         @map("min_amount") // source minor units
+  maxAmount           BigInt         @map("max_amount")
+  status              CorridorStatus @default(SUSPENDED) // new corridors start OFF until reviewed
+  createdAt           DateTime       @default(now()) @map("created_at")
+
+  quotes    FxQuote[]
+  transfers CrossBorderTransfer[]
+
+  @@unique([originCountry, destinationCountry, sourceCurrency, destinationCurrency, providerName])
+  @@map("payment_corridors")
+}
+
+// A rate+fee quote with a hard expiry. The customer accepts exactly these numbers;
+// an expired quote is never executed.
+model FxQuote {
+  id                  String        @id @default(uuid()) @db.Uuid
+  userId              String        @map("user_id") @db.Uuid
+  corridorId          String        @map("corridor_id") @db.Uuid
+  sourceAmount        BigInt        @map("source_amount") // minor units of source currency
+  sourceCurrency      String        @map("source_currency")
+  destinationAmount   BigInt        @map("destination_amount") // minor units the recipient gets
+  destinationCurrency String        @map("destination_currency")
+  rate                Decimal       @db.Decimal(24, 10) // snapshot
+  exchangeRateId      String        @map("exchange_rate_id") @db.Uuid
+  feeAmount           BigInt        @map("fee_amount") // charged on top, source currency
+  providerName        String        @map("provider_name")
+  status              FxQuoteStatus @default(OPEN)
+  expiresAt           DateTime      @map("expires_at")
+  acceptedAt          DateTime?     @map("accepted_at")
+  createdAt           DateTime      @default(now()) @map("created_at")
+
+  user      User                   @relation(fields: [userId], references: [id])
+  corridor  PaymentCorridor        @relation(fields: [corridorId], references: [id])
+  exchangeRateRef ExchangeRate     @relation(fields: [exchangeRateId], references: [id])
+  transfer  CrossBorderTransfer?
+
+  @@index([userId, createdAt])
+  @@map("fx_quotes")
+}
+
+// One cross-border transfer against an accepted quote. The ledger movement is an
+// FX_CONVERSION transaction; the partner settlement is tracked separately.
+model CrossBorderTransfer {
+  id               String            @id @default(uuid()) @db.Uuid
+  reference        String            @unique // e.g. XBT-7K2M9QX4TB
+  senderId         String            @map("sender_id") @db.Uuid
+  recipientId      String?           @map("recipient_id") @db.Uuid
+  recipientPhone   String            @map("recipient_phone")
+  recipientCountry String            @map("recipient_country")
+  corridorId       String            @map("corridor_id") @db.Uuid
+  quoteId          String            @unique @map("quote_id") @db.Uuid // one transfer per quote
+  status           CrossBorderStatus @default(CREATED)
+  transactionId    String?           @unique @map("transaction_id") @db.Uuid
+  idempotencyKey   String?           @map("idempotency_key")
+  failureReason    String?           @map("failure_reason")
+  completedAt      DateTime?         @map("completed_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  sender      User                @relation("CrossBorderSender", fields: [senderId], references: [id])
+  recipient   User?               @relation("CrossBorderRecipient", fields: [recipientId], references: [id])
+  corridor    PaymentCorridor     @relation(fields: [corridorId], references: [id])
+  quote       FxQuote             @relation(fields: [quoteId], references: [id])
+  transaction Transaction?        @relation(fields: [transactionId], references: [id])
+  settlements ProviderSettlement[]
+
+  @@unique([senderId, idempotencyKey])
+  @@index([senderId, createdAt])
+  @@index([recipientId, createdAt])
+  @@map("cross_border_transfers")
+}
+
+// Partner settlement tracking for a transfer (references, value date, reconciliation).
+model ProviderSettlement {
+  id           String           @id @default(uuid()) @db.Uuid
+  providerName String           @map("provider_name")
+  transferId   String           @map("transfer_id") @db.Uuid
+  reference    String // partner's settlement reference
+  amount       BigInt
+  currencyCode String           @map("currency_code")
+  valueDate    DateTime?        @map("value_date")
+  status       SettlementStatus @default(PENDING)
+  createdAt    DateTime         @default(now()) @map("created_at")
+
+  transfer CrossBorderTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+
+  @@unique([providerName, reference])
+  @@index([transferId])
+  @@map("provider_settlements")
 }

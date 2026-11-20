@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { ApprovalStatus } from '@prisma/client';
 import { z } from 'zod';
-import { prisma } from '../../lib/prisma';
+import { prisma, TX_OPTIONS } from '../../lib/prisma';
 import { AppError } from '../../lib/errors';
 import { refundableAmount, refundPayment, reverseTransaction } from '../../services/payment.service';
 import { audit } from '../audit';
@@ -122,7 +122,7 @@ approvalsRouter.post('/approvals', requirePermission('approvals:request'), async
       tx,
     );
     return a;
-  });
+  }, TX_OPTIONS);
   res.status(201).json(await present((await loadApproval(created.id))!));
 });
 
@@ -162,7 +162,7 @@ approvalsRouter.post('/approvals/:id/approve', requirePermission('approvals:deci
       });
     }
     await audit({ actorId: req.admin!.id, action: isRefund ? 'REFUND_APPROVED' : 'REVERSAL_APPROVED', entityType: 'ApprovalRequest', entityId: approval.id, after: { reversalReference: reversal.reference, note } }, tx);
-  });
+  }, TX_OPTIONS);
   res.json(await present((await loadApproval(approval.id))!));
 });
 
@@ -181,7 +181,7 @@ approvalsRouter.post('/approvals/:id/reject', requirePermission('approvals:decid
       await tx.supportCase.update({ where: { id: approval.caseId }, data: { status: 'IN_PROGRESS' } });
     }
     await audit({ actorId: req.admin!.id, action: 'REVERSAL_REJECTED', entityType: 'ApprovalRequest', entityId: approval.id, after: { note } }, tx);
-  });
+  }, TX_OPTIONS);
   res.json(await present((await loadApproval(approval.id))!));
 });
 

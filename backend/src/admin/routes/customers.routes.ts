@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
-import { prisma } from '../../lib/prisma';
+import { prisma, TX_OPTIONS } from '../../lib/prisma';
 import { AppError } from '../../lib/errors';
 import { audit } from '../audit';
 import { requirePermission } from '../auth';
@@ -165,6 +165,6 @@ customersRouter.post('/customers/:id/status', requirePermission('customers:statu
       tx,
     );
     return u;
-  });
+  }, TX_OPTIONS);
   res.json({ id: updated.id, status: updated.status });
 });

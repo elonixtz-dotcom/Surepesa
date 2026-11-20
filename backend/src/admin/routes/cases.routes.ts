@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Prisma, SupportCaseCategory, SupportCasePriority, SupportCaseStatus } from '@prisma/client';
 import { z } from 'zod';
-import { prisma } from '../../lib/prisma';
+import { prisma, TX_OPTIONS } from '../../lib/prisma';
 import { AppError } from '../../lib/errors';
 import { newTransactionReference } from '../../lib/reference';
 import { audit } from '../audit';
@@ -98,7 +98,7 @@ casesRouter.post('/cases', requirePermission('cases:manage'), async (req, res) =
     });
     await audit({ actorId: req.admin!.id, action: 'CASE_OPENED', entityType: 'SupportCase', entityId: c.id, after: { reference: c.reference } }, tx);
     return c;
-  });
+  }, TX_OPTIONS);
   res.status(201).json(presentCase(created));
 });
 
@@ -169,7 +169,7 @@ casesRouter.patch('/cases/:id', requirePermission('cases:manage'), async (req, r
       tx,
     );
     return c;
-  });
+  }, TX_OPTIONS);
   res.json(presentCase(updated));
 });
 

@@ -9,6 +9,7 @@ import '../widgets/balance_card.dart';
 import '../widgets/common.dart';
 import '../widgets/receipt_tile.dart';
 import 'home_shell.dart';
+import 'notifications_screen.dart';
 import 'pay/pay_form_screen.dart';
 import 'verify_screen.dart';
 
@@ -50,7 +51,7 @@ class HomeScreen extends StatelessWidget {
                 CircleIconButton(
                   icon: Icons.notifications_none_rounded,
                   tooltip: 'Notifications',
-                  onPressed: () => showComingSoon(context, 'Notifications'),
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const NotificationsScreen())),
                 ),
               ],
             ),
