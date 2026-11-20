@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 
 import '../core/theme.dart';
 import '../services/api_client.dart';
@@ -21,6 +23,32 @@ class _UnlockScreenState extends State<UnlockScreen> {
   bool _busy = false;
   bool _locked = false;
   String? _error;
+  bool _biometricTried = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _tryBiometric());
+  }
+
+  /// Fingerprint / face unlock, when the user turned it on (native only). The session
+  /// was already restored locally, so a pass just opens the UI; payments still verify
+  /// the PIN server-side. Failing or dismissing leaves the PIN screen as the fallback.
+  Future<void> _tryBiometric() async {
+    if (kIsWeb || _biometricTried) return;
+    final app = AppScope.read(context);
+    if (!app.biometricUnlock || app.stage != AppStage.locked) return;
+    _biometricTried = true;
+    try {
+      final ok = await LocalAuthentication().authenticate(
+        localizedReason: 'Unlock SurePesa',
+        options: const AuthenticationOptions(biometricOnly: true, stickyAuth: true),
+      );
+      if (ok && mounted) app.unlockLocally();
+    } catch (_) {
+      // No biometrics enrolled or dismissed — stay on the PIN screen.
+    }
+  }
 
   @override
   void dispose() {
@@ -96,6 +124,17 @@ class _UnlockScreenState extends State<UnlockScreen> {
                       InlineError(_error),
                       const SizedBox(height: 16),
                       BusyButton(label: 'Unlock', busy: _busy, onPressed: _locked ? null : _submit),
+                      if (!kIsWeb && AppScope.read(context).biometricUnlock)
+                        TextButton.icon(
+                          onPressed: _busy
+                              ? null
+                              : () {
+                                  _biometricTried = false;
+                                  _tryBiometric();
+                                },
+                          icon: const Icon(Icons.fingerprint_rounded),
+                          label: const Text('Use fingerprint'),
+                        ),
                     ],
                   ),
                 ),

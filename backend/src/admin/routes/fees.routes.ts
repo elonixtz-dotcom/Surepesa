@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { TransactionType } from '@prisma/client';
 import { z } from 'zod';
-import { prisma } from '../../lib/prisma';
+import { prisma, TX_OPTIONS } from '../../lib/prisma';
 import { DEFAULT_RULES, invalidateFeeCache } from '../../services/fee.service';
 import { audit } from '../audit';
 import { requirePermission } from '../auth';
@@ -57,7 +57,7 @@ feesRouter.post('/fees', requirePermission('fees:manage'), async (req, res) => {
       tx,
     );
     return created;
-  });
+  }, TX_OPTIONS);
   invalidateFeeCache();
   res.status(201).json(rule);
 });

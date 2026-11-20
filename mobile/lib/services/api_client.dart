@@ -36,6 +36,34 @@ class ApiClient {
 
   Future<Map<String, dynamic>> put(String path, Map<String, dynamic> body) => _send('PUT', path, body);
 
+  /// Uploads raw bytes (e.g. a KYC document photo) with a non-JSON content type.
+  Future<Map<String, dynamic>> putBytes(String path, List<int> bytes, String contentType) async {
+    final token = await _auth.accessToken();
+    final request = http.Request('PUT', Uri.parse('${AppConfig.apiBaseUrl}$path'))
+      ..headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+        'Content-Type': contentType,
+      })
+      ..bodyBytes = bytes;
+
+    final http.Response res;
+    try {
+      res = await http.Response.fromStream(await _http.send(request).timeout(const Duration(seconds: 60)));
+    } catch (_) {
+      throw ApiException(0, 'NETWORK_ERROR', 'Cannot reach SurePesa. Check your connection.');
+    }
+    final data = res.body.isEmpty ? <String, dynamic>{} : jsonDecode(res.body) as Map<String, dynamic>;
+    if (res.statusCode >= 400) {
+      final error = data['error'] as Map<String, dynamic>?;
+      throw ApiException(res.statusCode, error?['code'] as String? ?? 'HTTP_${res.statusCode}',
+          error?['message'] as String? ?? 'Request failed');
+    }
+    return data;
+  }
+
+  Future<Map<String, dynamic>> patch(String path, Map<String, dynamic> body) => _send('PATCH', path, body);
+
   Future<Map<String, dynamic>> _send(
     String method,
     String path, [

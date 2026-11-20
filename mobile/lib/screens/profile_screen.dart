@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 
 import '../core/format.dart';
 import '../core/theme.dart';
 import '../state/app_state.dart';
 import '../widgets/common.dart';
+import 'help_screens.dart';
 import 'linked_accounts_screen.dart';
 import 'pay/set_pin_screen.dart';
 import 'verify_screen.dart';
@@ -64,13 +67,10 @@ class ProfileScreen extends StatelessWidget {
                   subtitle: 'Used to confirm every payment',
                   onTap: () => _push(context, const SetPinScreen(changing: true)),
                 ),
-                const Divider(height: 1, indent: 64),
-                _Tile(
-                  icon: Icons.fingerprint_rounded,
-                  title: 'Fingerprint unlock',
-                  subtitle: 'Open SurePesa without typing your PIN',
-                  onTap: () => showComingSoon(context, 'Fingerprint unlock'),
-                ),
+                if (!kIsWeb) ...[
+                  const Divider(height: 1, indent: 64),
+                  _BiometricTile(),
+                ],
                 const Divider(height: 1, indent: 64),
                 _Tile(
                   icon: Icons.verified_user_outlined,
@@ -100,9 +100,9 @@ class ProfileScreen extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                _Tile(icon: Icons.support_agent_rounded, title: 'Contact support', onTap: () => showComingSoon(context, 'Support')),
+                _Tile(icon: Icons.support_agent_rounded, title: 'Contact support', onTap: () => _push(context, const SupportScreen())),
                 const Divider(height: 1, indent: 64),
-                _Tile(icon: Icons.description_outlined, title: 'Terms and privacy', onTap: () => showComingSoon(context, 'Terms and privacy')),
+                _Tile(icon: Icons.description_outlined, title: 'Terms and privacy', onTap: () => _push(context, const TermsScreen())),
               ],
             ),
           ),
@@ -125,6 +125,51 @@ class ProfileScreen extends StatelessWidget {
 
 void _push(BuildContext context, Widget screen) =>
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
+
+/// Fingerprint / face unlock toggle (native only). Turning it on asks the device
+/// to prove the biometric once; payments still confirm with the PIN.
+class _BiometricTile extends StatefulWidget {
+  @override
+  State<_BiometricTile> createState() => _BiometricTileState();
+}
+
+class _BiometricTileState extends State<_BiometricTile> {
+  final _localAuth = LocalAuthentication();
+  bool _busy = false;
+
+  Future<void> _toggle(bool enable) async {
+    final app = AppScope.read(context);
+    if (enable) {
+      setState(() => _busy = true);
+      try {
+        final ok = await _localAuth.authenticate(
+          localizedReason: 'Confirm it is you to turn on fingerprint unlock',
+          options: const AuthenticationOptions(biometricOnly: true),
+        );
+        if (!ok) return;
+      } catch (e) {
+        if (mounted) showError(context, 'This device has no fingerprint or face unlock set up');
+        return;
+      } finally {
+        if (mounted) setState(() => _busy = false);
+      }
+    }
+    await app.setBiometricUnlock(enable);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final app = AppScope.of(context);
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+      leading: const IconChip(icon: Icons.fingerprint_rounded, color: SpColors.ink2, background: SpColors.line),
+      title: const Text('Fingerprint unlock', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+      subtitle: const Text('Open SurePesa without typing your PIN',
+          style: TextStyle(fontSize: 12, color: SpColors.inkMuted)),
+      trailing: Switch(value: app.biometricUnlock, onChanged: _busy ? null : _toggle),
+    );
+  }
+}
 
 class _Tile extends StatelessWidget {
   const _Tile({required this.icon, required this.title, this.subtitle, this.trailing, this.onTap});

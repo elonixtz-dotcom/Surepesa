@@ -1,8 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
+import '../services/borderless_api.dart';
 import '../services/cards_api.dart';
+import '../services/circles_api.dart';
+import '../services/escrow_api.dart';
+import '../services/kyc_api.dart';
+import '../services/notifications_api.dart';
 import '../services/payments_api.dart';
 import '../services/pushbill_api.dart';
 import 'models.dart';
@@ -16,6 +23,11 @@ class AppState extends ChangeNotifier {
     payments = PaymentsApi(api);
     cards = CardsApi(api);
     pushBills = PushBillApi(api);
+    circles = CirclesApi(api);
+    escrow = EscrowApi(api);
+    borderless = BorderlessApi(api);
+    notifications = NotificationsApi(api);
+    kyc = KycApi(api);
   }
 
   final AuthService auth;
@@ -23,6 +35,11 @@ class AppState extends ChangeNotifier {
   late final PaymentsApi payments;
   late final CardsApi cards;
   late final PushBillApi pushBills;
+  late final CirclesApi circles;
+  late final EscrowApi escrow;
+  late final BorderlessApi borderless;
+  late final NotificationsApi notifications;
+  late final KycApi kyc;
 
   AppStage stage = AppStage.starting;
   Me? me;
@@ -32,10 +49,32 @@ class AppState extends ChangeNotifier {
   bool _locked = false;
   DateTime? _backgroundedAt;
 
+  /// Biometric (fingerprint/face) unlock. Native-only; on the web it stays off.
+  static const _biometricKey = 'surepesa_biometric_unlock';
+  final _biometricStorage = const FlutterSecureStorage();
+
+  /// True when the user turned on biometric unlock on this device. Payments still
+  /// ask for the PIN — this only replaces the PIN at the lock screen.
+  bool biometricUnlock = false;
+
+  Future<void> setBiometricUnlock(bool enable) async {
+    biometricUnlock = enable;
+    await _biometricStorage.write(key: _biometricKey, value: enable ? '1' : '0');
+    notifyListeners();
+  }
+
+  /// Biometrics passed at the lock screen. The session was already restored locally,
+  /// so this only opens the UI — moving money still verifies the PIN server-side.
+  void unlockLocally() {
+    _locked = false;
+    if (me != null) _applyMe(me!);
+  }
+
   /// Bumped whenever money moves, so lists of receipts know to reload.
   int activityVersion = 0;
 
   Future<void> start() async {
+    biometricUnlock = !kIsWeb && (await _biometricStorage.read(key: _biometricKey)) == '1';
     if (await auth.restore()) {
       _locked = true;
       try {
@@ -122,6 +161,8 @@ class AppState extends ChangeNotifier {
   Future<void> signOut() async {
     await auth.signOut();
     _locked = false;
+    biometricUnlock = false;
+    await _biometricStorage.delete(key: _biometricKey);
     me = null;
     _setStage(AppStage.signedOut);
   }

@@ -32,6 +32,11 @@ export const PERMISSIONS = {
   // Money movement reports; the CSV export lists every transaction, so Finance and the Controller only.
   'reports:view': ['SUPER_ADMIN', 'FINANCE', 'COMPLIANCE'],
   'reports:export': ['SUPER_ADMIN', 'FINANCE'],
+  // Escrow disputes and custody reconciliation (blueprint §10): an authorised decision,
+  // never a silent override.
+  'escrow:view': ['SUPER_ADMIN', 'SUPPORT', 'FINANCE', 'COMPLIANCE'],
+  'escrow:resolve': ['SUPER_ADMIN', 'FINANCE'],
+  'escrow:reconcile': ['SUPER_ADMIN', 'FINANCE'],
 } as const satisfies Record<string, readonly AdminRole[]>;
 
 export type Permission = keyof typeof PERMISSIONS;

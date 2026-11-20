@@ -3,7 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { KycDocumentType } from '@prisma/client';
 import { env } from '../config/env';
-import { prisma } from '../lib/prisma';
+import { prisma, TX_OPTIONS } from '../lib/prisma';
 import { AppError } from '../lib/errors';
 import { presignGet, putObject } from '../lib/storage';
 import { requireAuth } from '../middleware/auth';
@@ -44,7 +44,7 @@ kycRouter.post('/submissions', async (req, res) => {
     const created = await tx.kycSubmission.create({ data: { ...input, userId: user.id, status: 'PENDING' } });
     await tx.user.update({ where: { id: user.id }, data: { kycStatus: 'PENDING' } });
     return created;
-  });
+  }, TX_OPTIONS);
   res.status(201).json(submission);
 });
 

@@ -18,6 +18,28 @@ String formatMoney(String decimal, String currency) {
   return '$currency ${p.whole}${p.fraction}';
 }
 
+/// Formats an API minor-unit string ("150000" with 2 minor units) for display.
+String formatMinorUnits(String? minor, String currency, {int minorUnits = 2}) {
+  if (minor == null || minor.isEmpty) return '$currency 0';
+  final negative = minor.startsWith('-');
+  final digits = (negative ? minor.substring(1) : minor).padLeft(minorUnits + 1, '0');
+  final whole = digits.substring(0, digits.length - minorUnits);
+  final fraction = digits.substring(digits.length - minorUnits);
+  return formatMoney('${negative ? '-' : ''}$whole.$fraction', currency);
+}
+
+/// Converts user input ("1500.50") to an API minor-unit string ("150050").
+/// Returns null for invalid or non-positive input. Exact — no floating point.
+String? toMinorUnitsString(String input, {int minorUnits = 2}) {
+  final cleaned = input.trim().replaceAll(',', '');
+  final match = RegExp('^(\\d+)(?:\\.(\\d{1,$minorUnits}))?\$').firstMatch(cleaned);
+  if (match == null) return null;
+  final whole = BigInt.parse(match.group(1)!);
+  final fraction = (match.group(2) ?? '').padRight(minorUnits, '0');
+  final minor = whole * BigInt.from(10).pow(minorUnits) + BigInt.parse(fraction.isEmpty ? '0' : fraction);
+  return minor <= BigInt.zero ? null : minor.toString();
+}
+
 /// Accepts 0712345678 or 712345678 (or +255712345678) and returns +255712345678.
 String toE164(String input) {
   var digits = input.replaceAll(RegExp(r'\D'), '');

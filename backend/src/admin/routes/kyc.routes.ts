@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { KycStatus } from '@prisma/client';
 import { z } from 'zod';
 import { env } from '../../config/env';
-import { prisma } from '../../lib/prisma';
+import { prisma, TX_OPTIONS } from '../../lib/prisma';
 import { AppError } from '../../lib/errors';
 import { presignGet } from '../../lib/storage';
 import { audit } from '../audit';
@@ -104,7 +104,7 @@ async function decide(id: string, adminId: string, decision: 'APPROVED' | 'REJEC
       tx,
     );
     return updated;
-  });
+  }, TX_OPTIONS);
 }
 
 kycReviewRouter.post('/kyc/:id/approve', async (req, res) => {

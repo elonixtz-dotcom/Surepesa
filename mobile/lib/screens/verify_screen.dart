@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../state/app_state.dart';
 import '../widgets/common.dart';
+import 'verify_submit_screen.dart';
 
 /// Identity verification (KYC): where the customer stands and what verifying unlocks.
 class VerifyScreen extends StatelessWidget {
@@ -77,7 +78,7 @@ class VerifyScreen extends StatelessWidget {
             const SizedBox(height: 18),
             if (status == 'NOT_STARTED' || status == 'REJECTED')
               FilledButton(
-                onPressed: () => showComingSoon(context, 'Document upload'),
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const KycSubmitScreen())),
                 child: const Text('Continue with National ID'),
               ),
           ],

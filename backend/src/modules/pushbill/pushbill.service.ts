@@ -1,5 +1,5 @@
 import { Prisma, PushBillSession, PushBillState } from '@prisma/client';
-import { prisma } from '../../lib/prisma';
+import { prisma, TX_OPTIONS } from '../../lib/prisma';
 import { AppError, PaymentRejectedError } from '../../lib/errors';
 import { newPushBillReference } from '../../lib/reference';
 import { verifyPin } from '../../services/pin.service';
@@ -199,7 +199,7 @@ export async function createPushBill(input: CreatePushBillInput): Promise<PushBi
         },
       });
       return updated;
-    });
+    }, TX_OPTIONS);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       const retry = await prisma.pushBillSession.findUnique({

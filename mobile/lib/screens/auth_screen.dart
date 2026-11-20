@@ -46,6 +46,47 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+  Future<void> _resetPassword() async {
+    final email = TextEditingController(text: _email.text.trim());
+    final sent = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Reset your password'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('We will email you a link to choose a new password.'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: email,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Send link')),
+        ],
+      ),
+    );
+    if (sent != true || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await AppScope.read(context).auth.requestPasswordReset(email.text.trim());
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('If that email has an account, a reset link is on its way.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) showError(context, e);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,7 +162,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       if (!_signUp)
                         Align(
                           alignment: Alignment.centerRight,
-                          child: TextButton(onPressed: () => showComingSoon(context, 'Password reset'), child: const Text('Forgot password?')),
+                          child: TextButton(onPressed: _busy ? null : _resetPassword, child: const Text('Forgot password?')),
                         )
                       else
                         const SizedBox(height: 16),

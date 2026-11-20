@@ -2,6 +2,9 @@ import { timingSafeEqual } from 'node:crypto';
 import { Router } from 'express';
 import { env } from '../config/env';
 import { syncRails } from '../services/rail-sync.service';
+import { expireOverdueSessions } from '../modules/pushbill/pushbill.service';
+import { expireOverdueCases } from '../modules/escrow/escrow.service';
+import { expireOverdueQuotes } from '../modules/borderless/borderless.service';
 
 /**
  * Scheduled jobs, for hosts without a long-running process (Vercel Cron, or any external
@@ -26,4 +29,22 @@ cronRouter.get('/rail-sync', async (req, res) => {
     return;
   }
   res.json(await syncRails(200));
+});
+
+/** Expiry sweeps: PushBill sessions, escrow funding deadlines, FX quotes. */
+cronRouter.get('/sweep-expiry', async (req, res) => {
+  if (!env.CRON_SECRET) {
+    res.status(503).json({ error: { code: 'CRON_DISABLED', message: 'Set CRON_SECRET to enable scheduled jobs' } });
+    return;
+  }
+  if (!authorised(req.header('authorization'))) {
+    res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Bad cron credentials' } });
+    return;
+  }
+  const [pushBills, escrowCases, fxQuotes] = await Promise.all([
+    expireOverdueSessions(),
+    expireOverdueCases(),
+    expireOverdueQuotes(),
+  ]);
+  res.json({ pushBills, escrowCases, fxQuotes });
 });

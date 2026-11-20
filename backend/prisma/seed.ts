@@ -10,6 +10,7 @@ const prisma = new PrismaClient();
 const CURRENCIES = [
   { code: 'TZS', name: 'Tanzanian Shilling', minorUnits: 2, symbol: 'TSh' },
   { code: 'USD', name: 'US Dollar', minorUnits: 2, symbol: '$' },
+  { code: 'KES', name: 'Kenyan Shilling', minorUnits: 2, symbol: 'KSh' },
 ];
 
 async function main() {
@@ -35,6 +36,26 @@ async function main() {
     // Placeholder for the prototype; replace with a rate feed (e.g. Bank of Tanzania) later.
     await prisma.exchangeRate.create({ data: { baseCurrency: 'USD', quoteCurrency: 'TZS', rate: '2500', source: 'MANUAL' } });
   }
+  const hasKesRate = await prisma.exchangeRate.findFirst({ where: { baseCurrency: 'TZS', quoteCurrency: 'KES' } });
+  if (!hasKesRate) {
+    await prisma.exchangeRate.create({ data: { baseCurrency: 'TZS', quoteCurrency: 'KES', rate: '0.051', source: 'MANUAL' } });
+  }
+
+  // Borderless corridors (blueprint §7): only reviewed routes are ACTIVE; everything else
+  // stays SUSPENDED and is shown as unavailable.
+  await prisma.paymentCorridor.upsert({
+    where: {
+      originCountry_destinationCountry_sourceCurrency_destinationCurrency_providerName: {
+        originCountry: 'TZ', destinationCountry: 'KE', sourceCurrency: 'TZS', destinationCurrency: 'KES', providerName: 'SIMULATED',
+      },
+    },
+    update: {},
+    create: {
+      originCountry: 'TZ', destinationCountry: 'KE', sourceCurrency: 'TZS', destinationCurrency: 'KES',
+      providerName: 'SIMULATED', allowedTypes: ['SEND'],
+      minAmount: 100_000n, maxAmount: 3_000_000_00n, status: 'ACTIVE',
+    },
+  });
 
   // Fee schedule as data (see fee.service.ts). Only seeded once, so later changes made in the
   // back office are never overwritten.

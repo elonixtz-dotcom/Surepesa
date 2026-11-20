@@ -7,6 +7,7 @@ import '../../core/theme.dart';
 import '../../state/app_state.dart';
 import '../../state/payment_models.dart';
 import '../../widgets/common.dart';
+import '../help_screens.dart';
 import 'pay_widgets.dart';
 
 /// The in-app receipt. While the rail is still working (`final` is false, e.g. after a 202),
@@ -171,7 +172,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
         ],
         const SizedBox(height: 4),
         TextButton(
-          onPressed: () => showComingSoon(context, 'Reporting a problem'),
+          onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SupportScreen())),
           child: const Text('Report a problem with this payment'),
         ),
       ],
