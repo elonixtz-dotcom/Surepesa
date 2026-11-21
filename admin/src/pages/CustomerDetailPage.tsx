@@ -13,6 +13,7 @@ interface Customer360 {
   status: string;
   kycStatus: string;
   accountType: string;
+  pinSet: boolean;
   createdAt: string;
   lastLoginAt: string | null;
   profile: { firstName: string; lastName: string; region: string | null; dateOfBirth: string | null } | null;
@@ -32,6 +33,7 @@ export function CustomerDetailPage() {
   const { data: c, error, loading, reload } = useApi(() => api<Customer360>(`/customers/${id}`), [id]);
   const [newCase, setNewCase] = useState(false);
   const [statusChange, setStatusChange] = useState<'SUSPENDED' | 'ACTIVE' | null>(null);
+  const [pinReset, setPinReset] = useState(false);
 
   if (error != null) return <ErrorBox error={error} />;
   if (loading && !c) return <div className="card"><Loading rows={8} /></div>;
@@ -46,6 +48,9 @@ export function CustomerDetailPage() {
         subtitle={<>{c.phoneNumber ?? 'No phone'} · {c.email} · customer since {day(c.createdAt)}</>}
         actions={
           <>
+            {can('customers:reset-pin') && c.pinSet && (
+              <button className="btn" onClick={() => setPinReset(true)}>Reset PIN</button>
+            )}
             {can('customers:status') && (
               c.status === 'SUSPENDED'
                 ? <button className="btn" onClick={() => setStatusChange('ACTIVE')}>Reactivate account</button>
@@ -115,6 +120,20 @@ export function CustomerDetailPage() {
       </div>
 
       {newCase && <NewCaseModal customer={c} onClose={() => setNewCase(false)} />}
+      {pinReset && (
+        <ReasonModal
+          title={`Reset ${c.name}'s PIN?`}
+          description="The old PIN is wiped. The customer sets a new PIN from the app on their next payment. Verify the caller's identity before confirming."
+          label="How was the customer's identity verified? (recorded in the audit log)"
+          confirmLabel="Reset PIN"
+          onConfirm={async (reason) => {
+            await api(`/customers/${c.id}/pin-reset`, { method: 'POST', body: { reason } });
+            toast('PIN cleared. The customer can set a new one in the app.');
+            reload();
+          }}
+          onClose={() => setPinReset(false)}
+        />
+      )}
       {statusChange && (
         <ReasonModal
           title={statusChange === 'SUSPENDED' ? `Suspend ${c.name}?` : `Reactivate ${c.name}?`}

@@ -16,6 +16,8 @@ export const PERMISSIONS = {
   'overview:view': ['SUPER_ADMIN', 'FINANCE', 'COMPLIANCE'],
   'customers:view': ['SUPER_ADMIN', 'SUPPORT', 'FINANCE', 'COMPLIANCE'],
   'customers:status': ['SUPER_ADMIN', 'COMPLIANCE'],
+  // Forgotten transaction PIN: clear it after the agent verifies the caller; the customer sets a new one in the app.
+  'customers:reset-pin': ['SUPER_ADMIN', 'SUPPORT'],
   'transactions:view': ['SUPER_ADMIN', 'SUPPORT', 'FINANCE', 'COMPLIANCE'],
   'cases:manage': ['SUPER_ADMIN', 'SUPPORT'],
   'cases:view': ['SUPER_ADMIN', 'SUPPORT', 'FINANCE', 'COMPLIANCE'],

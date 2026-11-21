@@ -101,6 +101,7 @@ customersRouter.get('/customers/:id', requirePermission('customers:view'), async
     status: user.status,
     kycStatus: user.kycStatus,
     accountType: user.accountType,
+    pinSet: !!user.pinHash,
     createdAt: user.createdAt,
     lastLoginAt: user.lastLoginAt,
     profile: user.profile,
@@ -167,4 +168,34 @@ customersRouter.post('/customers/:id/status', requirePermission('customers:statu
     return u;
   }, TX_OPTIONS);
   res.json({ id: updated.id, status: updated.status });
+});
+
+const pinResetSchema = z.object({
+  reason: z.string().trim().min(5).max(500),
+});
+
+/** Clear a forgotten transaction PIN after the agent has verified the caller (Customer Service). */
+customersRouter.post('/customers/:id/pin-reset', requirePermission('customers:reset-pin'), async (req, res) => {
+  const { reason } = pinResetSchema.parse(req.body);
+  const id = String(req.params.id);
+  const user = await prisma.user.findUnique({ relationLoadStrategy: 'join', where: { id } });
+  if (!user) throw new AppError('CUSTOMER_NOT_FOUND', 'Customer not found', 404);
+  if (!user.pinHash) throw new AppError('NO_PIN_SET', 'This customer has no PIN set — they can create one in the app', 409);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id }, data: { pinHash: null, pinAttempts: 0, pinLockedAt: null } });
+    await audit(
+      {
+        actorId: req.admin!.id,
+        action: 'USER_PIN_RESET',
+        entityType: 'User',
+        entityId: id,
+        before: { pinSet: true },
+        after: { pinSet: false, reason },
+        ipAddress: req.ip,
+      },
+      tx,
+    );
+  }, TX_OPTIONS);
+  res.json({ id, pinSet: false });
 });
