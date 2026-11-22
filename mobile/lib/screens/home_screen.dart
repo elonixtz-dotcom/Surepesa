@@ -39,11 +39,7 @@ class HomeScreen extends StatelessWidget {
             // quick actions — melting into the warm Ledger content below.
             Container(
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF180C06), Color(0xFF241209)],
-                ),
+                gradient: SpColors.nightGradient,
                 borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
               ),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),

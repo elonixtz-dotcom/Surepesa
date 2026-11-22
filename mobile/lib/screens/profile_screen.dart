@@ -6,6 +6,7 @@ import '../core/format.dart';
 import '../core/theme.dart';
 import '../state/app_state.dart';
 import '../widgets/common.dart';
+import '../widgets/solara.dart';
 import 'help_screens.dart';
 import 'linked_accounts_screen.dart';
 import 'pay/set_pin_screen.dart';
@@ -28,32 +29,40 @@ class ProfileScreen extends StatelessWidget {
     return SafeArea(
       bottom: false,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        padding: EdgeInsets.zero,
         children: [
-          Text('Profile', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.4)),
-          const SizedBox(height: 16),
-          SpCard(
-            padding: const EdgeInsets.all(18),
-            child: Row(
-              children: [
-                InitialsAvatar(name: me.displayName, size: 56, onDark: true),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(me.displayName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
-                      const SizedBox(height: 2),
-                      Text(maskPhone(me.phoneNumber) ?? '', style: const TextStyle(color: SpColors.ink2)),
-                      if (me.email != null) Text(me.email!, style: const TextStyle(color: SpColors.inkMuted, fontSize: 12)),
-                      const SizedBox(height: 8),
-                      StatusPill(label: kycLabel, tone: kycTone),
-                    ],
+          SolaraHero(
+            title: 'Profile',
+            child: Padding(
+              padding: const EdgeInsets.only(top: 18),
+              child: Row(
+                children: [
+                  InitialsAvatar(name: me.displayName, size: 56, onDark: true),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(me.displayName,
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: SpColors.onNight)),
+                        const SizedBox(height: 2),
+                        Text(maskPhone(me.phoneNumber) ?? '', style: const TextStyle(color: SpColors.onNightSoft)),
+                        if (me.email != null)
+                          Text(me.email!, style: const TextStyle(color: Color(0x80FFE6D6), fontSize: 12)),
+                        const SizedBox(height: 8),
+                        StatusPill(label: kycLabel, tone: kycTone),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
           const SizedBox(height: 20),
           const SectionHeader(title: 'Security', caps: true),
           const SizedBox(height: 8),
@@ -116,6 +125,9 @@ class ProfileScreen extends StatelessWidget {
             ),
             icon: const Icon(Icons.logout_rounded),
             label: const Text('Sign out'),
+          ),
+              ],
+            ),
           ),
         ],
       ),

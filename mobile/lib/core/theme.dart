@@ -42,6 +42,22 @@ class SpColors {
     colors: [Color(0xFFE03A1E), Color(0xFFF57C12)],
   );
 
+  // "Solara" night surfaces: deep espresso darks that keep the palette's warmth.
+  static const night = Color(0xFF180C06);
+  static const nightDeep = Color(0xFF0F0703);
+  static const nightRaised = Color(0xFF241209);
+  static const nightGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [night, nightRaised],
+  );
+
+  // Glass on night: fills, borders and text.
+  static const glass = Color(0x12FFFFFF);
+  static const glassBorder = Color(0x1FFFFFFF);
+  static const onNight = Colors.white;
+  static const onNightSoft = Color(0xB3FFE6D6); // warm secondary text on night
+
   static const cardGradient = brandGradient;
   static const backgroundGradient = LinearGradient(colors: [ground, ground]);
 }
@@ -100,13 +116,16 @@ ThemeData buildTheme() {
   return base.copyWith(
     textTheme: text,
     appBarTheme: AppBarTheme(
-      backgroundColor: SpColors.ground,
+      backgroundColor: SpColors.night,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
-      foregroundColor: SpColors.ink,
+      foregroundColor: SpColors.onNight,
+      iconTheme: const IconThemeData(color: SpColors.onNight),
+      actionsIconTheme: const IconThemeData(color: SpColors.onNight),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(24))),
       centerTitle: false,
-      titleTextStyle: text.titleMedium?.copyWith(fontWeight: FontWeight.w700, fontSize: 16),
+      titleTextStyle: text.titleMedium?.copyWith(fontWeight: FontWeight.w700, fontSize: 16, color: SpColors.onNight),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,

@@ -6,6 +6,7 @@ import '../state/app_state.dart';
 import '../state/payment_models.dart';
 import '../widgets/common.dart';
 import '../widgets/receipt_tile.dart';
+import '../widgets/solara.dart';
 
 /// Activity: receipts newest first, grouped by day, paged with `before`. Search and the
 /// filter chips narrow what has been loaded so far.
@@ -113,27 +114,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: ListView(
           controller: _scroll,
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          padding: EdgeInsets.zero,
           children: [
-            Text('Activity', style: text.headlineSmall?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.4)),
-            const SizedBox(height: 14),
-            TextField(
-              controller: _query,
-              onChanged: (_) => setState(() {}),
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                hintText: 'Search name, number or SPX reference',
-                prefixIcon: const Icon(Icons.search_rounded, color: SpColors.inkMuted),
-                suffixIcon: _query.text.isEmpty
-                    ? null
-                    : IconButton(
-                        tooltip: 'Clear search',
-                        icon: const Icon(Icons.close_rounded, color: SpColors.inkMuted),
-                        onPressed: () => setState(_query.clear),
-                      ),
+            SolaraHero(
+              title: 'Activity',
+              child: Padding(
+                padding: const EdgeInsets.only(top: 14),
+                child: SolaraGlassField(
+                  controller: _query,
+                  hint: 'Search name, number or SPX reference',
+                  onChanged: (_) => setState(() {}),
+                  textInputAction: TextInputAction.search,
+                ),
               ),
             ),
-            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -200,6 +199,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 TextButton(onPressed: _loadMore, child: const Text('Could not load more. Try again'))
               else if (_next != null)
                 TextButton(onPressed: _loadMore, child: const Text('Load older activity')),
+                ],
+              ),
+            ),
           ],
         ),
       ),

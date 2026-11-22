@@ -41,20 +41,36 @@ class _HomeShellState extends State<HomeShell> {
       child: Scaffold(
         body: IndexedStack(index: _tab.index, children: _pages),
         bottomNavigationBar: DecoratedBox(
-          decoration: const BoxDecoration(border: Border(top: BorderSide(color: Color(0xFFE1E6EE)))),
+          decoration: const BoxDecoration(
+            color: SpColors.night,
+            border: Border(top: BorderSide(color: SpColors.glassBorder)),
+          ),
           child: NavigationBar(
             selectedIndex: _tab.index,
             onDestinationSelected: (i) => setState(() => _tab = ShellTab.values[i]),
-            backgroundColor: SpColors.surface,
+            backgroundColor: SpColors.night,
             surfaceTintColor: Colors.transparent,
-            indicatorColor: SpColors.mint,
+            indicatorColor: const Color(0x33F57C12),
             height: 68,
             labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            labelTextStyle: const WidgetStatePropertyAll(TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xB3FFE6D6))),
             destinations: const [
-              NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded, color: SpColors.teal), label: 'Home'),
-              NavigationDestination(icon: Icon(Icons.show_chart_rounded), selectedIcon: Icon(Icons.show_chart_rounded, color: SpColors.teal), label: 'Activity'),
-              NavigationDestination(icon: Icon(Icons.credit_card_outlined), selectedIcon: Icon(Icons.credit_card_rounded, color: SpColors.teal), label: 'Cards'),
-              NavigationDestination(icon: Icon(Icons.person_outline_rounded), selectedIcon: Icon(Icons.person_rounded, color: SpColors.teal), label: 'Profile'),
+              NavigationDestination(
+                  icon: Icon(Icons.home_outlined, color: Color(0xB3FFE6D6)),
+                  selectedIcon: Icon(Icons.home_rounded, color: SpColors.tealLight),
+                  label: 'Home'),
+              NavigationDestination(
+                  icon: Icon(Icons.show_chart_rounded, color: Color(0xB3FFE6D6)),
+                  selectedIcon: Icon(Icons.show_chart_rounded, color: SpColors.tealLight),
+                  label: 'Activity'),
+              NavigationDestination(
+                  icon: Icon(Icons.credit_card_outlined, color: Color(0xB3FFE6D6)),
+                  selectedIcon: Icon(Icons.credit_card_rounded, color: SpColors.tealLight),
+                  label: 'Cards'),
+              NavigationDestination(
+                  icon: Icon(Icons.person_outline_rounded, color: Color(0xB3FFE6D6)),
+                  selectedIcon: Icon(Icons.person_rounded, color: SpColors.tealLight),
+                  label: 'Profile'),
             ],
           ),
         ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../state/payment_models.dart';
 import '../widgets/common.dart';
+import '../widgets/solara.dart';
 import 'cards/cards_screen.dart';
 import 'borderless/borderless_screen.dart';
 import 'circles/circles_screen.dart';
@@ -61,11 +62,12 @@ class ServicesScreen extends StatelessWidget {
     return SafeArea(
       bottom: false,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 110),
+        padding: EdgeInsets.zero,
         children: [
-          Text('Services', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
-          const SizedBox(height: 16),
-          GridView.count(
+          const SolaraHero(title: 'Services'),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 110),
+            child: GridView.count(
             crossAxisCount: 4,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -94,6 +96,7 @@ class ServicesScreen extends StatelessWidget {
                   ),
                 ),
             ],
+          ),
           ),
         ],
       ),
