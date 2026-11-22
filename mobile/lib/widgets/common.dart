@@ -96,23 +96,26 @@ class SectionHeader extends StatelessWidget {
 
 /// Rounded-square icon button (back, notifications, close). 44 px touch target.
 class CircleIconButton extends StatelessWidget {
-  const CircleIconButton({super.key, required this.icon, this.onPressed, this.badge = false, this.tooltip});
+  const CircleIconButton({super.key, required this.icon, this.onPressed, this.badge = false, this.tooltip, this.onDark = false});
 
   final IconData icon;
   final VoidCallback? onPressed;
   final bool badge;
   final String? tooltip;
 
+  /// Frosted-glass variant for dark hero surfaces.
+  final bool onDark;
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         Material(
-          color: SpColors.surface,
+          color: onDark ? const Color(0x14FFFFFF) : SpColors.surface,
           borderRadius: BorderRadius.circular(SpRadii.control),
           child: IconButton(
             icon: Icon(icon, size: 22),
-            color: SpColors.ink,
+            color: onDark ? Colors.white : SpColors.ink,
             tooltip: tooltip,
             constraints: const BoxConstraints.tightFor(width: 44, height: 44),
             onPressed: onPressed,

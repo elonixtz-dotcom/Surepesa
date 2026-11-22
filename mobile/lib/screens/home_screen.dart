@@ -5,7 +5,7 @@ import '../core/theme.dart';
 import '../state/app_state.dart';
 import '../state/card_models.dart';
 import '../state/payment_models.dart';
-import '../widgets/balance_card.dart';
+import '../widgets/aurora_balance_card.dart';
 import '../widgets/common.dart';
 import '../widgets/receipt_tile.dart';
 import 'home_shell.dart';
@@ -33,39 +33,63 @@ class HomeScreen extends StatelessWidget {
           }
         },
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          padding: EdgeInsets.zero,
           children: [
-            Row(
-              children: [
-                InitialsAvatar(name: me.displayName, size: 42, onDark: true),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            // "Solara" hero: a dark, immersive zone — aurora glass balance card and frosted
+            // quick actions — melting into the warm Ledger content below.
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF180C06), Color(0xFF241209)],
+                ),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+              ),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              child: Column(
+                children: [
+                  Row(
                     children: [
-                      Text(greetingFor(DateTime.now()), style: const TextStyle(fontSize: 13, color: SpColors.inkMuted)),
-                      Text(me.displayName, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                      InitialsAvatar(name: me.displayName, size: 42, onDark: true),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(greetingFor(DateTime.now()), style: const TextStyle(fontSize: 13, color: Color(0xB3FFE6D6))),
+                            Text(me.displayName, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                      CircleIconButton(
+                        icon: Icons.notifications_none_rounded,
+                        tooltip: 'Notifications',
+                        onDark: true,
+                        onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const NotificationsScreen())),
+                      ),
                     ],
                   ),
-                ),
-                CircleIconButton(
-                  icon: Icons.notifications_none_rounded,
-                  tooltip: 'Notifications',
-                  onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const NotificationsScreen())),
-                ),
-              ],
+                  const SizedBox(height: 18),
+                  AuroraBalanceCard(me: me, wallet: me.walletIn('TZS')),
+                  const SizedBox(height: 18),
+                  const _QuickActions(),
+                ],
+              ),
             ),
-            const SizedBox(height: 18),
-            BalanceCard(me: me, wallet: me.walletIn('TZS')),
-            const SizedBox(height: 18),
-            const _QuickActions(),
-            const SizedBox(height: 18),
-            if (!me.isVerified) ...[
-              _VerifyBanner(kycStatus: me.kycStatus),
-              const SizedBox(height: 14),
-            ],
-            const _CardStrip(),
-            const _RecentActivity(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+              child: Column(
+                children: [
+                  if (!me.isVerified) ...[
+                    _VerifyBanner(kycStatus: me.kycStatus),
+                    const SizedBox(height: 14),
+                  ],
+                  const _CardStrip(),
+                  const _RecentActivity(),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -103,13 +127,15 @@ class _QuickActions extends StatelessWidget {
                         height: 56,
                         decoration: BoxDecoration(
                           gradient: i == 0 ? SpColors.brandGradient : null,
-                          color: i == 0 ? null : SpColors.surface,
+                          color: i == 0 ? null : const Color(0x12FFFFFF),
                           borderRadius: BorderRadius.circular(18),
+                          border: i == 0 ? null : Border.all(color: const Color(0x1FFFFFFF)),
+                          boxShadow: i == 0 ? const [BoxShadow(color: Color(0x66E03A1E), blurRadius: 18, offset: Offset(0, 6))] : null,
                         ),
-                        child: Icon(icon, color: i == 0 ? Colors.white : SpColors.ink, size: 22),
+                        child: Icon(icon, color: Colors.white, size: 22),
                       ),
                       const SizedBox(height: 8),
-                      Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                      Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xD9FFFFFF))),
                     ],
                   ),
                 ),
