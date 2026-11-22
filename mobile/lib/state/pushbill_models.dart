@@ -14,6 +14,8 @@ class PushBillSession {
     required this.destinationLabel,
     required this.amountValue,
     required this.amountFormatted,
+    required this.feeFormatted,
+    required this.totalFormatted,
     required this.note,
     required this.expiresAt,
     required this.paidTransactionId,
@@ -30,6 +32,10 @@ class PushBillSession {
   final String? destinationLabel;
   final String amountValue;
   final String amountFormatted;
+
+  /// What the payer is charged on top, disclosed before authorisation (null on older backends).
+  final String? feeFormatted;
+  final String? totalFormatted;
   final String? note;
   final DateTime expiresAt;
   final String? paidTransactionId;
@@ -50,6 +56,8 @@ class PushBillSession {
   factory PushBillSession.fromJson(Map<String, dynamic> json) {
     final destination = json['destination'] as Map<String, dynamic>? ?? const {};
     final amount = json['amount'] as Map<String, dynamic>? ?? const {};
+    final fee = json['fee'] as Map<String, dynamic>?;
+    final total = json['total'] as Map<String, dynamic>?;
     return PushBillSession(
       id: json['id'] as String,
       reference: json['reference'] as String,
@@ -59,6 +67,8 @@ class PushBillSession {
       destinationLabel: destination['label'] as String?,
       amountValue: amount['value']?.toString() ?? '0',
       amountFormatted: amount['formatted']?.toString() ?? '',
+      feeFormatted: fee?['formatted']?.toString(),
+      totalFormatted: total?['formatted']?.toString(),
       note: json['note'] as String?,
       expiresAt: DateTime.parse(json['expiresAt'] as String),
       paidTransactionId: json['paidTransactionId'] as String?,

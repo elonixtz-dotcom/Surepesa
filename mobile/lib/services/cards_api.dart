@@ -45,6 +45,17 @@ class CardsApi {
     return VirtualCard.fromJson(data['card'] as Map<String, dynamic>);
   }
 
+  /// What loading [amount] onto the card costs — amount, fee, total — shown before the PIN.
+  /// Moves no money.
+  Future<(Money, Money, Money)> loadQuote(String id, {required String amount}) async {
+    final data = await _api.get('/v1/cards/$id/load-quote', query: {'amount': amount});
+    return (
+      Money.fromJson(data['amount'] as Map<String, dynamic>),
+      Money.fromJson(data['fee'] as Map<String, dynamic>),
+      Money.fromJson(data['total'] as Map<String, dynamic>),
+    );
+  }
+
   Future<Receipt> load(String id, {required String amount, required String pin, required String idempotencyKey}) async => Receipt.fromJson(
         await _api.post('/v1/cards/$id/load', {'amount': amount, 'pin': pin}, headers: {'Idempotency-Key': idempotencyKey}),
       );

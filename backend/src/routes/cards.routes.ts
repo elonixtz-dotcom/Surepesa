@@ -20,6 +20,7 @@ import {
   unloadCard,
 } from '../services/card.service';
 import { verifyPin } from '../services/pin.service';
+import { quoteFee } from '../services/fee.service';
 import { displayMoney, loadReceipt, minorUnitsOf, presentReceipt, receiptInclude } from '../services/receipt.service';
 
 /**
@@ -112,6 +113,18 @@ cardsRouter.get('/:id', async (req, res) => {
       })
     : [];
   res.json({ card: await view(card), transactions: await Promise.all(txns.map((t) => presentReceipt(t, req.user!.id))) });
+});
+
+/** What loading the card costs: amount, fee and total, shown before the PIN. Moves no money. */
+cardsRouter.get('/:id/load-quote', async (req, res) => {
+  const card = await loadOwnCard(req.user!.id, String(req.params.id));
+  const amount = await toMinor(String(req.query.amount ?? ''));
+  const fee = await quoteFee('CARD_LOAD', amount);
+  res.json({
+    amount: await displayMoney(amount, card.currencyCode),
+    fee: await displayMoney(fee, card.currencyCode),
+    total: await displayMoney(amount + fee, card.currencyCode),
+  });
 });
 
 cardsRouter.post('/:id/load', async (req, res) => {

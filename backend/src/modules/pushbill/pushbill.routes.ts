@@ -5,6 +5,7 @@ import { AppError } from '../../lib/errors';
 import { toMinorUnits } from '../../lib/money';
 import { requireAuth } from '../../middleware/auth';
 import { displayMoney, minorUnitsOf } from '../../services/receipt.service';
+import { quoteFee } from '../../services/fee.service';
 import {
   acceptPushBill,
   authorisePushBill,
@@ -39,6 +40,8 @@ function idempotencyKey(req: Request): string {
 }
 
 async function present(session: PushBillSession, viewerId: string) {
+  // The payer authorises a merchant payment; the fee they would be charged is disclosed up front.
+  const fee = await quoteFee('MERCHANT_PAYMENT', session.amount);
   return {
     id: session.id,
     reference: session.reference,
@@ -49,6 +52,8 @@ async function present(session: PushBillSession, viewerId: string) {
       label: session.destinationLabel,
     },
     amount: await displayMoney(session.amount, session.currencyCode),
+    fee: await displayMoney(fee, session.currencyCode),
+    total: await displayMoney(session.amount + fee, session.currencyCode),
     note: session.note,
     expiresAt: session.expiresAt,
     paidTransactionId: session.paymentTransactionId,

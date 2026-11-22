@@ -107,16 +107,27 @@ class _CardDetailScreenState extends State<CardDetailScreen> with WidgetsBinding
     if (mounted) _toast('$label copied');
   }
 
-  /// Load (wallet -> card) or unload (card -> wallet).
+  /// Load (wallet -> card) or unload (card -> wallet). Loads quote the fee first so the PIN
+  /// sheet discloses amount, fee and total.
   Future<void> _move({required bool toCard}) async {
     final card = _page!.card;
     final amount = await _askAmount(toCard ? 'Add money to ${card.nickname}' : 'Move back to your wallet');
     if (amount == null || !mounted) return;
     final app = AppScope.read(context);
+    var summary = toCard ? 'Load TZS $amount onto ${card.nickname}' : 'Move TZS $amount to your wallet';
+    if (toCard) {
+      try {
+        final (quoted, fee, total) = await app.cards.loadQuote(card.id, amount: amount);
+        if (!mounted) return;
+        summary = 'Load ${quoted.formatted} onto ${card.nickname}\nFee ${fee.formatted} · Total ${total.formatted}';
+      } catch (_) {
+        // The quote is advisory; if it fails the load still discloses the plain amount.
+      }
+    }
     final key = newIdempotencyKey();
     final receipt = await showPinSheet(
       context,
-      summary: toCard ? 'Load TZS $amount onto ${card.nickname}' : 'Move TZS $amount to your wallet',
+      summary: summary,
       submit: (pin) => toCard
           ? app.cards.load(card.id, amount: amount, pin: pin, idempotencyKey: key)
           : app.cards.unload(card.id, amount: amount, pin: pin, idempotencyKey: key),

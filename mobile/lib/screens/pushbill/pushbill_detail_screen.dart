@@ -76,7 +76,9 @@ class _PushBillDetailScreenState extends State<PushBillDetailScreen> {
     final idempotencyKey = newIdempotencyKey();
     final result = await showPinSheet<PushBillSession>(
       context,
-      summary: 'Pay ${s.amountFormatted} to ${s.destinationLabel ?? 'this merchant'}',
+      summary: s.feeFormatted != null
+          ? 'Pay ${s.totalFormatted ?? s.amountFormatted} to ${s.destinationLabel ?? 'this merchant'}\nAmount ${s.amountFormatted} · Fee ${s.feeFormatted}'
+          : 'Pay ${s.amountFormatted} to ${s.destinationLabel ?? 'this merchant'}',
       submit: (pin) => app.pushBills.authorize(s.id, pin: pin, idempotencyKey: idempotencyKey),
     );
     if (result != null) {
@@ -174,6 +176,11 @@ class _PushBillDetailScreenState extends State<PushBillDetailScreen> {
                 if (s.note != null) ...[
                   const SizedBox(height: 4),
                   Text('“${s.note}”', style: const TextStyle(color: SpColors.inkMuted)),
+                ],
+                if (s.isPayer && !s.isTerminal && s.feeFormatted != null) ...[
+                  const SizedBox(height: 10),
+                  DetailRow(label: 'Fee', value: s.feeFormatted!),
+                  DetailRow(label: 'Total you pay', value: s.totalFormatted ?? s.amountFormatted, bold: true),
                 ],
               ],
             ),
