@@ -79,7 +79,17 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              Icon(icon, color: color, size: 56),
+              TweenAnimationBuilder<double>(
+                key: ValueKey('${r.succeeded}-${r.isFinal}-${r.status}'),
+                tween: Tween(begin: 0, end: 1),
+                duration: const Duration(milliseconds: 650),
+                curve: Curves.easeOutBack,
+                builder: (context, t, child) => Opacity(
+                  opacity: t.clamp(0.0, 1.0),
+                  child: Transform.scale(scale: 0.6 + 0.4 * t, child: child),
+                ),
+                child: _StatusGlow(icon: icon, color: color, glow: r.succeeded),
+              ),
               const SizedBox(height: 10),
               StatusPill(
                 label: r.succeeded ? 'Completed' : !r.isFinal ? 'In progress' : r.status == 'REVERSED' ? 'Reversed' : 'Failed',
@@ -92,7 +102,10 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                             : PillTone.negative,
               ),
               const SizedBox(height: 10),
-              Text('${r.isIncoming ? '+' : ''}${r.amount.formatted}', style: moneyStyle(size: 32)),
+              Text('${r.isIncoming ? '+' : ''}${r.amount.formatted}',
+                  style: moneyStyle(size: 32).copyWith(
+                    shadows: r.succeeded ? [Shadow(color: color.withValues(alpha: 0.35), blurRadius: 22)] : null,
+                  )),
               const SizedBox(height: 4),
               Text(r.typeLabel, style: const TextStyle(color: SpColors.ink2, fontWeight: FontWeight.w600)),
               const SizedBox(height: 10),
@@ -176,6 +189,43 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
           child: const Text('Report a problem with this payment'),
         ),
       ],
+    );
+  }
+}
+
+/// The receipt's status mark. On success it sits on a soft halo of its own light.
+class _StatusGlow extends StatelessWidget {
+  const _StatusGlow({required this.icon, required this.color, required this.glow});
+
+  final IconData icon;
+  final Color color;
+  final bool glow;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 104,
+      height: 104,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (glow)
+            Container(
+              width: 104,
+              height: 104,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(colors: [color.withValues(alpha: 0.35), color.withValues(alpha: 0)]),
+              ),
+            ),
+          Icon(
+            icon,
+            color: color,
+            size: 56,
+            shadows: glow ? [Shadow(color: color.withValues(alpha: 0.55), blurRadius: 26)] : null,
+          ),
+        ],
+      ),
     );
   }
 }
