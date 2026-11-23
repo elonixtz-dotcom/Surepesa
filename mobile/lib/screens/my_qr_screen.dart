@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import '../../core/format.dart';
-import '../../core/theme.dart';
-import '../../state/app_state.dart';
-import '../../widgets/common.dart';
-import '../pay/pay_widgets.dart';
+import '../core/format.dart';
+import '../core/theme.dart';
+import '../state/app_state.dart';
+import '../widgets/common.dart';
+import 'pay/pay_widgets.dart';
 
 /// "My QR Code": the customer's receive code — their SurePesa number as a scannable QR,
 /// with the number itself copyable for chat/SMS. Anyone with the app can pay this number.
@@ -15,7 +15,7 @@ class MyQrScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final me = AppScope.of(context).me!;
-    final phone = me.phoneNumber;
+    final phone = me.phoneNumber ?? '';
 
     return PayScaffold(
       title: 'My QR Code',

@@ -4,6 +4,7 @@ import '../core/theme.dart';
 import '../state/payment_models.dart';
 import '../widgets/common.dart';
 import '../widgets/solara.dart';
+import 'bills_screen.dart';
 import 'cards/cards_screen.dart';
 import 'my_qr_screen.dart';
 import 'borderless/borderless_screen.dart';
@@ -27,6 +28,7 @@ class ServicesScreen extends StatelessWidget {
     (Icons.phone_android_rounded, 'Mobile Money'),
     (Icons.groups_rounded, 'Circles'),
     (Icons.verified_user_rounded, 'Escrow'),
+    (Icons.receipt_long_rounded, 'Pay Bills'),
     (Icons.currency_exchange_rounded, 'Exchange'),
     (Icons.public_rounded, 'Cross-border'),
   ];
@@ -43,6 +45,8 @@ class ServicesScreen extends StatelessWidget {
       openPayFlow(context, flow);
     } else if (label == 'My QR Code') {
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const MyQrScreen()));
+    } else if (label == 'Pay Bills') {
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const BillsScreen()));
     } else if (label == 'PushBill') {
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const PushBillListScreen()));
     } else if (label == 'Virtual Cards') {
