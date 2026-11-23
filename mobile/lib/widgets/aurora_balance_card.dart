@@ -87,7 +87,7 @@ class _AuroraBalanceCardState extends State<AuroraBalanceCard> with SingleTicker
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(22),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -113,7 +113,7 @@ class _AuroraBalanceCardState extends State<AuroraBalanceCard> with SingleTicker
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 10),
                     FittedBox(
                       alignment: Alignment.centerLeft,
                       fit: BoxFit.scaleDown,
@@ -128,14 +128,14 @@ class _AuroraBalanceCardState extends State<AuroraBalanceCard> with SingleTicker
                           const SizedBox(width: 8),
                           Text(
                             _hidden ? '••••••' : '${amount.whole}${amount.fraction}',
-                            style: moneyStyle(size: 36, color: Colors.white).copyWith(
+                            style: moneyStyle(size: 30, color: Colors.white).copyWith(
                               shadows: [const Shadow(color: Color(0x59F57C12), blurRadius: 24)],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(

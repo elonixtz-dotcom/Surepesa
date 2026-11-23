@@ -42,7 +42,7 @@ class HomeScreen extends StatelessWidget {
                 gradient: SpColors.nightGradient,
                 borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
               ),
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
               child: Column(
                 children: [
                   Row(
@@ -66,9 +66,9 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 14),
                   AuroraBalanceCard(me: me, wallet: me.walletIn('TZS')),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 14),
                   const _QuickActions(),
                 ],
               ),
@@ -115,12 +115,12 @@ class _QuickActions extends StatelessWidget {
                 borderRadius: BorderRadius.circular(18),
                 onTap: () => openPayFlow(context, flow),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 2),
                   child: Column(
                     children: [
                       Container(
-                        width: 56,
-                        height: 56,
+                        width: 50,
+                        height: 50,
                         decoration: BoxDecoration(
                           gradient: i == 0 ? SpColors.brandGradient : null,
                           color: i == 0 ? null : const Color(0x12FFFFFF),
@@ -128,9 +128,9 @@ class _QuickActions extends StatelessWidget {
                           border: i == 0 ? null : Border.all(color: const Color(0x1FFFFFFF)),
                           boxShadow: i == 0 ? const [BoxShadow(color: Color(0x66E03A1E), blurRadius: 18, offset: Offset(0, 6))] : null,
                         ),
-                        child: Icon(icon, color: Colors.white, size: 22),
+                        child: Icon(icon, color: Colors.white, size: 20),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xD9FFFFFF))),
                     ],
                   ),
