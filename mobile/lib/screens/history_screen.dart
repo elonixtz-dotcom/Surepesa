@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../core/format.dart';
 import '../core/theme.dart';
 import '../state/app_state.dart';
 import '../state/payment_models.dart';
+import '../widgets/activity_insights.dart';
 import '../widgets/common.dart';
+import '../widgets/download.dart';
 import '../widgets/receipt_tile.dart';
 import '../widgets/solara.dart';
 
@@ -59,6 +62,34 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Future<void> _loadMore() async {
     if (_next != null) await _fetch(reset: false);
+  }
+
+  /// Downloads the currently shown activity as CSV (web: browser download).
+  void _exportCsv() {
+    final rows = _items.where(_matches).toList();
+    if (rows.isEmpty) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(content: Text('Nothing to export yet')));
+      return;
+    }
+    String q(String? s) => '"${(s ?? '').replaceAll('"', '""')}"';
+    final b = StringBuffer('Date,Reference,Type,Direction,Counterparty,Amount,Fee,Total,Currency,Status\n');
+    for (final r in rows) {
+      b.writeln([
+        DateFormat('yyyy-MM-dd HH:mm').format(r.createdAt),
+        q(r.reference),
+        q(r.typeLabel),
+        r.direction,
+        q(r.counterparty?.name ?? r.counterparty?.account),
+        r.amount.value,
+        r.fee.value,
+        r.total.value,
+        r.currency,
+        q(r.statusText),
+      ].join(','));
+    }
+    downloadText('surepesa-activity-${DateFormat('yyyyMMdd').format(DateTime.now())}.csv', b.toString());
   }
 
   Future<void> _fetch({required bool reset}) async {
@@ -118,6 +149,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
           children: [
             SolaraHero(
               title: 'Activity',
+              trailing: CircleIconButton(
+                icon: Icons.download_rounded,
+                tooltip: 'Download statement (CSV)',
+                onDark: true,
+                onPressed: _exportCsv,
+              ),
               child: Padding(
                 padding: const EdgeInsets.only(top: 14),
                 child: SolaraGlassField(
@@ -151,6 +188,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            ActivityInsights(items: _items),
+            if (_items.isNotEmpty) const SizedBox(height: 16),
             if (_error != null && _items.isEmpty) ...[
               const SizedBox(height: 40),
               Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: SpColors.negative)),

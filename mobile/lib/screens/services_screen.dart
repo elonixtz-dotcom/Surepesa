@@ -5,6 +5,7 @@ import '../state/payment_models.dart';
 import '../widgets/common.dart';
 import '../widgets/solara.dart';
 import 'cards/cards_screen.dart';
+import 'my_qr_screen.dart';
 import 'borderless/borderless_screen.dart';
 import 'circles/circles_screen.dart';
 import 'escrow/escrow_screen.dart';
@@ -40,6 +41,8 @@ class ServicesScreen extends StatelessWidget {
     };
     if (flow != null) {
       openPayFlow(context, flow);
+    } else if (label == 'My QR Code') {
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const MyQrScreen()));
     } else if (label == 'PushBill') {
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const PushBillListScreen()));
     } else if (label == 'Virtual Cards') {
